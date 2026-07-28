@@ -499,39 +499,24 @@
   }
 }
 
-/* ── 모바일: 화면 안 개념을 쓰지 않습니다 ─────
-   작은 화면에서 테두리는 읽을 공간만 좁힙니다.
-   모니터를 전체 화면으로 펼쳐 일반 페이지처럼 씁니다. */
+/* ── 모바일 ───────────────────────────────────
+   카메라는 데스크톱과 똑같이 씁니다. 값만 다릅니다(RoomShell 의 camConfig).
+   다만 좁은 화면에서 테두리 여백은 읽을 공간만 줄이므로,
+   다 들어갔을 때는 화면이 뷰포트를 꽉 채우게 두었습니다.
+   테두리는 "들어가고 나오는 동안"에만 보입니다. */
 @media (max-width: 860px) {
-  .room[data-screen="on"] .mon {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    z-index: 60;
-  }
-  .room[data-screen="on"] .mon__bezel {
-    padding: 0;
-    border-radius: 0;
-    box-shadow: none;
-    height: 100%;
-  }
-  .room[data-screen="on"] .mon__screen {
-    aspect-ratio: auto;
-    height: 100%;
-    border-radius: 0;
-    box-shadow: none;
-  }
-  .room[data-screen="on"] .mon__stage {
-    width: 100% !important;
-    height: 100% !important;
-    transform: none !important;
-  }
-  .room[data-screen="on"] .mon__neck,
-  .room[data-screen="on"] .mon__foot,
-  .room[data-screen="on"] .mon__glow {
-    display: none;
-  }
   .exit {
     bottom: 14px;
+    font-size: 12px;
+    padding: 10px 17px;
+  }
+  /* 바텀 시트가 화면 아래를 덮으므로 안내는 위로 올립니다 */
+  .guide {
+    bottom: 16px;
+    font-size: 10.5px;
+    padding: 9px 15px;
+    max-width: calc(100vw - 24px);
+    text-align: center;
+    line-height: 1.4;
   }
 }

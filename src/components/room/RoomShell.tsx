@@ -21,15 +21,31 @@ import "@/styles/shell.css";
  * 뒤로가기도 자동으로 줌아웃이 됩니다.
  *
  * 화면 안 내용의 크기 맞추기:
- *   무대(stage)를 뷰포트의 FILL 배만 한 논리 크기로 그린 뒤 화면 크기에 맞게 축소해 둡니다.
+ *   무대(stage)를 뷰포트의 fill 배만 한 논리 크기로 그린 뒤 화면 크기에 맞게 축소해 둡니다.
  *   카메라가 그만큼 확대하면 최종 배율이 정확히 1 이 되어 글자가 원래 크기로 또렷하게 보입니다.
  */
 
-/** 줌인했을 때 화면이 차지하는 뷰포트 비율. 나머지 여백에 모니터 테두리가 남습니다. */
-const FILL = 0.92;
-/** 이 폭 미만에서는 카메라를 쓰지 않습니다 */
-const DESKTOP_MIN = 861;
+const MOBILE_MAX = 860;
 const EASE = "cubic-bezier(.45,.02,.18,1)";
+
+/**
+ * 카메라 값은 화면 크기에 따라 달라집니다. 동작 자체는 하나입니다.
+ *
+ *  fill      줌인했을 때 모니터 화면이 차지하는 뷰포트 비율.
+ *            데스크톱은 92% — 남는 여백에 테두리가 계속 보입니다.
+ *            모바일은 100% — 좁은 화면에서 테두리는 읽을 공간만 줄이므로,
+ *            들어가고 나오는 "동안"에만 보이고 다 들어가면 꽉 찹니다.
+ *
+ *  itemAim   사물을 눌렀을 때 그 사물을 화면 어디에 둘지 (가로, 세로 비율).
+ *            데스크톱은 카드가 오른쪽을 덮으니 왼쪽에,
+ *            모바일은 바텀 시트가 아래 64%를 덮으니 위쪽에 둡니다.
+ */
+function camConfig() {
+  const mobile = window.innerWidth <= MOBILE_MAX;
+  return mobile
+    ? { fill: 1, itemAim: [0.5, 0.16] as const, itemScale: 1.85 }
+    : { fill: 0.92, itemAim: [0.29, 0.46] as const, itemScale: 2.4 };
+}
 
 interface Shot {
   ox: number;
@@ -93,6 +109,9 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
   /* ── 무대 크기 맞추기 ─────────────────────────
      화면(screen)의 종횡비를 뷰포트와 같게 만들면
      줌인했을 때 모니터 화면이 곧 브라우저 창이 됩니다. */
+  /** 마지막으로 무대를 맞춘 뷰포트 크기 */
+  const fittedTo = useRef({ w: 0, h: 0 });
+
   const fit = useCallback(() => {
     const room = roomRef.current;
     const screen = screenRef.current;
@@ -101,32 +120,27 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
 
     const vw = window.innerWidth;
     const vh = window.innerHeight;
+    const { fill } = camConfig();
     room.style.setProperty("--vp-aspect", String(vw / vh));
 
-    const stageW = Math.round(vw * FILL);
-    const stageH = Math.round(vh * FILL);
+    const stageW = Math.round(vw * fill);
+    const stageH = Math.round(vh * fill);
     stage.style.width = `${stageW}px`;
     stage.style.height = `${stageH}px`;
 
     // 화면 안에 딱 맞도록 미리 줄여 둔다. 카메라가 1/이 값 만큼 확대하면 배율 1.
-    const shrink = screen.offsetWidth / stageW;
-    stage.style.transform = `scale(${shrink})`;
-    room.style.setProperty("--stage-shrink", String(shrink));
+    stage.style.transform = `scale(${screen.offsetWidth / stageW})`;
+    fittedTo.current = { w: vw, h: vh };
   }, []);
 
   useLayoutEffect(() => {
     fit();
     const ro = new ResizeObserver(fit);
     if (screenRef.current) ro.observe(screenRef.current);
-    window.addEventListener("resize", fit);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", fit);
-    };
+    return () => ro.disconnect();
   }, [fit]);
 
   /* ── 카메라 ──────────────────────────────── */
-  const isDesktop = () => window.innerWidth >= DESKTOP_MIN;
 
   /** scene 기준 중심 좌표. offsetLeft 는 transform 의 영향을 받지 않습니다. */
   const centerIn = (el: HTMLElement) => {
@@ -149,11 +163,11 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
     return { ox: c.x, oy: c.y, s: scale, tx: aimX - c.x * scale, ty: aimY - c.y * scale };
   };
 
-  /** 모니터 화면이 뷰포트의 FILL 만큼을 차지하도록 하는 카메라 값 */
+  /** 모니터 화면이 뷰포트를 fill 만큼 차지하도록 하는 카메라 값 */
   const screenShot = (): Shot | null => {
     const screen = screenRef.current;
     if (!screen || !screen.offsetWidth) return null;
-    const scale = (window.innerWidth * FILL) / screen.offsetWidth;
+    const scale = (window.innerWidth * camConfig().fill) / screen.offsetWidth;
     return shotFor(screen, 0.5, 0.5, scale);
   };
 
@@ -189,12 +203,6 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
     const scene = sceneRef.current;
     if (!scene) return;
 
-    if (!isDesktop()) {
-      scene.style.transform = "none";
-      settled.current = true;
-      return;
-    }
-
     // 첫 그림은 애니메이션 없이 자리를 잡습니다.
     // /projects 로 직접 들어온 경우 방에서 날아오는 연출이 나오면 어색합니다.
     const duration = settled.current ? 1050 : 0;
@@ -221,13 +229,8 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
     const el = roomRef.current?.querySelector<HTMLElement>(`[data-thing="${id}"]`);
     if (!el || !sceneRef.current) return;
 
-    if (!isDesktop()) {
-      setActiveId(id);
-      setShownId(id);
-      return;
-    }
-
-    const shot = shotFor(el, 0.29, 0.46, 2.4);
+    const { itemAim, itemScale } = camConfig();
+    const shot = shotFor(el, itemAim[0], itemAim[1], itemScale);
     const switching = activeId !== null && activeId !== id;
 
     let via: string | null = null;
@@ -235,12 +238,12 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
     if (switching && lastShot.current) {
       // 한 번 물러섰다가 건너가서 다시 다가간다
       const prev = lastShot.current;
-      const midS = Math.max(1.12, Math.min(prev.s, shot.s) * 0.5);
+      const midS = Math.max(1.1, Math.min(prev.s, shot.s) * 0.5);
       const mox = (prev.ox + shot.ox) / 2;
       const moy = (prev.oy + shot.oy) / 2;
       const scene = sceneRef.current;
-      const aimX = scene.offsetWidth * 0.29;
-      const aimY = scene.offsetHeight * 0.46;
+      const aimX = scene.offsetWidth * itemAim[0];
+      const aimY = scene.offsetHeight * itemAim[1];
       via = `translate(${(aimX - mox * midS).toFixed(2)}px,${(aimY - moy * midS).toFixed(2)}px) scale(${midS.toFixed(4)})`;
       const gap = Math.hypot(shot.ox - prev.ox, shot.oy - prev.oy) / scene.offsetWidth;
       duration = 1000 + Math.min(gap, 1) * 500;
@@ -261,7 +264,7 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
   /** 방 전경으로 되돌립니다. */
   const closeItem = useCallback(() => {
     if (swapTimer.current) clearTimeout(swapTimer.current);
-    if (sceneRef.current && window.innerWidth >= DESKTOP_MIN) move(NEUTRAL, null, 820);
+    move(NEUTRAL, null, 820);
     lastShot.current = null;
     setActiveId(null);
     setShownId(null);
@@ -276,7 +279,7 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
         else closeItem();
         return;
       }
-      if (!activeId || inScreen || window.innerWidth < DESKTOP_MIN) return;
+      if (!activeId || inScreen) return;
       const i = items.findIndex((it) => it.id === activeId);
       if (i < 0) return;
       if (e.key === "ArrowRight") openItem(items[(i + 1) % items.length].id);
@@ -286,14 +289,19 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
     return () => window.removeEventListener("keydown", onKey);
   });
 
-  /* 창 크기가 바뀌면 애니메이션 없이 다시 맞춥니다 */
+  /* 창 크기가 바뀌면 애니메이션 없이 다시 맞춥니다.
+     단, 모바일에서 스크롤할 때 주소창이 접히고 펴지면서 나는 높이 변화는
+     무시합니다. 그때마다 다시 맞추면 읽는 중에 화면이 흔들립니다. */
   useEffect(() => {
     const onResize = () => {
       if (!sceneRef.current) return;
-      if (window.innerWidth < DESKTOP_MIN) {
-        sceneRef.current.style.transform = "none";
-        return;
-      }
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const was = fittedTo.current;
+      const urlBarOnly = vw === was.w && Math.abs(vh - was.h) < 160;
+      if (urlBarOnly) return;
+
+      fit();
       if (inScreen) {
         const shot = screenShot();
         if (shot) {
@@ -303,15 +311,22 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
       } else if (activeId) {
         const el = roomRef.current?.querySelector<HTMLElement>(`[data-thing="${activeId}"]`);
         if (el) {
-          const shot = shotFor(el, 0.29, 0.46, 2.4);
+          const { itemAim, itemScale } = camConfig();
+          const shot = shotFor(el, itemAim[0], itemAim[1], itemScale);
           move(css(shot), null, 0);
           lastShot.current = shot;
         }
+      } else {
+        move(NEUTRAL, null, 0);
       }
     };
     window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, [inScreen, activeId]);
+    window.addEventListener("orientationchange", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onResize);
+    };
+  }, [inScreen, activeId, fit]);
 
   useEffect(() => {
     router.prefetch("/projects");
