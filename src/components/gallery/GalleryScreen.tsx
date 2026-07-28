@@ -1,22 +1,15 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { getPublishedProjects, getProjectStats, getTagsByFrequency } from "@/content/projects";
-import { ProjectBands } from "@/components/gallery/ProjectBands";
-import "@/styles/gallery.css";
+import { ProjectBands } from "./ProjectBands";
 
 /**
- * 프로젝트 갤러리 목록.
+ * 모니터 화면 안에 들어가는 갤러리 목록.
  *
- * 정적으로 생성됩니다. 방문자 요청 시 함수 호출 0회, DB 접근 0회 (docs/03 §3.1).
+ * `/` 와 `/projects` 가 똑같이 이걸 렌더링합니다.
+ * 두 주소의 화면 내용이 동일하기 때문에 오갈 때 바뀌는 것은 카메라뿐이고,
+ * 그래서 이동이 끊기지 않고 이어집니다.
  */
-export const metadata: Metadata = {
-  title: "프로젝트 갤러리",
-  description:
-    "저장소 12개. 무엇을 왜 그렇게 만들었고, 그때 어떤 판단을 했고 무엇이 아쉬웠는지까지 적어 뒀습니다.",
-  alternates: { canonical: "/projects" },
-};
-
-export default async function ProjectsPage() {
+export async function GalleryScreen() {
   const [projects, stats, tags] = await Promise.all([
     getPublishedProjects(),
     getProjectStats(),
@@ -26,6 +19,7 @@ export default async function ProjectsPage() {
   return (
     <div className="gal">
       <header className="gal__top">
+        {/* 방에 있을 때는 숨깁니다 — 이미 방이니까 */}
         <Link className="gal__home" href="/">
           ← 작업실로
         </Link>

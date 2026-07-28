@@ -1024,20 +1024,37 @@ body[data-night="true"] .face {
 .mon__screen {
   display: block;
   position: relative;
-  aspect-ratio: 16 / 10;
+  /* 뷰포트와 같은 종횡비로 둡니다.
+     그래야 줌인했을 때 모니터 화면이 곧 브라우저 창이 됩니다. */
+  aspect-ratio: var(--vp-aspect, 16 / 10);
   overflow: hidden;
   border-radius: 4px;
   background: #f6f6f3;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
 }
-/* 화면 미리보기 — /projects 화면을 축소해 그대로 보여준다 */
-.mon__preview {
+/* 라우트의 내용이 사는 무대.
+   뷰포트의 92% 크기로 그린 뒤 화면에 맞게 줄여 두고,
+   카메라가 그만큼 확대하면 최종 배율이 정확히 1 이 됩니다. */
+.mon__stage {
   position: absolute;
   top: 0;
   left: 0;
   transform-origin: 0 0;
+  overflow: hidden;
   pointer-events: none;
   user-select: none;
+  background: #f6f6f3;
+}
+/* 화면 안에 들어갔을 때만 만질 수 있고 스크롤됩니다 */
+.room[data-screen="on"] .mon__stage {
+  pointer-events: auto;
+  user-select: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+.room[data-screen="on"] .mon__stage::-webkit-scrollbar {
+  display: none;
 }
 .mon__glare {
   position: absolute;
@@ -1115,26 +1132,35 @@ body[data-night="true"] .face {
   opacity: 0.26;
   filter: blur(2.5px);
 }
-/* 화면으로 빨려 들어가는 중 */
+/* ── 화면 안에 들어가 있을 때 ──────────────────
+   테두리는 화면 가장자리에 그대로 남습니다.
+   방은 사라지지 않고 카메라 밖으로 밀려났을 뿐입니다. */
 .room[data-screen="on"] .mon {
   scale: 1;
 }
-.room[data-screen="on"] .mon__hit,
-.room[data-screen="on"] .mon .thing__tip {
-  display: none;
-}
-.room[data-screen="on"] .mon__glare,
+.room[data-screen="on"] .mon .thing__tip,
 .room[data-screen="on"] .mon__glow {
   opacity: 0;
+  pointer-events: none;
 }
-.room[data-screen="on"] .l-desk {
-  filter: blur(3px);
+/* 유리 반사는 읽는 데 방해되므로 걷어냅니다 */
+.room[data-screen="on"] .mon__glare {
+  opacity: 0;
+}
+/* 사물과 방은 화면 밖으로 나가지만, 혹시 걸쳐 보일 때를 대비해 */
+.room[data-screen="on"] .thing {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s var(--ease);
 }
 .room[data-screen="on"] .l-fore {
   opacity: 0;
 }
 .room[data-screen="on"] .vignette {
-  opacity: 0.55;
+  opacity: 0;
+}
+.room[data-screen="on"] .nightwash {
+  opacity: 0;
 }
 
 /* ── 모바일: 카메라를 움직이지 않는다 ────────── */
