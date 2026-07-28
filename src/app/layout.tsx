@@ -52,7 +52,12 @@ const blackHan = Black_Han_Sans({
   display: "swap",
 });
 
-const SITE_URL = "https://you4ranghe.dev"; // TODO: 실제 도메인으로 교체
+/**
+ * OG 태그의 절대 주소를 만드는 기준값입니다.
+ * 틀리면 카카오톡·슬랙 링크 미리보기가 깨집니다.
+ * 커스텀 도메인을 붙이면 여기만 바꾸면 됩니다.
+ */
+const SITE_URL = "https://about-jooeun.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
