@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>포트폴리오 시안 3종 — 비교</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#15161A;--surface:#1D1F26;--line:#2C2F3A;
+  --fg:#E9EAEF;--fg-mid:#969CAC;--fg-dim:#636A7B;
+  --mono:"IBM Plex Mono",Consolas,monospace;
+  --sans:"IBM Plex Sans KR","Malgun Gothic",-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-weight:300;line-height:1.7}
+:focus-visible{outline:2px solid #8B9DFF;outline-offset:3px;border-radius:6px}
+.wrap{max-width:1120px;margin:0 auto;padding:clamp(36px,7vw,88px) clamp(20px,4vw,40px)}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-dim);margin:0 0 16px}
+h1{font-size:clamp(26px,4vw,42px);font-weight:300;letter-spacing:-.02em;margin:0 0 14px;line-height:1.25}
+.lede{color:var(--fg-mid);max-width:62ch;margin:0 0 clamp(32px,5vw,56px);font-size:16px}
+.group{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-dim);margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.cards--2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cards + .group{margin-top:clamp(34px,5vw,58px)}
+.card{
+  display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;overflow:hidden;text-decoration:none;color:inherit;
+  transition:border-color .18s,transform .18s;
+}
+.card:hover{border-color:#8B9DFF;transform:translateY(-4px)}
+.swatch{height:112px;display:flex}
+.swatch i{flex:1}
+.card__body{padding:20px 22px 24px;display:flex;flex-direction:column;gap:10px;flex:1}
+.card__no{font-family:var(--mono);font-size:11px;color:var(--fg-dim);letter-spacing:.14em}
+.card__h{font-size:20px;font-weight:500;margin:0;letter-spacing:-.01em}
+.card__h small{display:block;font-family:var(--mono);font-size:11.5px;font-weight:400;color:var(--fg-dim);margin-top:5px;letter-spacing:.02em}
+.card__p{margin:0;font-size:14px;color:var(--fg-mid);line-height:1.65;flex:1}
+.card__spec{list-style:none;margin:6px 0 0;padding:12px 0 0;border-top:1px solid var(--line);font-family:var(--mono);font-size:11.5px;color:var(--fg-dim);display:grid;gap:5px}
+.card__spec b{color:var(--fg-mid);font-weight:400}
+.card__go{font-family:var(--mono);font-size:12px;color:#8B9DFF;margin-top:14px}
+.note{margin-top:clamp(32px,5vw,56px);padding-top:22px;border-top:1px solid var(--line);font-size:14px;color:var(--fg-dim);max-width:70ch}
+.note code{font-family:var(--mono);font-size:12.5px;color:var(--fg-mid)}
+@media (max-width:860px){.cards,.cards--2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="kicker">Design proposals · 2026.07</p>
+  <h1>포트폴리오 사이트 시안 3종</h1>
+  <p class="lede">같은 콘텐츠(저장소 12개)를 다섯 가지 방향으로 짰습니다. A·B·C는 정보를 읽는 사이트, D·E는 만지고 노는 사이트입니다. 프로젝트 데이터는 샘플이며 실제 저장소 목록으로 교체합니다.</p>
+
+  <p class="group">1군 · 읽는 쪽 — 정보 전달과 신뢰감 우선</p>
+  <div class="cards">
+
+    <a class="card" href="01-board.html">
+      <div class="swatch" aria-hidden="true">
+        <i style="background:#F6F6F3"></i><i style="background:#0B4F4A"></i><i style="background:#B98511"></i><i style="background:#1B3BCF"></i><i style="background:#CE3B27"></i>
+      </div>
+      <div class="card__body">
+        <span class="card__no">시안 A</span>
+        <h2 class="card__h">판 (Board)<small>bold korean display</small></h2>
+        <p class="card__p">두꺼운 한글 디스플레이 타입과 전면 컬러 밴드. 프로젝트마다 가로로 긴 띠가 되고, 마우스를 올리면 색이 좌에서 우로 차오릅니다. 목소리가 큰 방향입니다.</p>
+        <ul class="card__spec">
+          <li><b>밝기</b> 밝음 · 오프화이트</li>
+          <li><b>타입</b> Black Han Sans + Plex Mono</li>
+          <li><b>구조</b> 전폭 밴드 리스트</li>
+          <li><b>인상</b> 자신감 · 편집 디자인</li>
+        </ul>
+        <span class="card__go">열어보기 →</span>
+      </div>
+    </a>
+
+    <a class="card" href="02-runtime.html">
+      <div class="swatch" aria-hidden="true">
+        <i style="background:#0D0F16"></i><i style="background:#141822"></i><i style="background:#8B9DFF"></i><i style="background:#E8C48A"></i><i style="background:#79D3B4"></i>
+      </div>
+      <div class="card__body">
+        <span class="card__no">시안 B</span>
+        <h2 class="card__h">런타임 (Runtime)<small>dark control surface</small></h2>
+        <p class="card__p">어두운 관제 화면. 히어로에 요청이 지나가는 경로를 그려두고 펄스가 흐릅니다. 백엔드 작업이 왜 안 보이는지를 화면으로 답하는 방향입니다. 벤토 그리드.</p>
+        <ul class="card__spec">
+          <li><b>밝기</b> 어두움 · 인디고 차콜</li>
+          <li><b>타입</b> IBM Plex Mono + Sans KR</li>
+          <li><b>구조</b> 벤토 그리드 + 카드</li>
+          <li><b>인상</b> 기술적 · 최신 SaaS</li>
+        </ul>
+        <span class="card__go">열어보기 →</span>
+      </div>
+    </a>
+
+    <a class="card" href="03-margin.html">
+      <div class="swatch" aria-hidden="true">
+        <i style="background:#EDECF2"></i><i style="background:#F6F5F9"></i><i style="background:#4B34E8"></i><i style="background:#1A1622"></i>
+      </div>
+      <div class="card__body">
+        <span class="card__no">시안 C</span>
+        <h2 class="card__h">여백 (Margin)<small>annotated book</small></h2>
+        <p class="card__p">주석이 달린 책. 메타데이터가 본문 왼쪽 여백에 살고, 제목을 누르면 그 자리에서 상세가 펼쳐집니다. 명조 계열 세리프와 넉넉한 공백. 조용하고 정제된 방향입니다.</p>
+        <ul class="card__spec">
+          <li><b>밝기</b> 밝음 · 연회색 라일락</li>
+          <li><b>타입</b> Noto Serif KR + Plex Sans</li>
+          <li><b>구조</b> 단일 칼럼 + 여백 주석</li>
+          <li><b>인상</b> 차분함 · 성숙함</li>
+        </ul>
+        <span class="card__go">열어보기 →</span>
+      </div>
+    </a>
+
+  </div>
+
+  <p class="group">2군 · 노는 쪽 — 클릭하면 카메라가 대상으로 밀고 들어갑니다</p>
+  <div class="cards cards--2">
+
+    <a class="card" href="04-crate.html">
+      <div class="swatch" aria-hidden="true">
+        <i style="background:#1B1626"></i><i style="background:#FFB86B"></i><i style="background:#2FB8A0"></i><i style="background:#FF6B5A"></i><i style="background:#8B6BFF"></i>
+      </div>
+      <div class="card__body">
+        <span class="card__no">시안 D</span>
+        <h2 class="card__h">레코드 진열대 (Crate)<small>flip through the crate</small></h2>
+        <p class="card__p">해질녘 레코드 가게. 3층 선반이 서로 다른 속도로 흐르고, 마우스를 올리면 판이 선반 밖으로 반쯤 뽑힙니다. 한 장을 누르면 그 자리에서 무대 중앙으로 날아와 슬리브에서 판이 빠져나오며 돌아갑니다.</p>
+        <ul class="card__spec">
+          <li><b>움직임</b> 드래그 · 패럴랙스 · FLIP 줌</li>
+          <li><b>타입</b> Do Hyeon + Plex Mono</li>
+          <li><b>구조</b> 3층 가로 진열 + 뷰어</li>
+          <li><b>인상</b> 수집품 · 취향 · 밤의 가게</li>
+        </ul>
+        <span class="card__go">열어보기 →</span>
+      </div>
+    </a>
+
+    <a class="card" href="05-room.html">
+      <div class="swatch" aria-hidden="true">
+        <i style="background:#F7E3C2"></i><i style="background:#FFC93C"></i><i style="background:#3FBFA8"></i><i style="background:#FF7A5C"></i><i style="background:#7B5AA6"></i>
+      </div>
+      <div class="card__body">
+        <span class="card__no">시안 E</span>
+        <h2 class="card__h">작업실 (Room)<small>find the hidden things</small></h2>
+        <p class="card__p">해질녘 방 하나에 물건 12개가 놓여 있고, 각각이 프로젝트입니다. 윷 네 짝, 러버덕, 화분에 사는 거미, 깜빡이는 서버 랙. 누르면 카메라가 그 물건으로 밀고 들어가며 상세가 열립니다. 몇 개 찾았는지 세어 줍니다.</p>
+        <ul class="card__spec">
+          <li><b>움직임</b> 카메라 줌 · 부유 · 먼지</li>
+          <li><b>타입</b> Jua + Plex Sans KR</li>
+          <li><b>구조</b> 단일 장면 + 사이드 카드</li>
+          <li><b>인상</b> 애니메이션 한 장면 · 탐험</li>
+        </ul>
+        <span class="card__go">열어보기 →</span>
+      </div>
+    </a>
+
+  </div>
+
+  <p class="note">다섯 시안 모두 모바일 폭까지 대응하고, 키보드로 조작할 수 있으며, <code>prefers-reduced-motion</code>을 지킵니다. D·E는 이미지 파일을 하나도 쓰지 않고 CSS와 SVG로만 그렸습니다. E에는 “목록으로 보기” 버튼이 있어, 숨은 물건을 찾을 생각이 없는 방문자도 바로 전체를 훑을 수 있습니다. 웹폰트는 Google Fonts 링크라 인터넷 연결이 필요합니다.</p>
+</div>
+</body>
+</html>

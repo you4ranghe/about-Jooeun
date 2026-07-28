@@ -1,26 +1,35 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/**
+ * Tailwind 4 는 tailwind.config.js 가 없고 테마를 여기서 정합니다.
+ * 폰트 변수는 layout.tsx 의 next/font 가 <html> 에 심어 줍니다.
+ *
+ * 이 사이트는 해질녘 방의 색을 기준으로 하므로 다크 모드를 따라가지 않습니다.
+ * 대신 방 안에 밤/낮 토글이 따로 있습니다.
+ */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-body);
+  --color-ink: #46304f;
+  --color-cream: #fff7ea;
+  --color-plum: #7b5aa6;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  font-family: var(--font-body), "Malgun Gothic", -apple-system, sans-serif;
+  font-weight: 300;
+  line-height: 1.65;
+  color: #46304f;
+  background: #241a2c;
+}
+
+/* 포커스 링은 어느 배경에서도 보여야 합니다 */
+:focus-visible {
+  outline: 3px solid #7b5aa6;
+  outline-offset: 4px;
+  border-radius: 10px;
 }

@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 B · 런타임(Runtime) — you4ranghe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────────────────────────
+   시안 B — 런타임 (Runtime)
+   어두운 관제 화면 + 요청 흐름 다이어그램
+   ───────────────────────────────────────────── */
+
+:root{
+  --bg:#0D0F16;
+  --surface:#141822;
+  --surface-2:#1A1F2C;
+  --line:#242B3B;
+  --line-soft:#1D2331;
+  --fg:#E6E9F2;
+  --fg-mid:#98A1B8;
+  --fg-dim:#5D6679;
+
+  --peri:#8B9DFF;   /* 주 강조 — 페리윙클 */
+  --sand:#E8C48A;   /* 보조 — 샌드 */
+  --mint:#79D3B4;   /* 상태 표시 전용 */
+
+  --mono:"IBM Plex Mono","Consolas",monospace;
+  --body:"IBM Plex Sans KR","Malgun Gothic",-apple-system,sans-serif;
+
+  --pad:clamp(18px,4vw,56px);
+  --r:14px;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--fg);
+  font-family:var(--body);font-weight:300;line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+/* 은은한 격자 배경 — 관제 화면의 바탕 */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(var(--line-soft) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--line-soft) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 0%,transparent 75%);
+  opacity:.5;
+}
+main,header,footer{position:relative;z-index:1}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--peri);outline-offset:3px;border-radius:4px}
+
+/* ── 상단 ──────────────────────────────────── */
+.bar{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:16px var(--pad);border-bottom:1px solid var(--line);
+  background:rgba(13,15,22,.82);backdrop-filter:blur(10px);
+  position:sticky;top:0;z-index:60;
+}
+.bar__id{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.02em}
+.bar__id em{font-style:normal;color:var(--fg-dim);font-weight:400}
+.bar__status{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11.5px;color:var(--fg-mid)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 0 0 rgba(121,211,180,.55);animation:pulse 2.6s ease-out infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(121,211,180,.5)}70%{box-shadow:0 0 0 9px rgba(121,211,180,0)}100%{box-shadow:0 0 0 0 rgba(121,211,180,0)}}
+.bar__links{display:flex;gap:16px;font-family:var(--mono);font-size:12px}
+.bar__links a{text-decoration:none;color:var(--fg-mid)}
+.bar__links a:hover{color:var(--peri)}
+
+/* ── 히어로 벤토 ───────────────────────────── */
+.bento{
+  display:grid;gap:12px;padding:clamp(24px,4vw,44px) var(--pad);
+  grid-template-columns:repeat(4,minmax(0,1fr));
+}
+.cell{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:clamp(20px,2.6vw,30px);
+}
+.cell--hero{grid-column:span 4}
+.cell--stat{grid-column:span 1}
+
+.hero__eyebrow{
+  font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--fg-dim);margin:0 0 18px
+}
+.hero__h{
+  font-size:clamp(28px,4.6vw,54px);font-weight:300;line-height:1.18;
+  letter-spacing:-.02em;margin:0 0 14px;max-width:19ch;
+}
+.hero__h b{font-weight:600;color:var(--peri)}
+.hero__p{margin:0;color:var(--fg-mid);font-size:15.5px;max-width:52ch}
+
+/* 시그니처: 요청 흐름 다이어그램 */
+.flow{margin-top:clamp(26px,4vw,40px);padding-top:24px;border-top:1px dashed var(--line)}
+.flow__cap{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--fg-dim);margin:0 0 16px}
+.flow__track{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:0;align-items:center;position:relative;
+}
+.flow__rail{
+  position:absolute;left:6%;right:6%;top:19px;height:1px;background:var(--line);
+}
+.flow__pulse{
+  position:absolute;top:15px;left:6%;width:9px;height:9px;border-radius:50%;
+  background:var(--peri);box-shadow:0 0 14px 2px rgba(139,157,255,.7);
+  animation:travel 4.2s cubic-bezier(.6,.02,.4,.98) infinite;
+}
+.flow__pulse:nth-of-type(3){animation-delay:1.4s;background:var(--sand);box-shadow:0 0 14px 2px rgba(232,196,138,.6)}
+.flow__pulse:nth-of-type(4){animation-delay:2.8s;background:var(--mint);box-shadow:0 0 14px 2px rgba(121,211,180,.55)}
+@keyframes travel{
+  0%{left:6%;opacity:0}
+  8%{opacity:1}
+  92%{opacity:1}
+  100%{left:calc(94% - 9px);opacity:0}
+}
+.node{position:relative;text-align:center}
+.node__mark{
+  width:11px;height:11px;margin:0 auto 12px;border-radius:3px;
+  background:var(--bg);border:1px solid var(--fg-dim);position:relative;z-index:2;
+}
+.node__mark--db{border-radius:50%}
+.node__name{font-family:var(--mono);font-size:11.5px;color:var(--fg-mid);display:block}
+.node__sub{font-family:var(--mono);font-size:10px;color:var(--fg-dim);display:block;margin-top:3px}
+
+.stat__k{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-dim);margin:0 0 10px}
+.stat__v{font-family:var(--mono);font-size:clamp(24px,3vw,34px);font-weight:500;line-height:1;margin:0;color:var(--fg)}
+.stat__v small{font-size:14px;color:var(--fg-mid);font-weight:400;margin-left:4px}
+.stat__n{margin:10px 0 0;font-size:13px;color:var(--fg-mid);line-height:1.5}
+
+/* ── 필터 ──────────────────────────────────── */
+.controls{
+  padding:clamp(18px,3vw,30px) var(--pad) 0;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.controls__label{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-dim)}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{
+  font-family:var(--mono);font-size:12px;padding:6px 12px;border-radius:8px;cursor:pointer;
+  background:var(--surface);border:1px solid var(--line);color:var(--fg-mid);
+  transition:border-color .15s,color .15s,background-color .15s;
+}
+.chip:hover{border-color:var(--peri);color:var(--fg)}
+.chip[aria-pressed="true"]{background:rgba(139,157,255,.13);border-color:var(--peri);color:var(--peri)}
+.controls__count{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--fg-dim)}
+
+/* ── 프로젝트 그리드 ───────────────────────── */
+.grid{
+  display:grid;gap:12px;padding:16px var(--pad) clamp(40px,6vw,72px);
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:22px;text-decoration:none;display:flex;flex-direction:column;gap:12px;
+  transition:border-color .18s,transform .18s,background-color .18s;
+}
+.card:hover{border-color:var(--peri);transform:translateY(-3px);background:var(--surface-2)}
+.card--wide{grid-column:span 2}
+
+.card__top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card__repo{font-family:var(--mono);font-size:11.5px;color:var(--fg-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card__year{font-family:var(--mono);font-size:11px;color:var(--fg-dim);flex:none}
+.card__title{font-size:19px;font-weight:500;margin:0;line-height:1.35;letter-spacing:-.01em}
+.card--wide .card__title{font-size:23px}
+.card__sum{margin:0;font-size:14px;color:var(--fg-mid);line-height:1.6;flex:1}
+.card__tags{display:flex;flex-wrap:wrap;gap:5px;list-style:none;margin:0;padding:0}
+.card__tags li{
+  font-family:var(--mono);font-size:10.5px;padding:3px 8px;border-radius:5px;
+  background:rgba(139,157,255,.09);color:var(--peri);border:1px solid rgba(139,157,255,.18)
+}
+.card__tags li.alt{background:rgba(232,196,138,.08);color:var(--sand);border-color:rgba(232,196,138,.18)}
+.card.is-hidden{display:none}
+
+/* ── 소개 ──────────────────────────────────── */
+.about{
+  margin:0 var(--pad) clamp(40px,6vw,72px);
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:clamp(26px,4vw,48px);
+  display:grid;grid-template-columns:200px minmax(0,1fr);gap:clamp(20px,4vw,48px);
+}
+.about__k{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--fg-dim);margin:0}
+.about p{margin:0 0 16px;font-size:15.5px;color:var(--fg-mid);max-width:58ch}
+.about p:last-child{margin-bottom:0}
+.about strong{color:var(--fg);font-weight:500}
+
+/* ── 푸터 ──────────────────────────────────── */
+.foot{
+  border-top:1px solid var(--line);padding:clamp(30px,5vw,56px) var(--pad);
+  display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:flex-end;
+}
+.foot__h{font-size:clamp(20px,3vw,30px);font-weight:300;margin:0 0 10px;letter-spacing:-.01em}
+.foot__mail{font-family:var(--mono);font-size:15px;color:var(--peri);text-decoration:none;border-bottom:1px solid rgba(139,157,255,.4)}
+.foot__mail:hover{border-bottom-color:var(--peri)}
+.foot__meta{font-family:var(--mono);font-size:11.5px;color:var(--fg-dim);text-align:right;line-height:1.8}
+
+@media (max-width:1000px){
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cell--stat{grid-column:span 2}
+}
+@media (max-width:680px){
+  .grid{grid-template-columns:1fr}
+  .card--wide{grid-column:span 1}
+  .cell--stat{grid-column:span 4}
+  .about{grid-template-columns:1fr}
+  .flow__track{grid-template-columns:repeat(2,1fr);gap:22px 0}
+  .flow__rail,.flow__pulse{display:none}
+  .foot__meta{text-align:left}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition-duration:.01ms!important}
+  .flow__pulse{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar__id">you4ranghe <em>— backend</em></div>
+  <div class="bar__status"><span class="dot" aria-hidden="true"></span> 12 repositories · 7 in production</div>
+  <nav class="bar__links" aria-label="주요">
+    <a href="#work">work</a>
+    <a href="#about">about</a>
+    <a href="https://github.com/you4ranghe">github</a>
+  </nav>
+</header>
+
+<main>
+  <section class="bento">
+    <div class="cell cell--hero">
+      <p class="hero__eyebrow">Backend Engineer · 4 yrs</p>
+      <h1 class="hero__h">만든 것 대부분은 <b>눈에 보이지 않습니다.</b></h1>
+      <p class="hero__p">주문이 결제로 넘어가고, 정산이 새벽에 마감되고, 토큰이 조용히 갱신됩니다. 아래는 그 경로들을 하나씩 열어둔 기록입니다.</p>
+
+      <div class="flow">
+        <p class="flow__cap">요청이 지나가는 길</p>
+        <div class="flow__track">
+          <div class="flow__rail" aria-hidden="true"></div>
+          <span class="flow__pulse" aria-hidden="true"></span>
+          <span class="flow__pulse" aria-hidden="true"></span>
+          <span class="flow__pulse" aria-hidden="true"></span>
+
+          <div class="node">
+            <div class="node__mark" aria-hidden="true"></div>
+            <span class="node__name">Client</span>
+            <span class="node__sub">web · app</span>
+          </div>
+          <div class="node">
+            <div class="node__mark" aria-hidden="true"></div>
+            <span class="node__name">Gateway</span>
+            <span class="node__sub">authn · rate limit</span>
+          </div>
+          <div class="node">
+            <div class="node__mark" aria-hidden="true"></div>
+            <span class="node__name">Service</span>
+            <span class="node__sub">domain logic</span>
+          </div>
+          <div class="node">
+            <div class="node__mark node__mark--db" aria-hidden="true"></div>
+            <span class="node__name">Store</span>
+            <span class="node__sub">mysql · redis</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cell cell--stat">
+      <p class="stat__k">주력</p>
+      <p class="stat__v">Java<small>17</small></p>
+      <p class="stat__n">Spring Boot 3 · JPA</p>
+    </div>
+    <div class="cell cell--stat">
+      <p class="stat__k">정산 배치</p>
+      <p class="stat__v">300<small>만 건</small></p>
+      <p class="stat__n">12분 마감 · 재시작 가능</p>
+    </div>
+    <div class="cell cell--stat">
+      <p class="stat__k">동시 발급</p>
+      <p class="stat__v">10k<small>req</small></p>
+      <p class="stat__n">초과 발급 0건</p>
+    </div>
+    <div class="cell cell--stat">
+      <p class="stat__k">커밋 기록</p>
+      <p class="stat__v">2020<small>—</small></p>
+      <p class="stat__n">6년째 끊기지 않음</p>
+    </div>
+  </section>
+
+  <div class="controls" id="work">
+    <span class="controls__label">filter</span>
+    <div class="chips" role="group" aria-label="기술 태그 필터">
+      <button class="chip" data-tag="all" aria-pressed="true">all</button>
+      <button class="chip" data-tag="Java" aria-pressed="false">Java</button>
+      <button class="chip" data-tag="Spring Boot" aria-pressed="false">Spring Boot</button>
+      <button class="chip" data-tag="Redis" aria-pressed="false">Redis</button>
+      <button class="chip" data-tag="Kafka" aria-pressed="false">Kafka</button>
+      <button class="chip" data-tag="MySQL" aria-pressed="false">MySQL</button>
+      <button class="chip" data-tag="JPA" aria-pressed="false">JPA</button>
+      <button class="chip" data-tag="TypeScript" aria-pressed="false">TypeScript</button>
+    </div>
+    <span class="controls__count" id="count">12 shown</span>
+  </div>
+
+  <section class="grid" id="grid" aria-label="프로젝트">
+
+    <a class="card card--wide" href="https://github.com/you4ranghe/yutnori" data-tags="Java,Spring Boot,WebSocket,Redis">
+      <div class="card__top"><span class="card__repo">you4ranghe/yutnori</span><span class="card__year">2024</span></div>
+      <h2 class="card__title">윷놀이 온라인 대전</h2>
+      <p class="card__sum">WebSocket으로 4인 실시간 대전을 구현했습니다. 말 이동과 잡기 판정은 전부 서버에 두어, 클라이언트가 어떤 값을 보내도 판이 어긋나지 않습니다.</p>
+      <ul class="card__tags"><li>Java</li><li>Spring Boot</li><li class="alt">WebSocket</li><li class="alt">Redis</li></ul>
+    </a>
+
+    <a class="card" href="https://github.com/you4ranghe/order-service" data-tags="Java,Spring Boot,Kafka,MySQL">
+      <div class="card__top"><span class="card__repo">you4ranghe/order-service</span><span class="card__year">2024</span></div>
+      <h2 class="card__title">주문·결제 도메인 서비스</h2>
+      <p class="card__sum">주문 상태 전이를 도메인 이벤트로 분리하고 Kafka로 전파했습니다. 결제 지연이 주문 생성을 막지 않습니다.</p>
+      <ul class="card__tags"><li>Java</li><li>Spring Boot</li><li class="alt">Kafka</li></ul>
+    </a>
+
+    <a class="card" href="https://github.com/you4ranghe/coupon-issuer" data-tags="Java,Spring Boot,Redis">
+      <div class="card__top"><span class="card__repo">you4ranghe/coupon-issuer</span><span class="card__year">2023</span></div>
+      <h2 class="card__title">선착순 쿠폰 발급</h2>
+      <p class="card__sum">Redis 분산 락으로 재고 초과 발급을 막았습니다. 동시 요청 1만 건에서 수량이 정확히 일치합니다.</p>
+      <ul class="card__tags"><li>Java</li><li class="alt">Redis</li></ul>
+    </a>
+
+    <a class="card" href="https://github.com/you4ranghe/batch-settlement" data-tags="Java,Spring Boot,MySQL">
+      <div class="card__top"><span class="card__repo">you4ranghe/batch-settlement</span><span class="card__year">2023</span></div>
+      <h2 class="card__title">일 정산 배치</h2>
+      <p class="card__sum">Spring Batch 청크 처리로 300만 건을 12분에 마감합니다. 실패 지점부터 재시작할 수 있습니다.</p>
+      <ul class="card__tags"><li>Java</li><li>Spring Batch</li><li class="alt">MySQL</li></ul>
+    </a>
+
+    <a class="card card--wide" href="https://github.com/you4ranghe/api-gateway" data-tags="Java,Spring Boot,Redis">
+      <div class="card__top"><span class="card__repo">you4ranghe/api-gateway</span><span class="card__year">2023</span></div>
+      <h2 class="card__title">사내 API 게이트웨이</h2>
+      <p class="card__sum">라우팅·인증·레이트리밋을 한곳에 모아 서비스마다 반복되던 필터 코드를 걷어냈습니다. 신규 서비스는 설정 한 줄로 붙습니다.</p>
+      <ul class="card__tags"><li>Java</li><li>Spring Cloud Gateway</li><li class="alt">Redis</li></ul>
+    </a>
+
+    <a class="card" href="https://github.com/you4ranghe/notification-hub" data-tags="Java,Spring Boot">
+      <div class="card__top"><span class="card__repo">you4ranghe/notification-hub</span><span class="card__year">2022</span></div>
+      <h2 class="card__title">알림 발송 허브</h2>
+      <p class="card__sum">FCM·SMS·이메일을 하나의 인터페이스 뒤로 감췄습니다. 업체를 바꿔도 호출하는 쪽은 그대로입니다.</p>
+      <ul class="card__tags"><li>Java</li><li class="alt">RabbitMQ</li></ul>
+    </a>
+
+    <a class="card" href="https://github.com/you4ranghe/jwt-auth-starter" data-tags="Java,Spring Boot">
+      <div class="card__top"><span class="card__repo">you4ranghe/jwt-auth-starter</span><span class="card__year">2022</span></div>
+      <h2 class="card__title">공통 인증 스타터</h2>
+      <p class="card__sum">사내 서비스 6곳이 의존성 하나로 붙여 쓰는 오토컨피규레이션 라이브러리입니다.</p>
+      <ul class="card__tags"><li>Java</li><li>Spring Boot</li></ul>
+    </a>
+
+    <a class="card" href="https://github.com/you4ranghe/log-collector" data-tags="Java">
+      <div class="card__top"><span class="card__repo">you4ranghe/log-collector</span><span class="card__year">2022</span></div>
+      <h2 class="card__title">로그 수집 파이프라인</h2>
+      <p class="card__sum">흩어진 로그를 Elasticsearch로 모으고 대시보드로 열었습니다. 원인 추적 시간이 크게 줄었습니다.</p>
+      <ul class="card__tags"><li>Java</li><li class="alt">Elasticsearch</li></ul>
+    </a>
+
+    <a class="card" href="https://github.com/you4ranghe/crawler-scheduler" data-tags="Java,MySQL">
+      <div class="card__top"><span class="card__repo">you4ranghe/crawler-scheduler</span><span class="card__year">2022</span></div>
+      <h2 class="card__title">분산 크롤링 스케줄러</h2>
+      <p class="card__sum">Quartz 클러스터 모드로 노드가 늘어도 같은 작업이 두 번 돌지 않습니다.</p>
+      <ul class="card__tags"><li>Java</li><li class="alt">Quartz</li></ul>
+    </a>
+
+    <a class="card" href="https://github.com/you4ranghe/jpa-lab" data-tags="Java,JPA,MySQL">
+      <div class="card__top"><span class="card__repo">you4ranghe/jpa-lab</span><span class="card__year">2021—</span></div>
+      <h2 class="card__title">JPA 성능 실험실</h2>
+      <p class="card__sum">N+1, 페치 조인, 배치 사이즈를 같은 조건에서 재보고 기록했습니다. 코드 리뷰의 근거로 씁니다.</p>
+      <ul class="card__tags"><li>Java</li><li class="alt">JPA</li></ul>
+    </a>
+
+    <a class="card" href="https://github.com/you4ranghe/portfolio-gallery" data-tags="TypeScript">
+      <div class="card__top"><span class="card__repo">you4ranghe/portfolio-gallery</span><span class="card__year">2026</span></div>
+      <h2 class="card__title">이 사이트</h2>
+      <p class="card__sum">전 구간 무료 티어로 운영합니다. 공개·비공개 경계를 Postgres RLS로 강제했습니다.</p>
+      <ul class="card__tags"><li class="alt">TypeScript</li><li class="alt">Supabase</li></ul>
+    </a>
+
+    <a class="card" href="https://github.com/you4ranghe/algo-study" data-tags="Java">
+      <div class="card__top"><span class="card__repo">you4ranghe/algo-study</span><span class="card__year">2020—</span></div>
+      <h2 class="card__title">알고리즘 기록</h2>
+      <p class="card__sum">풀이보다 오답 노트가 많습니다. 커밋 그래프가 이 저장소의 본문입니다.</p>
+      <ul class="card__tags"><li>Java</li></ul>
+    </a>
+
+  </section>
+
+  <section class="about" id="about">
+    <p class="about__k">about</p>
+    <div>
+      <p>주문과 정산처럼 <strong>틀리면 돈이 어긋나는 도메인</strong>을 주로 맡았습니다. 그런 곳에서 배운 건 영리한 코드보다 다음 사람이 읽을 수 있는 코드가 오래 간다는 것이었습니다.</p>
+      <p>새 기능을 넣을 때 제일 먼저 확인하는 건 롤백 경로입니다. 되돌릴 방법이 없으면 아직 배포할 준비가 안 된 겁니다.</p>
+      <p>요즘은 배치 처리량과 동시성 제어를 파고 있습니다. 프런트엔드는 이 사이트를 만들면서 배우는 중입니다.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div>
+    <p class="foot__h">이야기할 준비가 되어 있습니다.</p>
+    <a class="foot__mail" href="mailto:you4ranghe@gmail.com">you4ranghe@gmail.com</a>
+  </div>
+  <div class="foot__meta">
+    github.com/you4ranghe<br>
+    Seoul, KR · 2026
+  </div>
+</footer>
+
+<script>
+(function(){
+  var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.card'));
+  var count = document.getElementById('count');
+
+  function apply(tag){
+    var shown = 0;
+    cards.forEach(function(c){
+      var tags = (c.dataset.tags || '').split(',');
+      var ok = (tag === 'all') || tags.indexOf(tag) !== -1;
+      c.classList.toggle('is-hidden', !ok);
+      if (ok) shown++;
+    });
+    count.textContent = shown + ' shown';
+  }
+
+  chips.forEach(function(chip){
+    chip.addEventListener('click', function(){
+      chips.forEach(function(c){ c.setAttribute('aria-pressed', String(c === chip)); });
+      apply(chip.dataset.tag);
+    });
+  });
+})();
+</script>
+</body>
+</html>
