@@ -1,0 +1,260 @@
+/* ═══════════════════════════════════════════════════════
+   아이패드 화면 안의 유튜브 뮤직.
+
+   여기의 px 값은 무대 좌표가 아니라 **확대했을 때의 실제 화면 픽셀**입니다.
+   .pad__stage 를 확대 크기로 그린 뒤 줄여 두기 때문에(RoomShell 의 fit 참고),
+   보통 크기의 글꼴을 그대로 쓰면 됩니다.
+
+   ⚠️ 영상 위에는 아무것도 올리지 않습니다.
+   덮는 것은 곧 플레이어를 가리는 것이라, 조작부와 대기열은
+   영상이 비켜 준 자리에만 들어갑니다.
+   ═══════════════════════════════════════════════════════ */
+
+.ytm {
+  --ytm-red: #ff0033;
+  --ytm-queue: 34%;
+  --ytm-bar: 20%;
+
+  position: absolute;
+  inset: 0;
+  color: #fff;
+  background: #030303;
+  font-family: var(--font-sans);
+  overflow: hidden;
+}
+
+/* ── 영상 = 플레이어 iframe ──
+   방에서는 화면을 꽉 채우고, 확대하면 조작부·대기열에 자리를 내줍니다.
+   iframe 을 옮기는 게 아니라 **크기만** 바꿉니다 — 옮기면 다시 로드되어 음악이 끊깁니다. */
+.ytm__video {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  transition: inset 0.85s cubic-bezier(0.22, 0.9, 0.24, 1);
+}
+.pad[data-zoom="true"] .ytm__video {
+  inset: 0 var(--ytm-queue) var(--ytm-bar) 0;
+}
+.ytm__video > div,
+.ytm__video iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+@keyframes ytm-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ═══ 아래 조작 막대 ═══════════════════════════ */
+.ytm__bar {
+  position: absolute;
+  left: 0;
+  right: var(--ytm-queue);
+  bottom: 0;
+  height: var(--ytm-bar);
+  display: grid;
+  /* 조작 버튼 줄 + 지금 재생 중. 진행 막대는 영상 안 유튜브 컨트롤이 그립니다. */
+  grid-template-rows: 1fr auto;
+  gap: 10px;
+  padding: 16px 22px 18px;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, #0a0a0a, #030303);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  animation: ytm-in 0.5s 0.15s backwards cubic-bezier(0.22, 0.9, 0.24, 1);
+}
+
+/* 재생 조작 */
+.ytm__transport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+.ytm__skip,
+.ytm__play {
+  display: grid;
+  place-items: center;
+  border: 0;
+  cursor: pointer;
+  color: #fff;
+  background: transparent;
+  transition:
+    color 0.15s,
+    transform 0.15s,
+    opacity 0.15s;
+}
+.ytm__skip {
+  width: 34px;
+  height: 34px;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.72);
+}
+.ytm__skip:hover {
+  color: #fff;
+}
+.ytm__play {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  font-size: 15px;
+  color: #030303;
+  background: #fff;
+}
+.ytm__play:hover:not(:disabled) {
+  transform: scale(1.06);
+}
+.ytm__play:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* 지금 재생 중 */
+.ytm__now {
+  margin: 0;
+  min-width: 0;
+  text-align: center;
+}
+.ytm__nowTitle {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ytm__nowArtist {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ═══ 오른쪽 대기열 ═══════════════════════════ */
+.ytm__queue {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--ytm-queue);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 12px 12px;
+  box-sizing: border-box;
+  background: #0a0a0a;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  animation: ytm-in 0.5s 0.1s backwards cubic-bezier(0.22, 0.9, 0.24, 1);
+}
+.ytm__queueH {
+  flex: none;
+  margin: 0 0 10px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+.ytm__list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+.ytm__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  border-radius: 8px;
+  padding: 7px 8px;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  background: transparent;
+  transition: background 0.15s;
+}
+.ytm__item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.ytm__item[data-on="true"] {
+  background: rgba(255, 255, 255, 0.12);
+}
+.ytm__no {
+  flex: none;
+  width: 16px;
+  font-size: 11px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.4);
+}
+.ytm__item[data-on="true"] .ytm__no {
+  color: var(--ytm-red);
+}
+.ytm__art {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #1a1a1a;
+}
+.ytm__art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.ytm__meta {
+  min-width: 0;
+  flex: 1;
+}
+.ytm__title {
+  display: block;
+  font-size: 12.5px;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ytm__artist {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ytm__foot {
+  flex: none;
+  margin: 10px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 10.5px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ytm__video {
+    transition: none;
+  }
+  .ytm__bar,
+  .ytm__queue {
+    animation: none;
+  }
+}

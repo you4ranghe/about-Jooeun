@@ -1,15 +1,34 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { usePathname, useRouter } from "next/navigation";
 import type { ResumeItem } from "@/content/types";
-import { STAGE, FURNITURE, SPOTS, PROPS, MONITOR, place, box } from "@/content/layout";
+import {
+  STAGE,
+  FURNITURE,
+  SPOTS,
+  PROPS,
+  onDesk,
+  box,
+  monitorBox,
+} from "@/content/layout";
 import { ObjectArt } from "@/components/art/ObjectArt";
 import { DeskClock } from "./DeskClock";
 import { DeskShelf } from "./DeskShelf";
 import { WallCalendar } from "./WallCalendar";
+import { DeskPad } from "./DeskPad";
+import { MusicProvider } from "@/components/music/MusicProvider";
 import { LoginNotice } from "./LoginNotice";
 import { useViewerIsAdmin } from "./useViewerIsAdmin";
+import { useSky } from "./useSky";
+import { WindowWeather } from "./WindowWeather";
+import { WallNotes } from "./WallNotes";
 import { RoomStageProvider } from "./RoomStage";
 import "@/styles/scene.css";
 import "@/styles/shell.css";
@@ -35,6 +54,13 @@ import "@/styles/shell.css";
 /** 줌인했을 때 모니터 화면이 차지하는 뷰포트 비율. 나머지 여백에 테두리가 남습니다. */
 const FILL = 0.92;
 const EASE = "cubic-bezier(.45,.02,.18,1)";
+
+/** 밝기 버튼이 무엇을 하는지 — 아이콘만으로는 알 수 없어서 붙입니다 */
+const LIGHT_LABEL = {
+  auto: "밝기: 실제 시각을 따름 — 눌러서 낮 고정",
+  day: "밝기: 낮 고정 — 눌러서 밤 고정",
+  night: "밝기: 밤 고정 — 눌러서 자동",
+} as const;
 
 /** 사물을 눌렀을 때: 화면 어디에 둘지(비율)와 기본 배율의 몇 배로 볼지 */
 const ITEM_AIM = [0.29, 0.46] as const;
@@ -66,13 +92,23 @@ const STARS = Array.from({ length: 34 }, (_, i) => {
   };
 });
 
-export function RoomShell({ items, children }: { items: ResumeItem[]; children: React.ReactNode }) {
+export function RoomShell({
+  items,
+  children,
+}: {
+  items: ResumeItem[];
+  children: React.ReactNode;
+}) {
   /** 화면을 가리는 용도일 뿐입니다. 진짜 방어선은 RLS 입니다. */
   const isAdmin = useViewerIsAdmin();
   const pathname = usePathname();
   const router = useRouter();
   const inScreen = pathname.startsWith("/projects");
   const inCalendar = pathname.startsWith("/calendar");
+  const inMusic = pathname.startsWith("/music");
+  /** 무언가에 줌인해 있는가. 나가기 버튼 · HUD · Esc 가 모두 이걸 봅니다.
+      음악이 빠져 있어 /music 에서는 나가기 버튼이 안 보였습니다. */
+  const zoomedIn = inScreen || inCalendar || inMusic;
 
   const roomRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
@@ -80,6 +116,9 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
   const stageRef = useRef<HTMLDivElement>(null);
   const calSurfaceRef = useRef<HTMLDivElement>(null);
   const calStageRef = useRef<HTMLDivElement>(null);
+  const padSurfaceRef = useRef<HTMLDivElement>(null);
+  const padScreenRef = useRef<HTMLDivElement>(null);
+  const padStageRef = useRef<HTMLDivElement>(null);
   const camAnim = useRef<Animation | null>(null);
   const lastShot = useRef<Shot | null>(null);
   const settled = useRef(false);
@@ -89,11 +128,17 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
   const [activeId, setActiveId] = useState<string | null>(null);
   const [shownId, setShownId] = useState<string | null>(null);
   const [seen, setSeen] = useState<Set<string>>(new Set());
-  const [night, setNight] = useState(false);
+  /** 밝기: auto = 실제 KST 시각을 따름, day/night = 직접 고정 */
+  const [lightMode, setLightMode] = useState<"auto" | "day" | "night">("auto");
   const [listOpen, setListOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
   /** 캘린더 오른쪽 패널이 열려 있는가. 카메라가 가운데/왼쪽을 정하는 데 씁니다. */
   const [sidePanel, setSidePanel] = useState(false);
+
+  /* 창밖 — 실제 서울 날씨와 KST 시각. 1시간마다 받아오고 1분마다 다시 계산합니다. */
+  const sky = useSky();
+  const night =
+    lightMode === "auto" ? sky.phase === "night" : lightMode === "night";
 
   useEffect(() => {
     document.body.dataset.night = String(night);
@@ -102,7 +147,8 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
   /* ── 무대를 화면에 맞추는 기본 배율 ────────────
      cover — 화면을 꽉 채우고 넘치는 쪽은 잘립니다.
      contain 이면 위아래에 검은 띠가 생겨 방이 액자 속 그림처럼 보입니다. */
-  const baseScale = () => Math.max(window.innerWidth / STAGE.w, window.innerHeight / STAGE.h);
+  const baseScale = () =>
+    Math.max(window.innerWidth / STAGE.w, window.innerHeight / STAGE.h);
 
   const baseShot = (): Shot => {
     const s = baseScale();
@@ -129,7 +175,12 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
   };
 
   /** 무대 위 한 점을 화면의 (aimRX, aimRY) 자리에 배율 scale 로 가져다 놓습니다 */
-  const shotFor = (el: HTMLElement, aimRX: number, aimRY: number, scale: number): Shot => {
+  const shotFor = (
+    el: HTMLElement,
+    aimRX: number,
+    aimRY: number,
+    scale: number,
+  ): Shot => {
     const c = centerIn(el);
     return {
       ox: c.x,
@@ -143,7 +194,12 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
   const screenShot = (): Shot | null => {
     const screen = screenRef.current;
     if (!screen?.offsetWidth) return null;
-    return shotFor(screen, 0.5, 0.5, (window.innerWidth * FILL) / screen.offsetWidth);
+    return shotFor(
+      screen,
+      0.5,
+      0.5,
+      (window.innerWidth * FILL) / screen.offsetWidth,
+    );
   };
 
   /**
@@ -161,14 +217,45 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
     const paper = calSurfaceRef.current;
     if (!paper?.offsetWidth) return null;
     const aspect = paper.offsetWidth / paper.offsetHeight;
-    const h = Math.min(window.innerHeight * 0.86, (window.innerWidth * 0.52) / aspect);
+    const h = Math.min(
+      window.innerHeight * 0.86,
+      (window.innerWidth * 0.52) / aspect,
+    );
     return { w: h * aspect, h, paper };
   };
 
   const calendarShot = (panelOpen: boolean): Shot | null => {
     const t = calTarget();
     if (!t) return null;
-    return shotFor(t.paper, panelOpen ? 0.31 : 0.5, 0.5, t.w / t.paper.offsetWidth);
+    return shotFor(
+      t.paper,
+      panelOpen ? 0.31 : 0.5,
+      0.5,
+      t.w / t.paper.offsetWidth,
+    );
+  };
+
+  /**
+   * 아이패드로 들어갈 때.
+   *
+   * 캘린더처럼 화면 가운데에 세웁니다. 옆으로 밀 이유가 없습니다 —
+   * 재생목록이 밖에 뜨지 않고 **아이패드 화면 안에** 들어가기 때문입니다.
+   */
+  const padTarget = () => {
+    const body = padSurfaceRef.current;
+    if (!body?.offsetWidth) return null;
+    const aspect = body.offsetWidth / body.offsetHeight;
+    const h = Math.min(
+      window.innerHeight * 0.84,
+      (window.innerWidth * 0.62) / aspect,
+    );
+    return { w: h * aspect, h, body };
+  };
+
+  const padShot = (): Shot | null => {
+    const t = padTarget();
+    if (!t) return null;
+    return shotFor(t.body, 0.5, 0.5, t.w / t.body.offsetWidth);
   };
 
   /* ── 모니터 화면 안 무대 크기 맞추기 ──────────
@@ -198,6 +285,22 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
       calStage.style.transform = `scale(${t.paper.offsetWidth / t.w})`;
     }
 
+    /* 아이패드 화면 무대.
+       확대했을 때의 실제 화면 크기로 내용을 그린 뒤 그만큼 줄여 둡니다.
+       카메라가 다시 키우면 배율이 1 이 되어 글자가 또렷합니다.
+
+       덤: iframe 의 CSS 크기가 늘 "확대했을 때 크기" 라서
+       유튜브가 요구하는 최소 200×200 을 방 화면에서도 자연히 넘깁니다. */
+    const padStage = padStageRef.current;
+    const padScreen = padScreenRef.current;
+    const pt = padTarget();
+    if (padStage && padScreen && pt) {
+      const mag = pt.w / pt.body.offsetWidth;
+      padStage.style.width = `${Math.round(padScreen.offsetWidth * mag)}px`;
+      padStage.style.height = `${Math.round(padScreen.offsetHeight * mag)}px`;
+      padStage.style.transform = `scale(${1 / mag})`;
+    }
+
     fittedTo.current = { w: vw, h: vh };
   }, []);
 
@@ -217,14 +320,25 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
     camAnim.current?.cancel();
     camAnim.current = null;
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || duration === 0) {
+    if (
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      duration === 0
+    ) {
       scene.style.transform = target;
       return;
     }
     const frames: Keyframe[] = via
-      ? [{ transform: from }, { transform: via, offset: 0.5 }, { transform: target }]
+      ? [
+          { transform: from },
+          { transform: via, offset: 0.5 },
+          { transform: target },
+        ]
       : [{ transform: from }, { transform: target }];
-    const anim = scene.animate(frames, { duration, easing: EASE, fill: "forwards" });
+    const anim = scene.animate(frames, {
+      duration,
+      easing: EASE,
+      fill: "forwards",
+    });
     camAnim.current = anim;
     anim.onfinish = () => {
       scene.style.transform = target;
@@ -238,10 +352,14 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
     if (!sceneRef.current) return;
     const duration = settled.current ? 1050 : 0;
 
-    if (inScreen || inCalendar) {
+    if (inScreen || inCalendar || inMusic) {
       setActiveId(null);
       setShownId(null);
-      const shot = inCalendar ? calendarShot(sidePanel) : screenShot();
+      const shot = inCalendar
+        ? calendarShot(sidePanel)
+        : inMusic
+          ? padShot()
+          : screenShot();
       if (shot) {
         move(css(shot), null, duration);
         lastShot.current = shot;
@@ -251,12 +369,14 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
       lastShot.current = null;
     }
     settled.current = true;
-  }, [inScreen, inCalendar]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [inScreen, inCalendar, inMusic]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /** 사물을 눌렀을 때. SPOTS 에 자리가 있는 항목만 방에 있습니다. */
   const openItem = (id: string) => {
     setSeen((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
-    const el = roomRef.current?.querySelector<HTMLElement>(`[data-thing="${id}"]`);
+    const el = roomRef.current?.querySelector<HTMLElement>(
+      `[data-thing="${id}"]`,
+    );
 
     // 방에 놓이지 않은 항목은 카메라를 움직이지 않고 카드만 엽니다
     if (!el || !sceneRef.current) {
@@ -279,7 +399,13 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
         window.innerHeight * ITEM_AIM[1] -
         moy * midS
       ).toFixed(2)}px) scale(${midS.toFixed(4)})`;
-      duration = 1000 + Math.min(Math.hypot(shot.ox - prev.ox, shot.oy - prev.oy) / STAGE.w, 1) * 500;
+      duration =
+        1000 +
+        Math.min(
+          Math.hypot(shot.ox - prev.ox, shot.oy - prev.oy) / STAGE.w,
+          1,
+        ) *
+          500;
     }
 
     move(css(shot), via, duration);
@@ -288,7 +414,10 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
 
     if (swapTimer.current) clearTimeout(swapTimer.current);
     if (switching) {
-      swapTimer.current = setTimeout(() => setShownId(id), Math.round(duration * 0.42));
+      swapTimer.current = setTimeout(
+        () => setShownId(id),
+        Math.round(duration * 0.42),
+      );
     } else {
       setShownId(id);
     }
@@ -307,15 +436,16 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         if (listOpen) setListOpen(false);
-        else if (inScreen || inCalendar) router.push("/");
+        else if (zoomedIn) router.push("/");
         else closeItem();
         return;
       }
-      if (!shownId || inScreen || inCalendar) return;
+      if (!shownId || zoomedIn) return;
       const i = items.findIndex((it) => it.id === shownId);
       if (i < 0) return;
       if (e.key === "ArrowRight") openItem(items[(i + 1) % items.length].id);
-      if (e.key === "ArrowLeft") openItem(items[(i - 1 + items.length) % items.length].id);
+      if (e.key === "ArrowLeft")
+        openItem(items[(i - 1 + items.length) % items.length].id);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -331,8 +461,8 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
       if (vw === was.w && Math.abs(vh - was.h) < 160) return;
 
       fit();
-      if (inCalendar) {
-        const shot = calendarShot(sidePanel);
+      if (inCalendar || inMusic) {
+        const shot = inMusic ? padShot() : calendarShot(sidePanel);
         if (shot) {
           move(css(shot), null, 0);
           lastShot.current = shot;
@@ -344,9 +474,16 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
           lastShot.current = shot;
         }
       } else if (activeId) {
-        const el = roomRef.current?.querySelector<HTMLElement>(`[data-thing="${activeId}"]`);
+        const el = roomRef.current?.querySelector<HTMLElement>(
+          `[data-thing="${activeId}"]`,
+        );
         if (el) {
-          const shot = shotFor(el, ITEM_AIM[0], ITEM_AIM[1], baseScale() * ITEM_MAG);
+          const shot = shotFor(
+            el,
+            ITEM_AIM[0],
+            ITEM_AIM[1],
+            baseScale() * ITEM_MAG,
+          );
           move(css(shot), null, 0);
           lastShot.current = shot;
         }
@@ -360,7 +497,7 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
       window.removeEventListener("resize", onResize);
       window.removeEventListener("orientationchange", onResize);
     };
-  }, [inScreen, inCalendar, sidePanel, activeId, fit]);
+  }, [inScreen, inCalendar, inMusic, sidePanel, activeId, fit]);
 
   /* 패널이 열리고 닫힐 때 캘린더를 가운데 ↔ 왼쪽으로 부드럽게 옮깁니다.
      주소가 바뀌는 게 아니라 자리만 바뀌므로 조금 짧게 움직입니다. */
@@ -373,7 +510,8 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
     }
   }, [sidePanel]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* 캘린더를 벗어나면 패널 상태도 초기화합니다 */
+  /* 캘린더를 벗어나면 패널 상태도 초기화합니다.
+     음악은 더 이상 옆 패널을 쓰지 않습니다 — 재생목록이 아이패드 화면 안으로 들어갔습니다. */
   useEffect(() => {
     if (!inCalendar) setSidePanel(false);
   }, [inCalendar]);
@@ -386,413 +524,530 @@ export function RoomShell({ items, children }: { items: ResumeItem[]; children: 
   const readCount = items.filter((it) => seen.has(it.id)).length;
 
   return (
-    <div
-      ref={roomRef}
-      className="room"
-      data-zoom={activeId ? "on" : "off"}
-      data-screen={inScreen ? "on" : "off"}
-      data-cal={inCalendar ? "on" : "off"}
-      data-night={String(night)}
-    >
-      <div ref={sceneRef} className="scene">
-        {/* ── 벽 · 창 ── */}
-        <div className="layer l-sky">
-          <div className="wall">
-            <span className="wall__paper" />
-            <span className="wall__bounce" />
-            <span className="wall__light" />
-            <span className="wall__rail" />
-          </div>
+    <MusicProvider>
+      <div
+        ref={roomRef}
+        className="room"
+        data-zoom={activeId ? "on" : "off"}
+        data-screen={inScreen ? "on" : "off"}
+        data-cal={inCalendar ? "on" : "off"}
+        data-music={inMusic ? "on" : "off"}
+        data-night={String(night)}
+        data-phase={lightMode === "auto" ? sky.phase : lightMode}
+        data-cond={sky.condition}
+        data-season={sky.season}
+      >
+        <div ref={sceneRef} className="scene">
+          {/* ── 벽 · 창 ── */}
+          <div className="layer l-sky">
+            <div className="wall">
+              <span className="wall__paper" />
+              <span className="wall__bounce" />
+              <span className="wall__light" />
+              <span className="wall__rail" />
+            </div>
 
-          <div className="win" style={box(FURNITURE.window)}>
-            <span className="win__day" />
-            <span className="win__night">
-              {STARS.map((s, i) => (
-                <span
-                  key={i}
-                  className="win__star"
-                  style={{
-                    left: s.left,
-                    top: s.top,
-                    width: s.size,
-                    height: s.size,
-                    animationDuration: s.dur,
-                    animationDelay: s.delay,
-                  }}
-                />
-              ))}
-            </span>
-            <span className="win__sun" />
-            <span className="win__moon" />
-            <span className="win__shoot" />
-            <span className="win__shoot" />
-            <span className="win__hill" />
-            <span className="win__hill win__hill--back" />
-            <span className="win__cloud" />
-            <span className="win__cloud" />
-            <span className="win__cloud" />
-            {[1.7, 2].map((w, i) => (
-              <span className="win__bird" key={i}>
-                <svg viewBox="0 0 24 12" role="presentation">
-                  <path
-                    d="M2 8c3.5-6 6-1.5 10-3.5 3.5 2 6-2.5 10 3.5"
-                    fill="none"
-                    stroke="#4A3550"
-                    strokeWidth={w}
-                    strokeLinecap="round"
+            <div className="win" style={box(FURNITURE.window)}>
+              <span className="win__day" />
+              <span className="win__night">
+                {STARS.map((s, i) => (
+                  <span
+                    key={i}
+                    className="win__star"
+                    style={{
+                      left: s.left,
+                      top: s.top,
+                      width: s.size,
+                      height: s.size,
+                      animationDuration: s.dur,
+                      animationDelay: s.delay,
+                    }}
                   />
-                </svg>
+                ))}
               </span>
-            ))}
-            <span className="win__bar-v" />
-            <span className="win__bar-v" />
-            <span className="win__bar-h" />
-            <span className="win__glass" />
+              {/* 흐린 날 하늘을 눌러 앉히는 층. 해·달보다 뒤에 있어야 가리지 않습니다. */}
+              <span className="win__sky-dim" />
+              {/* 해와 달은 실제 일출·일몰에 맞춰 창을 가로지릅니다.
+                  ready 전에는 CSS 기본 자리에 둡니다 — 서버는 "지금"을 모릅니다. */}
+              <span
+                className="win__sun"
+                style={
+                  sky.ready
+                    ? { left: `${sky.bodyX}%`, top: `${sky.bodyY}%` }
+                    : undefined
+                }
+              />
+              <span
+                className="win__moon"
+                style={
+                  sky.ready
+                    ? { left: `${sky.bodyX}%`, top: `${sky.bodyY}%` }
+                    : undefined
+                }
+              />
+              <span className="win__shoot" />
+              <span className="win__shoot" />
+              <span className="win__hill" />
+              <span className="win__hill win__hill--back" />
+              <span className="win__cloud" />
+              <span className="win__cloud" />
+              <span className="win__cloud" />
+              {[1.7, 2].map((w, i) => (
+                <span className="win__bird" key={i}>
+                  <svg viewBox="0 0 24 12" role="presentation">
+                    <path
+                      d="M2 8c3.5-6 6-1.5 10-3.5 3.5 2 6-2.5 10 3.5"
+                      fill="none"
+                      stroke="#4A3550"
+                      strokeWidth={w}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </span>
+              ))}
+              <WindowWeather />
+              <span className="win__bar-v" />
+              <span className="win__bar-v" />
+              <span className="win__bar-h" />
+              <span className="win__glass" />
+            </div>
+            <div
+              className="win__sill"
+              style={{
+                left: FURNITURE.window.x - 18,
+                top: FURNITURE.window.y + FURNITURE.window.h + 14,
+                width: FURNITURE.window.w + 36,
+                height: 16,
+              }}
+            />
+            <div
+              className="curtain"
+              style={{
+                left: FURNITURE.window.x - 62,
+                top: FURNITURE.window.y - 16,
+                width: 68,
+                height: FURNITURE.window.h + 56,
+              }}
+            />
+            <div
+              className="rays"
+              style={{
+                left: FURNITURE.window.x - 240,
+                top: FURNITURE.window.y,
+                width: FURNITURE.window.w + 240,
+                height: 540,
+              }}
+            />
           </div>
-          <div
-            className="win__sill"
-            style={{
-              left: FURNITURE.window.x - 18,
-              top: FURNITURE.window.y + FURNITURE.window.h + 14,
-              width: FURNITURE.window.w + 36,
-              height: 16,
-            }}
-          />
-          <div
-            className="curtain"
-            style={{
-              left: FURNITURE.window.x - 62,
-              top: FURNITURE.window.y - 16,
-              width: 68,
-              height: FURNITURE.window.h + 56,
-            }}
-          />
-          <div
-            className="rays"
-            style={{
-              left: FURNITURE.window.x - 240,
-              top: FURNITURE.window.y,
-              width: FURNITURE.window.w + 240,
-              height: 540,
-            }}
-          />
-        </div>
 
-        {/* ── 벽에 걸린 것 ──
+          {/* ── 벽에 걸린 것 ──
             캘린더를 숨기지 않고 벽에 남겨 둡니다. 비로그인이면 안내를 띄웁니다.
             장면의 일부로 남으면서 "여긴 주인 것" 이라고 정직하게 말하는 쪽입니다. */}
-        <div className="layer l-wall">
-          <WallCalendar
-            onOpen={() => (isAdmin ? router.push("/calendar") : setNoticeOpen(true))}
-            surfaceRef={calSurfaceRef}
-            stageRef={calStageRef}
-            zoomed={inCalendar}
-          >
-            {inCalendar ? (
-              <RoomStageProvider value={{ setSidePanel }}>{children}</RoomStageProvider>
-            ) : null}
-          </WallCalendar>
-        </div>
+          <div className="layer l-wall">
+            {/* 화면에 떠 있던 HUD 를 벽으로 옮긴 것들 */}
+            <WallNotes
+              readCount={readCount}
+              total={items.length}
+              onOpenResume={() => setListOpen(true)}
+              sky={sky}
+              lightMode={lightMode}
+              onCycleLight={() =>
+                setLightMode((m) =>
+                  m === "auto" ? "day" : m === "day" ? "night" : "auto",
+                )
+              }
+              lightLabel={LIGHT_LABEL[lightMode]}
+            />
 
-        {/* ── 책상 ──
+            <WallCalendar
+              onOpen={() =>
+                isAdmin ? router.push("/calendar") : setNoticeOpen(true)
+              }
+              surfaceRef={calSurfaceRef}
+              stageRef={calStageRef}
+              zoomed={inCalendar}
+            >
+              {inCalendar ? (
+                <RoomStageProvider value={{ setSidePanel }}>
+                  {children}
+                </RoomStageProvider>
+              ) : null}
+            </WallCalendar>
+          </div>
+
+          {/* ── 책상 ──
             상판이 화면 좌우를 넘어가고 아래는 서랍이 바닥까지 채웁니다.
             바닥을 보여주지 않으므로 책상 앞에 앉은 시점이 됩니다. */}
-        <div className="layer l-desk">
-          <div className="desk" style={box(FURNITURE.desk)}>
-            <span className="desk__edge" />
-            <span className="desk__grain" />
-            <span className="desk__pool" />
-          </div>
-          <div className="deskFront" style={{ top: FURNITURE.desk.y + FURNITURE.desk.h }}>
-            <span className="deskFront__drawer" style={{ left: 200 }}>
-              <i />
-              <i />
-            </span>
-            <span className="deskFront__drawer" style={{ right: 200 }}>
-              <i />
-              <i />
-            </span>
-          </div>
-
-          {/* 책상 왼쪽 책꽂이 — 바닥이 상판에 닿습니다 */}
-          <DeskShelf />
-
-          <div className="keyboard" style={place(PROPS.keyboard)} />
-          {/* 마우스는 장식입니다. 누르는 기능이 없습니다. */}
-          <div className="mouse" style={place(PROPS.mouse)} aria-hidden="true" />
-          <div className="papers" style={place(PROPS.papers)}>
-            <i />
-            <i />
-            <i />
-          </div>
-          <div className="mug" style={place(PROPS.mug)}>
-            <span className="mug__body" />
-            <span className="mug__handle" />
-          </div>
-
-          <div className="lamp" style={place(PROPS.lamp)}>
-            <span className="lamp__glow" />
-            <svg viewBox="0 0 90 118" role="presentation">
-              <path d="M22 112h44" stroke="#3D3229" strokeWidth="4" strokeLinecap="round" />
-              <ellipse cx="44" cy="110" rx="24" ry="6" fill="#5A4636" stroke="#3D3229" strokeWidth="2.4" />
-              <path d="M44 106V58" stroke="#5A4636" strokeWidth="6" strokeLinecap="round" />
-              <path d="M44 58L70 30" stroke="#5A4636" strokeWidth="6" strokeLinecap="round" />
-              <path d="M44 16h34l10 30H52z" fill="#B8944E" stroke="#8A6A31" strokeWidth="2.6" strokeLinejoin="round" />
-              <circle cx="70" cy="45" r="5" fill="#FFF3C4" />
-            </svg>
-          </div>
-
-          {/* 탁상시계 — 실제 KST 를 초 단위로 */}
-          <div className="clockSpot" style={place(PROPS.clock)}>
-            <DeskClock />
-          </div>
-        </div>
-
-        {/* ── 모니터 + (있다면) 이력서 사물 ── */}
-        <div className="layer l-things">
-          <div className="mon" style={place(MONITOR)} data-active={inScreen ? "true" : "false"}>
-            <span className="mon__glow" />
-            <span className="mon__bezel">
-              <span ref={screenRef} className="mon__screen">
-                {/* 캘린더로 들어가 있을 때는 내용이 그쪽으로 갑니다 */}
-                <div ref={stageRef} className="mon__stage">
-                  {inCalendar ? null : children}
-                </div>
-                <span className="mon__glare" />
+          <div className="layer l-desk">
+            <div className="desk" style={box(FURNITURE.desk)}>
+              <span className="desk__edge" />
+              <span className="desk__grain" />
+              <span className="desk__pool" />
+            </div>
+            <div
+              className="deskFront"
+              style={{ top: FURNITURE.desk.y + FURNITURE.desk.h }}
+            >
+              <span className="deskFront__drawer" style={{ left: 200 }}>
+                <i />
+                <i />
               </span>
-            </span>
-            <span className="mon__neck" />
-            <span className="mon__foot" />
-            {!inScreen && (
-              <button
-                type="button"
-                className="mon__hit"
-                onClick={() => router.push("/projects")}
-                aria-label="모니터 — 프로젝트 갤러리 12개 보기"
-              />
-            )}
-            <span className="thing__tip">모니터 · 프로젝트 갤러리 12개 →</span>
+              <span className="deskFront__drawer" style={{ right: 200 }}>
+                <i />
+                <i />
+              </span>
+            </div>
+
+            {/* 책상 왼쪽 책꽂이 — 바닥이 상판에 닿습니다 */}
+            <DeskShelf />
+
+            <div className="keyboard" style={onDesk(PROPS.keyboard)} />
+            {/* 마우스는 장식입니다. 누르는 기능이 없습니다. */}
+            <div
+              className="mouse"
+              style={onDesk(PROPS.mouse)}
+              aria-hidden="true"
+            />
+            <div className="papers" style={onDesk(PROPS.papers)}>
+              <i />
+              <i />
+              <i />
+            </div>
+            <div className="mug" style={onDesk(PROPS.mug)}>
+              <span className="mug__body" />
+              <span className="mug__handle" />
+            </div>
+
+            <div className="lamp" style={onDesk(PROPS.lamp)}>
+              <span className="lamp__glow" />
+              <svg viewBox="0 0 90 118" role="presentation">
+                <path
+                  d="M22 112h44"
+                  stroke="#3D3229"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                />
+                <ellipse
+                  cx="44"
+                  cy="110"
+                  rx="24"
+                  ry="6"
+                  fill="#5A4636"
+                  stroke="#3D3229"
+                  strokeWidth="2.4"
+                />
+                <path
+                  d="M44 106V58"
+                  stroke="#5A4636"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M44 58L70 30"
+                  stroke="#5A4636"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M44 16h34l10 30H52z"
+                  fill="#B8944E"
+                  stroke="#8A6A31"
+                  strokeWidth="2.6"
+                  strokeLinejoin="round"
+                />
+                <circle cx="70" cy="45" r="5" fill="#FFF3C4" />
+              </svg>
+            </div>
+
+            {/* 탁상시계 — 실제 KST 를 초 단위로 */}
+            <div className="clockSpot" style={onDesk(PROPS.clock)}>
+              <DeskClock />
+            </div>
+
+            {/* 책상 오른쪽 끝 아이패드. 화면 안이 유튜브 플레이어입니다. */}
+            <DeskPad
+              onOpen={() => router.push("/music")}
+              zoomed={inMusic}
+              surfaceRef={padSurfaceRef}
+              screenRef={padScreenRef}
+              stageRef={padStageRef}
+            >
+              {inMusic ? children : null}
+            </DeskPad>
           </div>
 
-          {/* SPOTS 에 자리가 있는 항목만 방에 나타납니다. 지금은 비어 있습니다. */}
-          {items.map((item) => {
-            const spot = SPOTS[item.id];
-            if (!spot) return null;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                className="thing"
-                data-thing={item.id}
-                data-seen={String(seen.has(item.id))}
-                data-active={String(activeId === item.id)}
-                style={place(spot)}
-                onClick={() => openItem(item.id)}
-                aria-label={`${item.category} — ${item.title}`}
-                aria-expanded={activeId === item.id}
-                tabIndex={inScreen || inCalendar ? -1 : 0}
-              >
-                <ObjectArt art={item.art} />
-                <span className="thing__tip">{item.tip}</span>
-              </button>
-            );
-          })}
+          {/* ── 모니터 + (있다면) 이력서 사물 ── */}
+          <div className="layer l-things">
+            <div
+              className="mon"
+              style={monitorBox()}
+              data-active={inScreen ? "true" : "false"}
+            >
+              <span className="mon__glow" />
+              <span className="mon__bezel">
+                <span ref={screenRef} className="mon__screen">
+                  {/* 캘린더로 들어가 있을 때는 내용이 그쪽으로 갑니다 */}
+                  <div ref={stageRef} className="mon__stage">
+                    {inCalendar || inMusic ? null : children}
+                  </div>
+                  <span className="mon__glare" />
+                </span>
+              </span>
+              <span className="mon__neck" />
+              <span className="mon__foot" />
+              {!inScreen && (
+                <button
+                  type="button"
+                  className="mon__hit"
+                  onClick={() => router.push("/projects")}
+                  aria-label="모니터 — 프로젝트 갤러리 12개 보기"
+                />
+              )}
+              <span className="thing__tip">
+                모니터 · 프로젝트 갤러리 12개 →
+              </span>
+            </div>
+
+            {/* SPOTS 에 자리가 있는 항목만 방에 나타납니다. 지금은 비어 있습니다. */}
+            {items.map((item) => {
+              const spot = SPOTS[item.id];
+              if (!spot) return null;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  className="thing"
+                  data-thing={item.id}
+                  data-seen={String(seen.has(item.id))}
+                  data-active={String(activeId === item.id)}
+                  style={onDesk(spot)}
+                  onClick={() => openItem(item.id)}
+                  aria-label={`${item.category} — ${item.title}`}
+                  aria-expanded={activeId === item.id}
+                  tabIndex={zoomedIn ? -1 : 0}
+                >
+                  <ObjectArt art={item.art} />
+                  <span className="thing__tip">{item.tip}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <span className="nightwash" />
         </div>
+        <span className="vignette" />
 
-        <span className="nightwash" />
-      </div>
-      <span className="vignette" />
+        {/* ── 화면에서 나가기 ── */}
+        <button
+          type="button"
+          className="exit"
+          onClick={() => router.push("/")}
+          data-on={zoomedIn ? "true" : "false"}
+          tabIndex={zoomedIn ? 0 : -1}
+        >
+          ← 작업실로 나가기
+        </button>
 
-      {/* ── 화면에서 나가기 ── */}
-      <button
-        type="button"
-        className="exit"
-        onClick={() => router.push("/")}
-        data-on={inScreen || inCalendar ? "true" : "false"}
-        tabIndex={inScreen || inCalendar ? 0 : -1}
-      >
-        ← 작업실로 나가기
-      </button>
+        <LoginNotice open={noticeOpen} onClose={() => setNoticeOpen(false)} />
 
-      {/* ── HUD ── */}
-      <div className="hud" data-on={inScreen || inCalendar ? "false" : "true"}>
-        <div className="hud__brand">
-          <h1>you4ranghe의 작업실</h1>
-          <p>backend engineer · 4 yrs · seoul</p>
-        </div>
-        <div className="hud__right">
-          <span className="hud__pill hud__progress">
-            <span className="hud__bar" style={{ width: `${(readCount / items.length) * 100}%` }} />
-            <span>
-              <b>{readCount}</b> / {items.length} 읽음
-            </span>
-          </span>
-          <button type="button" className="hud__pill" onClick={() => setListOpen(true)} tabIndex={inScreen || inCalendar ? -1 : 0}>
-            이력서 보기
-          </button>
+        <p
+          className="guide"
+          data-on={
+            !shownId && !zoomedIn && !listOpen && !noticeOpen ? "true" : "false"
+          }
+        >
+          <span className="guide__dot" />
+          모니터를 누르면 프로젝트 12개 · 이력서는 벽에 붙은 메모에서
+        </p>
+
+        {/* ── 이력서 카드 ──
+          12개를 모두 마크업에 남기고 활성 항목만 보여 줍니다. */}
+        <aside
+          className="card-panel"
+          data-open={shown ? "true" : "false"}
+          aria-hidden={!shown}
+          inert={!shown}
+        >
           <button
             type="button"
-            className="hud__pill hud__icon"
-            onClick={() => setNight((v) => !v)}
-            aria-label={night ? "낮으로 바꾸기" : "밤으로 바꾸기"}
-            title={night ? "낮으로 되돌리기" : "밤으로"}
-            tabIndex={inScreen || inCalendar ? -1 : 0}
+            className="card-panel__close"
+            onClick={closeItem}
+            aria-label="닫기"
           >
-            {night ? "☀️" : "🌙"}
+            ×
           </button>
-        </div>
-      </div>
+          {items.map((item) => (
+            <article
+              key={item.id}
+              hidden={item.id !== shownId}
+              className="card"
+            >
+              <div className="card__obj">
+                <ObjectArt art={item.art} />
+              </div>
+              <p className="card__cat">{item.category}</p>
+              <h2 className="card__h">{item.title}</h2>
+              <p className="card__lead">{item.lead}</p>
 
-      <LoginNotice open={noticeOpen} onClose={() => setNoticeOpen(false)} />
+              {item.rows && (
+                <dl className="card__rows">
+                  {item.rows.map((row) => (
+                    <div className="card__row" key={row.label + row.value}>
+                      <dt>{row.label}</dt>
+                      <dd>
+                        <b>{row.value}</b>
+                        {row.note && <small>{row.note}</small>}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
 
-      <p className="guide" data-on={!shownId && !inScreen && !inCalendar && !listOpen && !noticeOpen ? "true" : "false"}>
-        <span className="guide__dot" />
-        모니터를 누르면 프로젝트 12개 · 이력서는 오른쪽 위에서
-      </p>
+              {item.chips && (
+                <ul className="card__chips">
+                  {item.chips.map((chip) => (
+                    <li key={chip.name} data-hot={chip.hot ? "true" : "false"}>
+                      {chip.name}
+                    </li>
+                  ))}
+                </ul>
+              )}
 
-      {/* ── 이력서 카드 ──
-          12개를 모두 마크업에 남기고 활성 항목만 보여 줍니다. */}
-      <aside className="card-panel" data-open={shown ? "true" : "false"} aria-hidden={!shown} inert={!shown}>
-        <button type="button" className="card-panel__close" onClick={closeItem} aria-label="닫기">
-          ×
-        </button>
-        {items.map((item) => (
-          <article key={item.id} hidden={item.id !== shownId} className="card">
-            <div className="card__obj">
-              <ObjectArt art={item.art} />
-            </div>
-            <p className="card__cat">{item.category}</p>
-            <h2 className="card__h">{item.title}</h2>
-            <p className="card__lead">{item.lead}</p>
-
-            {item.rows && (
-              <dl className="card__rows">
-                {item.rows.map((row) => (
-                  <div className="card__row" key={row.label + row.value}>
-                    <dt>{row.label}</dt>
-                    <dd>
-                      <b>{row.value}</b>
-                      {row.note && <small>{row.note}</small>}
-                    </dd>
-                  </div>
+              <div className="card__body">
+                {item.body.map((paragraph, i) => (
+                  // 저장소 안의 신뢰된 문자열이며 <strong> 만 씁니다
+                  <p key={i} dangerouslySetInnerHTML={{ __html: paragraph }} />
                 ))}
-              </dl>
-            )}
+              </div>
 
-            {item.chips && (
-              <ul className="card__chips">
-                {item.chips.map((chip) => (
-                  <li key={chip.name} data-hot={chip.hot ? "true" : "false"}>
-                    {chip.name}
+              <div className="card__nav">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const i = items.findIndex((it) => it.id === item.id);
+                    openItem(items[(i - 1 + items.length) % items.length].id);
+                  }}
+                >
+                  ← 이전
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const i = items.findIndex((it) => it.id === item.id);
+                    openItem(items[(i + 1) % items.length].id);
+                  }}
+                >
+                  다음 →
+                </button>
+              </div>
+
+              {item.links && (
+                <div className="card__links">
+                  {item.links.map((link) => (
+                    <a
+                      key={link.href + link.label}
+                      href={link.href}
+                      data-ghost={link.ghost ? "true" : "false"}
+                      {...(link.href.startsWith("http")
+                        ? { target: "_blank", rel: "noopener" }
+                        : {})}
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </article>
+          ))}
+        </aside>
+
+        {/* ── 이력서 목록 ── */}
+        {listOpen && (
+          <div
+            className="sheet"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setListOpen(false);
+            }}
+          >
+            <button
+              type="button"
+              className="sheet__close"
+              onClick={() => setListOpen(false)}
+              aria-label="닫기"
+            >
+              ×
+            </button>
+            <div className="sheet__in">
+              <h2>이력서</h2>
+              <p>
+                12개 항목입니다. 프로젝트는 책상 위 모니터 안에 따로 있습니다.
+              </p>
+              <ul className="sheet__list">
+                {items.map((item) => (
+                  <li key={item.id}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setListOpen(false);
+                        openItem(item.id);
+                      }}
+                    >
+                      <span className="sheet__art">
+                        <ObjectArt art={item.art} />
+                      </span>
+                      <span className="sheet__t">{item.title}</span>
+                      <span className="sheet__s">{item.short}</span>
+                    </button>
                   </li>
                 ))}
               </ul>
-            )}
-
-            <div className="card__body">
-              {item.body.map((paragraph, i) => (
-                // 저장소 안의 신뢰된 문자열이며 <strong> 만 씁니다
-                <p key={i} dangerouslySetInnerHTML={{ __html: paragraph }} />
-              ))}
-            </div>
-
-            <div className="card__nav">
               <button
                 type="button"
+                className="sheet__gal"
                 onClick={() => {
-                  const i = items.findIndex((it) => it.id === item.id);
-                  openItem(items[(i - 1 + items.length) % items.length].id);
+                  setListOpen(false);
+                  router.push("/projects");
                 }}
               >
-                ← 이전
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const i = items.findIndex((it) => it.id === item.id);
-                  openItem(items[(i + 1) % items.length].id);
-                }}
-              >
-                다음 →
+                <span className="sheet__art">
+                  <svg viewBox="0 0 100 80" role="presentation">
+                    <rect
+                      x="2"
+                      y="2"
+                      width="96"
+                      height="60"
+                      rx="9"
+                      fill="#3D3229"
+                    />
+                    <rect
+                      x="8"
+                      y="8"
+                      width="84"
+                      height="48"
+                      rx="4"
+                      fill="#8FB8C4"
+                    />
+                    <rect
+                      x="29"
+                      y="70"
+                      width="42"
+                      height="8"
+                      rx="4"
+                      fill="#3D3229"
+                    />
+                    <rect x="42" y="62" width="16" height="9" fill="#2B231C" />
+                  </svg>
+                </span>
+                <span>
+                  <b>프로젝트 갤러리 열기</b>
+                  <small>저장소 12개를 자세히 · /projects</small>
+                </span>
+                <span className="sheet__s">→</span>
               </button>
             </div>
-
-            {item.links && (
-              <div className="card__links">
-                {item.links.map((link) => (
-                  <a
-                    key={link.href + link.label}
-                    href={link.href}
-                    data-ghost={link.ghost ? "true" : "false"}
-                    {...(link.href.startsWith("http") ? { target: "_blank", rel: "noopener" } : {})}
-                  >
-                    {link.label}
-                  </a>
-                ))}
-              </div>
-            )}
-          </article>
-        ))}
-      </aside>
-
-      {/* ── 이력서 목록 ── */}
-      {listOpen && (
-        <div
-          className="sheet"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setListOpen(false);
-          }}
-        >
-          <button type="button" className="sheet__close" onClick={() => setListOpen(false)} aria-label="닫기">
-            ×
-          </button>
-          <div className="sheet__in">
-            <h2>이력서</h2>
-            <p>12개 항목입니다. 프로젝트는 책상 위 모니터 안에 따로 있습니다.</p>
-            <ul className="sheet__list">
-              {items.map((item) => (
-                <li key={item.id}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setListOpen(false);
-                      openItem(item.id);
-                    }}
-                  >
-                    <span className="sheet__art">
-                      <ObjectArt art={item.art} />
-                    </span>
-                    <span className="sheet__t">{item.title}</span>
-                    <span className="sheet__s">{item.short}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-            <button
-              type="button"
-              className="sheet__gal"
-              onClick={() => {
-                setListOpen(false);
-                router.push("/projects");
-              }}
-            >
-              <span className="sheet__art">
-                <svg viewBox="0 0 100 80" role="presentation">
-                  <rect x="2" y="2" width="96" height="60" rx="9" fill="#3D3229" />
-                  <rect x="8" y="8" width="84" height="48" rx="4" fill="#8FB8C4" />
-                  <rect x="29" y="70" width="42" height="8" rx="4" fill="#3D3229" />
-                  <rect x="42" y="62" width="16" height="9" fill="#2B231C" />
-                </svg>
-              </span>
-              <span>
-                <b>프로젝트 갤러리 열기</b>
-                <small>저장소 12개를 자세히 · /projects</small>
-              </span>
-              <span className="sheet__s">→</span>
-            </button>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </MusicProvider>
   );
 }

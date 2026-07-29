@@ -1,4 +1,4 @@
-import { PROPS } from "@/content/layout";
+import { PROPS, onDesk } from "@/content/layout";
 
 /**
  * 책상 위 책꽂이.
@@ -49,7 +49,8 @@ const SIDE = 11;
 const BASE = 10;
 
 export function DeskShelf() {
-  const { x, y, w, h } = PROPS.bookshelf;
+  // 책꽂이 자체는 상판에 바닥을 대고 서고, 안쪽 좌표는 자기 상자(0..h) 기준입니다.
+  const { h } = PROPS.bookshelf;
   const innerLeft = SIDE + 4;
   const floorY = h - BASE; // 책들이 서는 바닥
 
@@ -62,7 +63,7 @@ export function DeskShelf() {
   });
 
   return (
-    <div className="deskShelf" style={{ left: x, top: y, width: w, height: h }}>
+    <div className="deskShelf" style={onDesk(PROPS.bookshelf)}>
       {/* 안쪽 그늘 — 속이 깊어야 책꽂이로 보입니다 */}
       <span className="deskShelf__well" />
 

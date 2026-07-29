@@ -45,102 +45,8 @@
   background: #fff;
 }
 
-/* ── HUD ─────────────────────────────────────── */
-.hud {
-  position: fixed;
-  inset: 0 0 auto 0;
-  z-index: 30;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  padding: clamp(12px, 2.4vw, 22px);
-  pointer-events: none;
-  transition: opacity 0.5s ease;
-}
-.hud[data-on="false"] {
-  opacity: 0;
-}
-.hud > * {
-  pointer-events: auto;
-}
-.hud[data-on="false"] > * {
-  pointer-events: none;
-}
-.hud__brand {
-  border-radius: 16px;
-  padding: 10px 16px;
-  background: rgba(255, 247, 234, 0.88);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 12px 30px rgba(88, 52, 72, 0.22);
-}
-.hud__brand h1 {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(15px, 2.2vw, 23px);
-  line-height: 1.2;
-}
-.hud__brand p {
-  margin: 2px 0 0;
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  color: rgba(70, 48, 79, 0.44);
-}
-.hud__right {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-}
-.hud__pill {
-  position: relative;
-  border: 0;
-  border-radius: 999px;
-  padding: 10px 15px;
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  color: #46304f;
-  cursor: pointer;
-  background: rgba(255, 247, 234, 0.88);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 12px 30px rgba(88, 52, 72, 0.22);
-  transition:
-    background 0.16s,
-    transform 0.16s;
-}
-.hud__pill:hover {
-  background: #fff;
-  transform: translateY(-1px);
-}
-.hud__icon {
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  display: grid;
-  place-items: center;
-  font-size: 16px;
-}
-.hud__progress {
-  overflow: hidden;
-  cursor: default;
-}
-.hud__progress:hover {
-  transform: none;
-  background: rgba(255, 247, 234, 0.88);
-}
-.hud__bar {
-  position: absolute;
-  inset: 0 auto 0 0;
-  background: rgba(123, 90, 166, 0.18);
-  transition: width 0.5s cubic-bezier(0.22, 0.9, 0.24, 1);
-}
-.hud__progress > span:last-child {
-  position: relative;
-}
-.hud__progress b {
-  color: #7b5aa6;
-}
+/* HUD 는 벽에 붙인 메모(.note*, scene.css)로 옮겼습니다.
+   떠 있는 칩은 장면 위에 얹힌 웹 UI 였고, 벽에 붙은 종이는 방의 일부입니다. */
 
 /* ── 안내 ────────────────────────────────────── */
 .guide {
@@ -230,7 +136,11 @@
   justify-content: center;
   border-radius: 24px;
   padding: 14px;
-  background: linear-gradient(150deg, rgba(123, 90, 166, 0.14), rgba(255, 201, 60, 0.14));
+  background: linear-gradient(
+    150deg,
+    rgba(123, 90, 166, 0.14),
+    rgba(255, 201, 60, 0.14)
+  );
 }
 .card__obj svg {
   width: 100%;
@@ -452,7 +362,11 @@
 }
 .sheet__gal {
   padding: 17px 20px;
-  background: linear-gradient(100deg, rgba(111, 195, 240, 0.22), rgba(123, 90, 166, 0.22));
+  background: linear-gradient(
+    100deg,
+    rgba(111, 195, 240, 0.22),
+    rgba(123, 90, 166, 0.22)
+  );
   box-shadow: inset 0 0 0 1px rgba(140, 205, 255, 0.34);
 }
 .sheet__gal:hover {

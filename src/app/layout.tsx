@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
-import { Jua, IBM_Plex_Sans_KR, IBM_Plex_Mono, Black_Han_Sans } from "next/font/google";
+import {
+  Jua,
+  IBM_Plex_Sans_KR,
+  IBM_Plex_Mono,
+  Black_Han_Sans,
+  Nanum_Pen_Script,
+} from "next/font/google";
 import "./globals.css";
 
 /**
@@ -41,6 +47,14 @@ const plexMono = IBM_Plex_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
   weight: ["400", "500", "600"],
+  display: "swap",
+});
+
+/** 벽에 붙인 메모 — 손으로 쓴 글씨. 종이에 적힌 것처럼 보여야 합니다 */
+const nanumPen = Nanum_Pen_Script({
+  variable: "--font-hand",
+  subsets: ["latin"],
+  weight: "400",
   display: "swap",
 });
 
@@ -93,7 +107,7 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${jua.variable} ${plexKr.variable} ${plexMono.variable} ${blackHan.variable} antialiased`}
+      className={`${jua.variable} ${plexKr.variable} ${plexMono.variable} ${blackHan.variable} ${nanumPen.variable} antialiased`}
     >
       <body>{children}</body>
     </html>
