@@ -125,95 +125,11 @@
   box-shadow: 0 3px 8px rgba(64, 44, 30, 0.18);
 }
 
-.floor {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 604px;
-  bottom: 0;
-  background: linear-gradient(180deg, var(--floor-hi), var(--floor));
-}
 /* 마루 결 — 원근이 느껴지도록 위가 촘촘 */
-.floor__planks {
-  position: absolute;
-  inset: 0;
-  opacity: 0.55;
-  background:
-    repeating-linear-gradient(94deg, rgba(48, 30, 16, 0.14) 0 2px, transparent 2px 96px),
-    repeating-linear-gradient(180deg, rgba(48, 30, 16, 0.09) 0 1px, transparent 1px 46px);
-}
-.baseboard {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 604px;
-  height: 20px;
-  background: linear-gradient(180deg, #c4ab86, #a68a63);
-  box-shadow: 0 6px 16px var(--shade);
-}
-.rug {
-  position: absolute;
-  border-radius: 50%;
-  opacity: 0.9;
-  background: radial-gradient(ellipse, #8f6a63 0 40%, #7a5750 40% 62%, #654640 62%);
-  box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.1);
-}
-.rug::after {
-  content: "";
-  position: absolute;
-  inset: 16% 9%;
-  border-radius: 50%;
-  border: 3px dashed rgba(242, 234, 217, 0.22);
-}
 
 /* ═══ 책장 ═══════════════════════════════════ */
-.bookcase {
-  position: absolute;
-  border-radius: 4px 4px 2px 2px;
-  background: linear-gradient(96deg, var(--oak-hi), var(--oak) 46%, var(--oak-lo));
-  box-shadow:
-    0 26px 46px var(--shade),
-    inset 0 2px 0 rgba(255, 255, 255, 0.16);
-}
 /* 안쪽 그늘 — 책장은 속이 깊어야 책장으로 보입니다 */
-.bookcase::before {
-  content: "";
-  position: absolute;
-  inset: 12px 14px 16px;
-  border-radius: 2px;
-  background: linear-gradient(180deg, #4e341c, #3d2916);
-  box-shadow: inset 0 0 26px rgba(0, 0, 0, 0.5);
-}
-.bookcase__shelf {
-  position: absolute;
-  left: 14px;
-  right: 14px;
-  height: 9px;
-  background: linear-gradient(180deg, var(--oak-hi), var(--oak-lo));
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-}
-.bookcase__books {
-  position: absolute;
-  display: flex;
-  align-items: flex-end;
-  gap: 3px;
-  overflow: hidden;
-}
-.bookcase__books i {
-  display: block;
-  border-radius: 2px 2px 0 0;
-  box-shadow: inset -2px 0 0 rgba(0, 0, 0, 0.18);
-}
 /* 책등의 띠 — 제목처럼 보이는 최소한의 표시 */
-.bookcase__books i::after {
-  content: "";
-  position: absolute;
-  bottom: 22%;
-  left: 18%;
-  right: 18%;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.28);
-}
 
 /* ═══ 창 ═════════════════════════════════════ */
 .win {
@@ -518,14 +434,6 @@
 }
 
 /* ═══ 액자 ═══════════════════════════════════ */
-.frameBox {
-  position: absolute;
-  border-radius: 3px;
-  background: #8a6238;
-  box-shadow:
-    inset 0 0 0 9px #a8814f,
-    0 14px 28px var(--shade);
-}
 
 /* ═══ 책상 ═══════════════════════════════════ */
 .desk {
@@ -563,57 +471,7 @@
   transition: opacity 1.4s ease;
   background: radial-gradient(ellipse, rgba(255, 238, 196, 0.5), transparent 72%);
 }
-.desk__leg {
-  position: absolute;
-  top: 100%;
-  width: 20px;
-  height: 176px;
-  background: linear-gradient(90deg, var(--wood-hi), #63431f);
-  border-radius: 0 0 3px 3px;
-}
-.desk__drawer {
-  position: absolute;
-  top: 100%;
-  width: 250px;
-  height: 140px;
-  border-radius: 0 0 4px 4px;
-  background: linear-gradient(180deg, #8a6238, #6f4c2a);
-  box-shadow: 0 16px 30px var(--shade);
-}
-.desk__drawer i {
-  position: absolute;
-  left: 12px;
-  right: 12px;
-  height: 38px;
-  border-radius: 3px;
-  background: linear-gradient(180deg, #9a7044, #7c552e);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
-}
-.desk__drawer i::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 46px;
-  height: 5px;
-  margin: -2.5px 0 0 -23px;
-  border-radius: 3px;
-  background: var(--brass);
-}
-.desk__drawer i:nth-child(1) {
-  top: 14px;
-}
-.desk__drawer i:nth-child(2) {
-  top: 62px;
-}
 
-.mat {
-  position: absolute;
-  height: 26px;
-  border-radius: 4px;
-  background: #5a4636;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
 .keyboard {
   position: absolute;
   height: 22px;
@@ -1153,4 +1011,402 @@ body[data-night="true"] .face {
   .clock__colon {
     animation: none !important;
   }
+}
+
+/* ═══ 책상 앞면 ═══════════════════════════════
+   바닥을 보여주지 않으므로 상판 아래는 서랍장이 화면 끝까지 채웁니다.
+   책상 앞에 앉아 정면을 보는 시점이 됩니다. */
+.deskFront {
+  position: absolute;
+  left: -40px;
+  right: -40px;
+  bottom: -40px;
+  background: linear-gradient(180deg, #6f4c2a, #58381c);
+}
+.deskFront::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3px;
+  background: rgba(0, 0, 0, 0.3);
+}
+.deskFront__drawer {
+  position: absolute;
+  top: 26px;
+  width: 300px;
+  height: 168px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #8a6238, #6f4c2a);
+  box-shadow:
+    0 10px 22px rgba(40, 26, 14, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.deskFront__drawer i {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  height: 62px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #9a7044, #7c552e);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+.deskFront__drawer i::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 62px;
+  height: 6px;
+  margin: -3px 0 0 -31px;
+  border-radius: 3px;
+  background: var(--brass);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+.deskFront__drawer i:nth-child(1) {
+  top: 16px;
+}
+.deskFront__drawer i:nth-child(2) {
+  top: 90px;
+}
+
+/* ═══ 머그 ═══════════════════════════════════ */
+.mug {
+  position: absolute;
+  aspect-ratio: 1 / 1.05;
+}
+.mug__body {
+  position: absolute;
+  inset: 0 14% 0 0;
+  border-radius: 4px 4px 10px 10px;
+  background: linear-gradient(96deg, #e9dfcc, #cbbba1);
+  box-shadow:
+    -3px 5px 8px rgba(64, 44, 30, 0.32),
+    inset -4px 0 0 rgba(0, 0, 0, 0.06);
+}
+/* 식은 커피 */
+.mug__body::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 8%;
+  height: 12%;
+  border-radius: 50%;
+  background: #4a3220;
+}
+.mug__handle {
+  position: absolute;
+  right: 0;
+  top: 26%;
+  width: 26%;
+  height: 40%;
+  border: 5px solid #d8cbb4;
+  border-left: none;
+  border-radius: 0 50% 50% 0;
+}
+
+/* 탁상시계를 감싸는 자리 */
+.clockSpot {
+  position: absolute;
+}
+
+/* ═══ 책상 위 책꽂이 ═══════════════════════════ */
+.deskShelf {
+  position: absolute;
+}
+/* 책 뒤의 그늘 */
+.deskShelf__well {
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
+  background: linear-gradient(180deg, rgba(52, 34, 18, 0.34), rgba(38, 24, 12, 0.5));
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.45);
+}
+.deskShelf__book {
+  position: absolute;
+  border-radius: 2px 2px 0 0;
+  box-shadow:
+    inset -3px 0 0 rgba(0, 0, 0, 0.22),
+    inset 0 2px 0 rgba(255, 255, 255, 0.12);
+}
+/* 책등의 띠 — 제목처럼 보이는 최소한의 표시 */
+.deskShelf__book::after {
+  content: "";
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  bottom: 26%;
+  height: 3px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.26);
+}
+/* 옆판에 기대어 선 한 권 */
+.deskShelf__book--lean {
+  transform: rotate(9deg);
+  transform-origin: bottom left;
+}
+/* 짧은 책들 위에 뉘어 둔 책 */
+.deskShelf__flat {
+  position: absolute;
+  height: 11px;
+  border-radius: 2px;
+  box-shadow:
+    0 2px 5px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+.deskShelf__side {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 2px;
+  background: linear-gradient(96deg, var(--oak-hi), var(--oak) 52%, var(--oak-lo));
+  box-shadow: 0 6px 14px rgba(64, 44, 30, 0.34);
+}
+.deskShelf__side--l {
+  left: 0;
+}
+.deskShelf__side--r {
+  right: 0;
+}
+.deskShelf__base {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(180deg, var(--oak-hi), var(--oak-lo));
+  box-shadow: 0 8px 16px rgba(64, 44, 30, 0.4);
+}
+
+/* ═══ 벽걸이 캘린더 ═══════════════════════════ */
+.cal {
+  position: absolute;
+}
+/* 벽에 박힌 못 */
+.cal__nail {
+  position: absolute;
+  left: 50%;
+  top: -14px;
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #d8cbb4, #7d6b52);
+  box-shadow: 0 2px 4px rgba(64, 44, 30, 0.5);
+}
+/* 못에 걸린 고리 */
+.cal__hook {
+  position: absolute;
+  left: 50%;
+  top: -11px;
+  width: 22px;
+  height: 20px;
+  margin-left: -11px;
+  border: 2.5px solid #9d8a6b;
+  border-bottom: none;
+  border-radius: 11px 11px 0 0;
+}
+.cal__paper {
+  position: absolute;
+  inset: 0;
+  border-radius: 3px;
+  background: linear-gradient(178deg, #fbf6ea, #f0e7d4);
+  box-shadow:
+    -5px 9px 16px rgba(64, 44, 30, 0.32),
+    inset 0 0 0 1px rgba(120, 96, 66, 0.18);
+  overflow: hidden;
+}
+/* 스프링 제본 */
+.cal__spiral {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 5px;
+  height: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+.cal__spiral i {
+  width: 7px;
+  height: 10px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #b9b0a2, #8d8478);
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.3);
+}
+.cal__head {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 18px;
+  height: 42px;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  border-bottom: 1.5px solid rgba(120, 96, 66, 0.28);
+}
+.cal__month {
+  font-family: var(--font-display);
+  font-size: 27px;
+  line-height: 1;
+  color: #8a4a3c;
+}
+.cal__year {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: rgba(90, 72, 52, 0.66);
+}
+.cal__grid {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 66px;
+  bottom: 8px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 1px;
+}
+.cal__wd {
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(90, 72, 52, 0.6);
+}
+.cal__day {
+  position: relative;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: #4a3b2c;
+}
+.cal__wd[data-wd="sun"],
+.cal__day[data-wd="sun"] {
+  color: #a8453a;
+}
+.cal__wd[data-wd="sat"],
+.cal__day[data-wd="sat"] {
+  color: #3f5c78;
+}
+/* 오늘 — 펜으로 동그라미 친 느낌.
+   색을 채우지 않고 테두리만 두릅니다. 종이 달력에 사람이 표시한 것처럼 보이게
+   완전한 원 대신 반지름을 조금씩 어긋나게 주고 살짝 기울였습니다. */
+.cal__day[data-today="true"] {
+  font-weight: 500;
+  color: #8a4a3c;
+}
+.cal__day[data-today="true"]::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 25px;
+  height: 23px;
+  margin: -11.5px 0 0 -12.5px;
+  border: 2px solid #8a4a3c;
+  border-radius: 47% 53% 51% 49% / 53% 47% 53% 47%;
+  rotate: -7deg;
+  opacity: 0.9;
+}
+/* 일요일·토요일에 걸리면 그 색을 따릅니다 */
+.cal__day[data-today="true"][data-wd="sun"],
+.cal__day[data-today="true"][data-wd="sun"]::before {
+  color: #a8453a;
+  border-color: #a8453a;
+}
+.cal__day[data-today="true"][data-wd="sat"],
+.cal__day[data-today="true"][data-wd="sat"]::before {
+  color: #3f5c78;
+  border-color: #3f5c78;
+}
+/* 밤에는 종이가 스탠드 불빛을 덜 받습니다 */
+.room[data-night="true"] .cal__paper {
+  background: linear-gradient(178deg, #e6ddcd, #d8cebc);
+}
+
+/* ═══ 캘린더 확대 무대 ═════════════════════════
+   모니터의 mon__stage 와 같은 원리입니다.
+   평소에는 감춰 두고 종이 달력이 보이며, 확대했을 때만 나타납니다. */
+.cal__stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 4;
+  transform-origin: 0 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+  background: #fbf6ea;
+}
+.cal__stage[data-on="true"] {
+  opacity: 1;
+  pointer-events: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+.cal__stage[data-on="true"]::-webkit-scrollbar {
+  display: none;
+}
+/* 확대 중에는 종이 위 장식을 걷어냅니다 — 일정 위에 스프링이 겹치면 지저분합니다 */
+.room[data-cal="on"] .cal__spiral,
+.room[data-cal="on"] .cal__head,
+.room[data-cal="on"] .cal__grid {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.room[data-cal="on"] .cal__hit {
+  display: none;
+}
+/* 캘린더로 들어갔을 때 나머지는 흐려집니다 */
+.room[data-cal="on"] .l-sky,
+.room[data-cal="on"] .l-desk,
+.room[data-cal="on"] .l-things {
+  filter: blur(4px);
+  opacity: 0.5;
+}
+.room[data-cal="on"] .vignette,
+.room[data-cal="on"] .nightwash {
+  opacity: 0;
+}
+
+/* 관리자 권한이 없을 때 종이 위에 뜨는 안내 */
+.calGate {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px;
+  text-align: center;
+  background: linear-gradient(178deg, #fbf6ea, #f2e9d7);
+}
+.calGate__h {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: #3d3229;
+}
+.calGate__p {
+  margin: 0;
+  max-width: 44ch;
+  font-size: 14px;
+  line-height: 1.8;
+  color: rgba(61, 50, 41, 0.7);
+}
+.calGate__go {
+  margin-top: 8px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 14px;
+  color: #fdf6e6;
+  background: #8a4a3c;
 }

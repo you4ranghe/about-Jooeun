@@ -1,0 +1,155 @@
+/* ═══════════════════════════════════════════════════════
+   로그인 화면.
+
+   방과 같은 서재 팔레트를 쓰되, 장면 없이 조용한 화면 하나로 둡니다.
+   ═══════════════════════════════════════════════════════ */
+
+.login {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(60% 50% at 50% 0%, rgba(216, 164, 65, 0.14), transparent 70%),
+    linear-gradient(180deg, #2e241c, #211a14);
+}
+
+.login__card {
+  position: relative;
+  width: min(420px, 100%);
+  padding: clamp(26px, 5vw, 40px);
+  border-radius: 14px;
+  background: linear-gradient(178deg, #fbf6ea, #f0e7d4);
+  box-shadow:
+    0 30px 70px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 1px rgba(120, 96, 66, 0.18);
+}
+
+.login__back {
+  display: inline-block;
+  margin-bottom: 22px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: rgba(61, 50, 41, 0.6);
+  text-decoration: none;
+  transition: color 0.16s;
+}
+.login__back:hover {
+  color: #3d3229;
+}
+
+.login__h {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-size: 26px;
+  color: #3d3229;
+}
+.login__lead {
+  margin: 0 0 26px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(61, 50, 41, 0.7);
+}
+
+.login__form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.login__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.login__field span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: rgba(61, 50, 41, 0.55);
+}
+.login__field input {
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 15px;
+  color: #3d3229;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: inset 0 0 0 1px rgba(120, 96, 66, 0.28);
+  transition: box-shadow 0.16s;
+}
+.login__field input:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 2px #8a4a3c;
+}
+
+.login__error {
+  margin: 0;
+  padding: 11px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: #7d2f24;
+  background: rgba(168, 69, 58, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(168, 69, 58, 0.28);
+}
+
+.login__submit {
+  margin-top: 6px;
+  padding: 14px;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 15px;
+  color: #fdf6e6;
+  background: #8a4a3c;
+  transition:
+    background 0.16s,
+    transform 0.16s;
+}
+.login__submit:hover:not(:disabled) {
+  background: #7a3f33;
+  transform: translateY(-1px);
+}
+.login__submit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.login__note {
+  margin: 20px 0 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.7;
+  color: rgba(61, 50, 41, 0.45);
+}
+
+/* 환경변수가 아직 없을 때 뜨는 설정 안내 */
+.login__setup {
+  padding: 16px 18px;
+  border-radius: 10px;
+  background: rgba(216, 164, 65, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(160, 120, 40, 0.3);
+}
+.login__setup b {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #7a5a1e;
+}
+.login__setup p {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.75;
+  color: rgba(61, 50, 41, 0.75);
+}
+.login__setup p:last-child {
+  margin-bottom: 0;
+}
+.login__setup code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  background: rgba(61, 50, 41, 0.1);
+}

@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# 예시 파일은 어떤 값을 채워야 하는지 알려주는 문서라 저장소에 둡니다.
+# 실제 값이 들어 있지 않은지 커밋 전에 확인할 것.
+!.env.example
 
 # vercel
 .vercel

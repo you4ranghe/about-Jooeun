@@ -520,3 +520,120 @@
     line-height: 1.4;
   }
 }
+
+/* ═══ 캘린더 클릭 영역 ═════════════════════════ */
+.cal__hit {
+  position: absolute;
+  inset: -8px;
+  z-index: 3;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: 8px;
+  /* ★ .layer 가 pointer-events:none 이므로 여기서 되돌려야 클릭이 먹습니다.
+     사물(.thing)과 모니터(.mon)에는 있는데 여기에만 빠져 있었습니다. */
+  pointer-events: auto;
+}
+.cal:hover .cal__paper {
+  box-shadow:
+    -6px 12px 22px rgba(64, 44, 30, 0.4),
+    inset 0 0 0 1px rgba(138, 74, 60, 0.5);
+}
+.cal:hover .thing__tip {
+  opacity: 1;
+  translate: -50% 0;
+}
+.cal__hit:focus-visible + .cal__paper {
+  box-shadow:
+    -6px 12px 22px rgba(64, 44, 30, 0.4),
+    inset 0 0 0 2px #8a4a3c;
+}
+
+/* ═══ 비로그인 안내 모달 ═══════════════════════ */
+.notice {
+  border: 0;
+  padding: 0;
+  border-radius: 16px;
+  max-width: min(460px, calc(100vw - 40px));
+  background: linear-gradient(178deg, #fbf6ea, #f0e7d4);
+  box-shadow: 0 40px 90px rgba(0, 0, 0, 0.5);
+  color: #3d3229;
+}
+.notice::backdrop {
+  background: rgba(28, 20, 14, 0.7);
+  backdrop-filter: blur(6px);
+}
+.notice__in {
+  padding: clamp(24px, 4vw, 34px);
+}
+.notice__icon {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin-bottom: 18px;
+  border-radius: 14px;
+  background: rgba(138, 74, 60, 0.12);
+}
+.notice__icon svg {
+  width: 26px;
+  height: auto;
+}
+.notice__h {
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 1.3;
+}
+.notice__p {
+  margin: 0 0 22px;
+  font-size: 14.5px;
+  line-height: 1.8;
+  color: rgba(61, 50, 41, 0.72);
+}
+.notice__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+.notice__go,
+.notice__close {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 20px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13.5px;
+  transition:
+    background 0.16s,
+    transform 0.16s;
+}
+.notice__go {
+  background: #8a4a3c;
+  color: #fdf6e6;
+}
+.notice__go:hover {
+  background: #7a3f33;
+  transform: translateY(-1px);
+}
+.notice__close {
+  background: transparent;
+  color: #3d3229;
+  box-shadow: inset 0 0 0 1px rgba(61, 50, 41, 0.24);
+}
+.notice__close:hover {
+  background: rgba(61, 50, 41, 0.07);
+}
+.notice__foot {
+  margin: 20px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid rgba(120, 96, 66, 0.2);
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: rgba(61, 50, 41, 0.55);
+}
+.notice__foot strong {
+  font-weight: 500;
+  color: #3d3229;
+}

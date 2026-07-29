@@ -1,0 +1,646 @@
+/* ═══════════════════════════════════════════════════════
+   일정 화면.
+
+   ── 왜 이렇게 바꿨나 ──
+   이전 버전이 촌스러웠던 이유는 색이 아니라 세 가지였습니다.
+     1. 딱딱한 선 — 2px 검은 밑줄, 칸마다 테두리
+     2. 라벨을 전부 고정폭(mono) 글꼴로 — 표 같아 보임
+     3. 채도 높은 사각 블록으로 일정 표시 — 90년대 달력 프로그램
+
+   그래서 선을 걷어내고 여백으로 구분하고, 글꼴 굵기와 크기로 위계를 만들고,
+   일정은 옅게 물든 알약 모양으로 바꿨습니다.
+   방이 따뜻한 나무 톤이므로 차가운 회색 대신 **따뜻한 중성색**을 씁니다.
+   ═══════════════════════════════════════════════════════ */
+
+.cs {
+  /* 종이 같지만 누렇지 않은 흰색 계열 */
+  --surface: #fdfbf7;
+  --surface-2: #f6f2ea;
+  --hair: rgba(61, 50, 41, 0.07);
+
+  --ink: #2c2622;
+  --ink-2: rgba(44, 38, 34, 0.62);
+  --ink-3: rgba(44, 38, 34, 0.34);
+
+  --accent: #b4574a;
+  --accent-soft: rgba(180, 87, 74, 0.1);
+
+  --brick: #b4574a;
+  --olive: #6b7a5a;
+  --slate: #5a6b7a;
+  --ochre: #a8834e;
+  --plum: #7d6480;
+
+  --r: 14px;
+  --ease: cubic-bezier(0.22, 0.9, 0.24, 1);
+
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(20px, 3.4vh, 34px) clamp(22px, 3vw, 38px) clamp(16px, 2.6vh, 26px);
+  background: var(--surface);
+  color: var(--ink);
+  font-feature-settings: "tnum" 1; /* 날짜 숫자 폭을 맞춥니다 */
+}
+
+/* ── 상단 ─────────────────────────────────── */
+.cs__top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex: none;
+}
+.cs__nav {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+.cs__title {
+  margin: 0;
+  font-size: clamp(26px, 3.6vh, 38px);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+.cs__title b {
+  font-weight: 500;
+  color: var(--ink);
+}
+.cs__arrows {
+  display: flex;
+  gap: 2px;
+}
+.cs__arrows button,
+.cs__today {
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  color: var(--ink-2);
+  background: transparent;
+  border-radius: 10px;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.cs__arrows button {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+}
+.cs__arrows button:hover,
+.cs__today:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.cs__tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cs__state {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+.cs__today {
+  padding: 8px 14px;
+  font-size: 13px;
+  box-shadow: inset 0 0 0 1px rgba(61, 50, 41, 0.14);
+}
+
+.cs__error {
+  flex: none;
+  margin: 14px 0 0;
+  padding: 11px 15px;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #8f3a2e;
+  background: rgba(180, 87, 74, 0.1);
+}
+
+/* ── 격자 ─────────────────────────────────
+   선을 그리지 않습니다. 칸 사이 여백과 배경만으로 나눕니다. */
+.cs__grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: auto repeat(6, minmax(0, 1fr));
+  gap: 3px;
+  margin-top: clamp(14px, 2.4vh, 22px);
+}
+.cs__wd {
+  display: grid;
+  place-items: center;
+  padding-bottom: 8px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+}
+.cs__wd[data-wd="sun"] {
+  color: rgba(180, 87, 74, 0.6);
+}
+.cs__wd[data-wd="sat"] {
+  color: rgba(90, 107, 122, 0.6);
+}
+
+.cs__cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 7px 7px 5px;
+  border: 0;
+  border-radius: var(--r);
+  text-align: left;
+  cursor: pointer;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  overflow: hidden;
+  transition:
+    background 0.16s var(--ease),
+    box-shadow 0.16s var(--ease);
+}
+.cs__cell:hover {
+  background: var(--surface-2);
+}
+.cs__cell--empty {
+  cursor: default;
+}
+.cs__cell--empty:hover {
+  background: transparent;
+}
+.cs__cell[data-picked="true"] {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1.5px rgba(180, 87, 74, 0.45);
+}
+
+.cs__date {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 50%;
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--ink-2);
+  transition:
+    background 0.16s,
+    color 0.16s;
+}
+.cs__cell[data-wd="sun"] .cs__date {
+  color: rgba(180, 87, 74, 0.85);
+}
+.cs__cell[data-wd="sat"] .cs__date {
+  color: rgba(90, 107, 122, 0.9);
+}
+/* 오늘 — 채운 원. 테두리보다 조용하고 확실합니다 */
+.cs__cell[data-today="true"] .cs__date {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 500;
+}
+
+/* ── 일정 알약 ─────────────────────────────
+   채도 높은 블록 대신 옅게 물든 바탕에 점 하나.
+   여러 개가 쌓여도 시끄럽지 않습니다. */
+.cs__chips {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 0;
+  overflow: hidden;
+}
+.cs__chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 7px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--ink);
+  background: var(--tint);
+}
+.cs__chip::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--dot);
+}
+.cs__chip i {
+  font-style: normal;
+  flex: none;
+  font-size: 10.5px;
+  color: var(--ink-3);
+}
+.cs__chip[data-color="brick"] {
+  --dot: var(--brick);
+  --tint: rgba(180, 87, 74, 0.13);
+}
+.cs__chip[data-color="olive"] {
+  --dot: var(--olive);
+  --tint: rgba(107, 122, 90, 0.15);
+}
+.cs__chip[data-color="slate"] {
+  --dot: var(--slate);
+  --tint: rgba(90, 107, 122, 0.15);
+}
+.cs__chip[data-color="ochre"] {
+  --dot: var(--ochre);
+  --tint: rgba(168, 131, 78, 0.16);
+}
+.cs__chip[data-color="plum"] {
+  --dot: var(--plum);
+  --tint: rgba(125, 100, 128, 0.15);
+}
+.cs__more {
+  padding-left: 8px;
+  font-size: 10.5px;
+  color: var(--ink-3);
+}
+
+/* ═══ 하루 패널 ═══════════════════════════
+   캘린더가 왼쪽으로 옮겨가며 생긴 자리에 들어옵니다. */
+.dp {
+  position: fixed;
+  top: clamp(14px, 3vh, 28px);
+  right: clamp(14px, 2vw, 26px);
+  bottom: clamp(14px, 3vh, 28px);
+  z-index: 60;
+  width: min(390px, 34vw);
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  padding: 24px 22px 20px;
+  color: #2c2622;
+  background: #fdfbf7;
+  box-shadow:
+    0 30px 80px rgba(30, 20, 12, 0.28),
+    0 2px 8px rgba(30, 20, 12, 0.08);
+  animation: dp-in 0.52s cubic-bezier(0.22, 0.9, 0.24, 1);
+}
+@keyframes dp-in {
+  from {
+    opacity: 0;
+    transform: translateX(28px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.dp__top {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.dp__date {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.dp__date span {
+  font-size: 15px;
+  font-weight: 300;
+  color: rgba(44, 38, 34, 0.4);
+  margin-left: 6px;
+}
+.dp__count {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: rgba(44, 38, 34, 0.4);
+}
+.dp__close {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 17px;
+  color: rgba(44, 38, 34, 0.5);
+  background: transparent;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.dp__close:hover {
+  background: #f6f2ea;
+  color: #2c2622;
+}
+.dp__error {
+  flex: none;
+  margin: 14px 0 0;
+  padding: 10px 13px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  color: #8f3a2e;
+  background: rgba(180, 87, 74, 0.1);
+}
+.dp__list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(44, 38, 34, 0.16) transparent;
+}
+.dp__empty {
+  margin: 0;
+  padding: 34px 0;
+  text-align: center;
+  font-size: 13.5px;
+  color: rgba(44, 38, 34, 0.32);
+}
+
+.dp__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 13px 14px;
+  border-radius: 13px;
+  background: #f6f2ea;
+  transition: background 0.15s;
+}
+.dp__item:hover {
+  background: #f0eade;
+}
+/* 색은 왼쪽 점 하나로만. 테두리 막대는 무겁습니다 */
+.dp__item::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  margin-top: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--brick);
+}
+.dp__item[data-color="olive"]::before {
+  background: var(--olive);
+}
+.dp__item[data-color="slate"]::before {
+  background: var(--slate);
+}
+.dp__item[data-color="ochre"]::before {
+  background: var(--ochre);
+}
+.dp__item[data-color="plum"]::before {
+  background: var(--plum);
+}
+.dp__itemMain {
+  flex: 1;
+  min-width: 0;
+}
+.dp__itemTitle {
+  margin: 0 0 2px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+  word-break: break-word;
+}
+.dp__itemTime {
+  margin: 0;
+  font-size: 12.5px;
+  color: rgba(44, 38, 34, 0.45);
+}
+.dp__itemNote {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(44, 38, 34, 0.62);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+/* 손댈 수 있다는 표시는 마우스를 올렸을 때만 */
+.dp__itemActions {
+  display: flex;
+  gap: 2px;
+  flex: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.dp__item:hover .dp__itemActions,
+.dp__item:focus-within .dp__itemActions {
+  opacity: 1;
+}
+.dp__itemActions button {
+  border: 0;
+  border-radius: 8px;
+  padding: 5px 9px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  color: rgba(44, 38, 34, 0.55);
+  background: transparent;
+  transition:
+    background 0.14s,
+    color 0.14s;
+}
+.dp__itemActions button:hover:not(:disabled) {
+  background: rgba(44, 38, 34, 0.09);
+  color: #2c2622;
+}
+.dp__itemActions button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.dp__add {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 0;
+  border-radius: 13px;
+  padding: 14px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  background: #b4574a;
+  transition:
+    background 0.16s,
+    transform 0.16s,
+    box-shadow 0.16s;
+}
+.dp__add:hover {
+  background: #a24c40;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(180, 87, 74, 0.3);
+}
+
+/* ═══ 등록 · 수정 폼 ═══════════════════════ */
+.ef {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow:
+    0 6px 20px rgba(30, 20, 12, 0.08),
+    inset 0 0 0 1px rgba(44, 38, 34, 0.08);
+}
+.ef input,
+.ef textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 14px;
+  color: #2c2622;
+  background: #f6f2ea;
+  transition: box-shadow 0.15s;
+}
+.ef input::placeholder,
+.ef textarea::placeholder {
+  color: rgba(44, 38, 34, 0.3);
+}
+.ef input:focus,
+.ef textarea:focus {
+  outline: none;
+  background: #fff;
+  box-shadow: 0 0 0 2px #b4574a;
+}
+.ef__title {
+  font-size: 16px !important;
+  font-weight: 500;
+}
+.ef__check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: rgba(44, 38, 34, 0.7);
+  cursor: pointer;
+  user-select: none;
+}
+.ef__check input {
+  width: auto;
+  accent-color: #b4574a;
+  background: none;
+}
+.ef__times {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ef__times span {
+  color: rgba(44, 38, 34, 0.28);
+}
+.ef__note {
+  resize: vertical;
+  line-height: 1.6;
+  min-height: 60px;
+}
+.ef__colors {
+  display: flex;
+  gap: 8px;
+}
+.ef__color {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition:
+    transform 0.16s var(--ease),
+    box-shadow 0.16s;
+}
+.ef__color[data-color="brick"] {
+  background: #b4574a;
+}
+.ef__color[data-color="olive"] {
+  background: #6b7a5a;
+}
+.ef__color[data-color="slate"] {
+  background: #5a6b7a;
+}
+.ef__color[data-color="ochre"] {
+  background: #a8834e;
+}
+.ef__color[data-color="plum"] {
+  background: #7d6480;
+}
+.ef__color:hover {
+  transform: scale(1.12);
+}
+.ef__color[data-on="true"] {
+  transform: scale(1.12);
+  box-shadow:
+    0 0 0 2.5px #fff,
+    0 0 0 4.5px currentColor;
+}
+.ef__error {
+  margin: 0;
+  font-size: 12.5px;
+  color: #8f3a2e;
+}
+.ef__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+.ef__save,
+.ef__cancel {
+  flex: 1;
+  border: 0;
+  border-radius: 10px;
+  padding: 11px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+.ef__save {
+  color: #fff;
+  background: #b4574a;
+}
+.ef__save:hover:not(:disabled) {
+  background: #a24c40;
+}
+.ef__save:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.ef__cancel {
+  color: rgba(44, 38, 34, 0.65);
+  background: #f6f2ea;
+}
+.ef__cancel:hover:not(:disabled) {
+  background: #ece5d8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dp {
+    animation: none;
+  }
+}
