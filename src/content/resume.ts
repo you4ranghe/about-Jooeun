@@ -6,15 +6,13 @@ import type { ResumeItem } from "./types";
  * ⚠️ 아래 내용은 전부 예시입니다. 실명·회사명·자격증·연도를 실제 이력으로 바꾸세요.
  *    바꿔야 하는 곳에는 TODO 를 달아 뒀습니다.
  *
- * pos 값은 장면(16:9 기준) 안의 퍼센트 좌표입니다.
- * left/width 는 화면 폭 기준, top 은 화면 높이 기준이라
- * 값을 바꿀 때는 실제 브라우저에서 확인하는 편이 빠릅니다.
+ * 이 파일에는 **글만** 있습니다. 방 어디에 놓이는지는 content/layout.ts 의 SPOTS 가 정합니다.
+ * 둘을 갈라 둔 이유: 방을 다시 꾸밀 때 이력서 문장을 건드리지 않기 위해서입니다.
  */
 export const RESUME: ResumeItem[] = [
   {
     id: "profile",
     art: "frame",
-    pos: { left: "5%", top: "5.5%", width: "10.5%" },
     tip: "액자 · 저는요",
     category: "PROFILE · 자기소개",
     short: "자기소개",
@@ -38,7 +36,6 @@ export const RESUME: ResumeItem[] = [
   {
     id: "career",
     art: "coins",
-    pos: { left: "62%", top: "53.4%", width: "6.6%" },
     tip: "쌓아둔 동전 · 경력",
     category: "EXPERIENCE · 경력",
     short: "경력",
@@ -66,7 +63,6 @@ export const RESUME: ResumeItem[] = [
   {
     id: "skills",
     art: "rack",
-    pos: { left: "30%", top: "76%", width: "6.6%" },
     tip: "서버 랙 · 기술 스택",
     category: "SKILLS · 기술",
     short: "기술 스택",
@@ -96,7 +92,6 @@ export const RESUME: ResumeItem[] = [
   {
     id: "education",
     art: "books",
-    pos: { left: "17%", top: "47%", width: "11%" },
     tip: "식은 커피와 노트 · 공부",
     category: "EDUCATION · 학력과 공부",
     short: "학력",
@@ -116,7 +111,6 @@ export const RESUME: ResumeItem[] = [
   {
     id: "strength",
     art: "glass",
-    pos: { left: "70%", top: "53%", width: "7.2%" },
     tip: "돋보기 · 강점",
     category: "STRENGTH · 강점",
     short: "강점",
@@ -131,7 +125,6 @@ export const RESUME: ResumeItem[] = [
   {
     id: "how-i-work",
     art: "duck",
-    pos: { left: "29%", top: "54.6%", width: "7.5%" },
     tip: "러버덕 · 막힐 때",
     category: "HOW I WORK · 일하는 방식",
     short: "일하는 방식",
@@ -146,7 +139,6 @@ export const RESUME: ResumeItem[] = [
   {
     id: "principles",
     art: "lock",
-    pos: { left: "34.5%", top: "16.4%", width: "5.6%" },
     tip: "자물쇠 · 지키는 것",
     category: "PRINCIPLES · 원칙",
     short: "원칙",
@@ -162,7 +154,6 @@ export const RESUME: ResumeItem[] = [
   {
     id: "collaboration",
     art: "bell",
-    pos: { left: "24%", top: "16.6%", width: "6%" },
     tip: "작은 종 · 협업",
     category: "COLLABORATION · 협업",
     short: "협업",
@@ -177,7 +168,6 @@ export const RESUME: ResumeItem[] = [
   {
     id: "certification",
     art: "ticket",
-    pos: { left: "33%", top: "7.5%", width: "10%" },
     tip: "꽂아둔 쿠폰 · 자격",
     category: "CERTIFICATION · 자격과 교육",
     short: "자격증",
@@ -197,7 +187,6 @@ export const RESUME: ResumeItem[] = [
   {
     id: "values",
     art: "yut",
-    pos: { left: "9%", top: "18.4%", width: "11%" },
     tip: "윷 네 짝 · 가치관",
     category: "VALUES · 가치관",
     short: "가치관",
@@ -212,7 +201,6 @@ export const RESUME: ResumeItem[] = [
   {
     id: "personal",
     art: "plant",
-    pos: { left: "87%", top: "43%", width: "9%" },
     tip: "화분… 에 사는 거미",
     category: "PERSONAL · 사람으로서",
     short: "취미",
@@ -227,7 +215,6 @@ export const RESUME: ResumeItem[] = [
   {
     id: "contact",
     art: "box",
-    pos: { left: "59%", top: "77%", width: "10%" },
     tip: "배송 대기 중인 상자 · 연락",
     category: "CONTACT · 연락처",
     short: "연락처",

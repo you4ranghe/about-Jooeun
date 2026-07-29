@@ -47,12 +47,14 @@ export interface ResumeLink {
 
 /** 방에 놓인 사물 하나 = 이력서 한 항목. */
 export interface ResumeItem {
-  /** URL 조각 및 React key */
+  /**
+   * React key 이자 **무대 위 자리를 찾는 열쇠**입니다.
+   * 실제 좌표는 content/layout.ts 의 SPOTS[id] 에 있습니다.
+   * 내용(여기)과 배치(거기)를 갈라 둔 이유: 방을 다시 꾸밀 때 글은 건드리지 않기 위해서입니다.
+   */
   id: string;
   /** 어떤 그림을 쓸지 */
   art: ArtKey;
-  /** 장면 안의 위치와 크기 (CSS 퍼센트) */
-  pos: { left: string; top: string; width: string };
   /** 마우스를 올렸을 때 뜨는 이름표 */
   tip: string;
   /** 카드 상단의 분류 라벨 */
