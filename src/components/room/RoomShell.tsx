@@ -800,12 +800,10 @@ export function RoomShell({
                   type="button"
                   className="mon__hit"
                   onClick={() => router.push("/projects")}
-                  aria-label="모니터 — 프로젝트 갤러리 12개 보기"
+                  aria-label="모니터 — 켜져 있는 컴퓨터 화면 보기"
                 />
               )}
-              <span className="thing__tip">
-                모니터 · 프로젝트 갤러리 12개 →
-              </span>
+              <span className="thing__tip">모니터 · 컴퓨터가 켜져 있음 →</span>
             </div>
 
             {/* SPOTS 에 자리가 있는 항목만 방에 나타납니다. 지금은 비어 있습니다. */}
@@ -857,7 +855,7 @@ export function RoomShell({
           }
         >
           <span className="guide__dot" />
-          모니터를 누르면 프로젝트 12개 · 이력서는 벽에 붙은 메모에서
+          모니터를 누르면 컴퓨터 화면 · 이력서는 벽에 붙은 메모에서
         </p>
 
         {/* ── 이력서 카드 ──
@@ -1039,8 +1037,8 @@ export function RoomShell({
                   </svg>
                 </span>
                 <span>
-                  <b>프로젝트 갤러리 열기</b>
-                  <small>저장소 12개를 자세히 · /projects</small>
+                  <b>컴퓨터 화면 열기</b>
+                  <small>바탕화면에서 프로젝트를 엽니다 · /projects</small>
                 </span>
                 <span className="sheet__s">→</span>
               </button>

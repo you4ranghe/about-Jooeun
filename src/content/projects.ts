@@ -11,14 +11,19 @@ import type { Project } from "./types";
  */
 const PROJECTS: Project[] = [
   {
+    // ⚠️ 아래 내용은 아직 예시입니다. 실측한 값으로 교체하는 것이 docs/06 의 Y-01 입니다.
+    //    지금 사실인 것은 repo · live · desktop · icon 네 개뿐입니다.
     slug: "yutnori",
     no: "01",
     color: "#0B4F4A",
+    /** 실제 저장소 1호 — 바탕화면에 아이콘으로 나옵니다 */
+    desktop: true,
+    icon: "yut",
     title: "윷놀이 온라인 대전",
     summary:
       "WebSocket으로 4인 실시간 대전을 구현했습니다. 말 이동과 잡기 규칙 판정을 전부 서버에 두어, 클라이언트가 어떤 값을 보내도 판이 어긋나지 않습니다.",
     repo: "you4ranghe/yutnori",
-    live: "",
+    live: "https://yutnori-rho.vercel.app",
     year: "2024",
     period: "2024.03 — 2024.07",
     role: "기획 · 서버 · 배포 (단독)",
@@ -465,6 +470,17 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
 
 export async function getProjectSlugs(): Promise<string[]> {
   return PROJECTS.map((p) => p.slug);
+}
+
+/**
+ * 바탕화면에 아이콘으로 꺼내 놓을 프로젝트.
+ *
+ * 실제 저장소만 나옵니다. 저장소를 하나 더 받으면 그 항목에 `desktop: true` 를
+ * 켜는 것으로 끝이고, 화면 코드는 건드리지 않습니다(docs/06 P8).
+ */
+export async function getDesktopProjects(): Promise<Project[]> {
+  const list = await getPublishedProjects();
+  return list.filter((p) => p.desktop);
 }
 
 /** 목록 위에 붙는 요약 수치. */

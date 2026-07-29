@@ -92,9 +92,26 @@ export interface RepoMeta {
   license: string;
 }
 
+/**
+ * 바탕화면 아이콘 그림.
+ *
+ * 모니터 안 바탕화면에 놓이는 아이콘의 종류입니다(docs/06 P8).
+ * 상표를 베끼지 않고 형태만 그립니다.
+ */
+export type IconArtKey = "yut" | "folder" | "doc" | "globe" | "trash";
+
 export interface Project {
   /** URL 식별자. docs/02 의 projects.slug 와 동일한 제약을 따릅니다. */
   slug: string;
+  /**
+   * 바탕화면에 아이콘으로 꺼내 놓을지.
+   *
+   * **실제 저장소만 true 입니다.** 예시로 채워 둔 항목이 바탕화면에 올라가면
+   * 방문자는 그것도 실제라고 읽습니다. 새 저장소를 받을 때마다 하나씩 켭니다.
+   */
+  desktop?: boolean;
+  /** 바탕화면 아이콘 그림. desktop 이 true 일 때만 씁니다. */
+  icon?: IconArtKey;
   /** 목록에서 보이는 번호 */
   no: string;
   /** 밴드 색. 목록과 상세 헤더에 함께 쓰입니다. */

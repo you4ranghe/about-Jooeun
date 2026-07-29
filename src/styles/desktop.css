@@ -1,0 +1,286 @@
+/**
+ * 모니터 안 바탕화면 (docs/06 P8).
+ *
+ * ── 좌표 감각 ──
+ * 이 화면은 `.mon__stage` 안에 **뷰포트의 92% 크기**로 그려진 뒤 모니터에 맞게
+ * 줄어듭니다(RoomShell 의 `fit`). 그래서 여기 적는 px 은 "줌인했을 때의 실제 px"
+ * 입니다. 작업표시줄 48px 은 진짜 48px 로 보입니다.
+ * 방에서 멀리 볼 때 글자가 안 읽히는 것은 정상입니다 — 실제 모니터도 그렇습니다.
+ *
+ * ── 색 ──
+ * 방은 나무·종이·황동입니다. 화면은 그 안의 유일한 **광원**이라 차가운 편이
+ * 맞습니다. 모니터에 이미 푸른 글로우(`.mon__glow`)가 걸려 있어 톤이 이어집니다.
+ *
+ * 이미지 파일 없음. 벽지는 그라디언트, 아이콘은 SVG 입니다(docs/04).
+ */
+
+.dt {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  font-family:
+    var(--font-body), "Segoe UI", "Malgun Gothic", -apple-system, sans-serif;
+  color: #f2f7fa;
+  background: #071a26;
+  --dt-bar: 48px;
+}
+
+/* ═══ 벽지 ═══════════════════════════════════ */
+.dt__paper {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      120% 90% at 62% 18%,
+      rgba(38, 138, 160, 0.55) 0%,
+      transparent 58%
+    ),
+    linear-gradient(158deg, #0b2c3d 0%, #0a2333 46%, #061620 100%);
+}
+
+/* 가운데 부풀어 오르는 빛. Windows 기본 배경의 인상만 가져옵니다 */
+.dt__bloom {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 78%;
+  aspect-ratio: 1.25;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse,
+    rgba(96, 210, 226, 0.34) 0%,
+    rgba(52, 150, 185, 0.18) 34%,
+    transparent 68%
+  );
+  filter: blur(18px);
+}
+
+/* 빛줄기 둘. 각도를 다르게 두어 대칭을 피합니다 */
+.dt__ray {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 150%;
+  height: 34%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(150, 232, 240, 0.14) 38%,
+    rgba(190, 245, 250, 0.2) 52%,
+    transparent 100%
+  );
+  filter: blur(26px);
+}
+.dt__ray:nth-of-type(2) {
+  transform: translate(-50%, -50%) rotate(-24deg);
+}
+.dt__ray:nth-of-type(3) {
+  width: 120%;
+  height: 22%;
+  opacity: 0.6;
+  transform: translate(-52%, -20%) rotate(14deg);
+}
+
+/* 아주 옅은 결. 없으면 그라디언트가 띠(banding)로 보입니다 */
+.dt__grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  background-image: radial-gradient(
+    circle 0.6px,
+    #ffffff 0.6px,
+    transparent 0.7px
+  );
+  background-size: 3px 3px;
+}
+
+/* ═══ 아이콘 ═════════════════════════════════ */
+.dt__field {
+  position: absolute;
+  inset: 0 0 var(--dt-bar) 0;
+  padding: 14px 12px;
+}
+
+.dt__grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(auto-fill, 96px);
+  justify-content: start;
+  gap: 2px;
+  height: 100%;
+}
+
+.dtIcon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 92px;
+  height: 96px;
+  padding: 8px 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: none;
+  cursor: default;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease;
+}
+.dtIcon:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+/* Windows 의 선택 상태 — 옅게 채우고 테두리를 한 줄 */
+.dtIcon[data-sel="true"] {
+  background: rgba(122, 197, 232, 0.24);
+  border-color: rgba(168, 222, 246, 0.42);
+}
+/* 어두운 벽지 위에서는 기본 보라색 포커스 링이 묻힙니다 */
+.dtIcon:focus-visible {
+  outline: 2px solid #d8f2ff;
+  outline-offset: 1px;
+}
+
+.dtIcon__art {
+  position: relative;
+  display: block;
+  width: 46px;
+  height: 46px;
+  flex: none;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
+}
+.dtIcon__art svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.dtIcon__badge {
+  position: absolute;
+  left: -2px;
+  bottom: -1px;
+  width: 17px;
+  height: 17px;
+}
+
+.dtIcon__label {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.28;
+  text-align: center;
+  word-break: keep-all;
+  /* 밝은 벽지 위에서도 흰 글씨가 읽히도록 그림자를 두 겹 */
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.75),
+    0 0 6px rgba(0, 0, 0, 0.4);
+}
+
+/* ── 처음 온 사람에게만 필요한 한 줄 ── */
+.dt__hint {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  margin: 0;
+  padding: 7px 16px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  font-size: 12.5px;
+  letter-spacing: 0.01em;
+  color: rgba(232, 246, 252, 0.86);
+  background: rgba(8, 26, 38, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(6px);
+  pointer-events: none;
+  transition:
+    opacity 0.5s ease,
+    visibility 0.5s;
+}
+.dt__hint[data-on="false"] {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* ═══ 작업표시줄 ═════════════════════════════ */
+.dtBar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--dt-bar);
+  display: flex;
+  align-items: center;
+  background: rgba(22, 40, 52, 0.72);
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(28px) saturate(150%);
+}
+
+/* 가운데 정렬이 이 세대 Windows 의 인상입니다 */
+.dtBar__mid {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dtBar__start {
+  display: grid;
+  grid-template-columns: repeat(2, 8px);
+  grid-template-rows: repeat(2, 8px);
+  gap: 3px;
+  padding: 8px;
+  border-radius: 5px;
+}
+.dtBar__start i {
+  display: block;
+  border-radius: 1.5px;
+  background: rgba(240, 250, 255, 0.9);
+}
+
+.dtBar__tray {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-right: 14px;
+  color: rgba(226, 240, 248, 0.88);
+}
+.dtBar__sound {
+  width: 17px;
+  height: 17px;
+}
+.dtBar__clock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.18;
+  font-variant-numeric: tabular-nums;
+}
+.dtBar__clock b {
+  font-size: 12.5px;
+  font-weight: 400;
+}
+.dtBar__clock small {
+  font-size: 11.5px;
+  opacity: 0.9;
+}
+
+/* ═══ 방에서 볼 때 ═══════════════════════════
+   조작은 `.mon__stage` 의 pointer-events 가 이미 막고 있습니다.
+   여기서는 **말을 거는 것**만 지웁니다 — 안내 문구와 선택 테두리는
+   멀리서 보는 그림에 있을 이유가 없습니다. */
+.room[data-screen="off"] .dt__hint {
+  opacity: 0;
+  visibility: hidden;
+}
+.room[data-screen="off"] .dtIcon[data-sel="true"] {
+  background: none;
+  border-color: transparent;
+}
