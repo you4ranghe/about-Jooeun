@@ -1,6 +1,6 @@
 "use client";
 
-import { NOTES } from "@/content/layout";
+import { useRoomLayout } from "./useRoomLayout";
 import type { Sky } from "./useSky";
 
 /**
@@ -34,6 +34,7 @@ export function WallNotes({
   onCycleLight: () => void;
   lightLabel: string;
 }) {
+  const N = useRoomLayout().notes;
   const pct = total > 0 ? (readCount / total) * 100 : 0;
 
   return (
@@ -43,11 +44,11 @@ export function WallNotes({
       <div
         className="note note--brand"
         style={{
-          left: `${NOTES.brand.x}px`,
-          top: `${NOTES.brand.y}px`,
-          width: `${NOTES.brand.w}px`,
-          height: `${NOTES.brand.h}px`,
-          rotate: `${NOTES.brand.deg}deg`,
+          left: `${N.brand.x}px`,
+          top: `${N.brand.y}px`,
+          width: `${N.brand.w}px`,
+          height: `${N.brand.h}px`,
+          rotate: `${N.brand.deg}deg`,
         }}
       >
         <span className="note__tape" />
@@ -63,11 +64,11 @@ export function WallNotes({
         className="note note--resume"
         onClick={onOpenResume}
         style={{
-          left: `${NOTES.resume.x}px`,
-          top: `${NOTES.resume.y}px`,
-          width: `${NOTES.resume.w}px`,
-          height: `${NOTES.resume.h}px`,
-          rotate: `${NOTES.resume.deg}deg`,
+          left: `${N.resume.x}px`,
+          top: `${N.resume.y}px`,
+          width: `${N.resume.w}px`,
+          height: `${N.resume.h}px`,
+          rotate: `${N.resume.deg}deg`,
         }}
       >
         <span className="note__pin" />
@@ -91,11 +92,11 @@ export function WallNotes({
       <div
         className="note note--sky"
         style={{
-          left: `${NOTES.sky.x}px`,
-          top: `${NOTES.sky.y}px`,
-          width: `${NOTES.sky.w}px`,
-          height: `${NOTES.sky.h}px`,
-          rotate: `${NOTES.sky.deg}deg`,
+          left: `${N.sky.x}px`,
+          top: `${N.sky.y}px`,
+          width: `${N.sky.w}px`,
+          height: `${N.sky.h}px`,
+          rotate: `${N.sky.deg}deg`,
         }}
       >
         <span className="note__pin note__pin--blue" />

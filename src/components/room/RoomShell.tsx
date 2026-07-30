@@ -9,15 +9,8 @@ import {
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import type { ResumeItem } from "@/content/types";
-import {
-  STAGE,
-  FURNITURE,
-  SPOTS,
-  PROPS,
-  onDesk,
-  box,
-  monitorBox,
-} from "@/content/layout";
+import { SPOTS } from "@/content/layout";
+import { useRoomLayout } from "./useRoomLayout";
 import { ObjectArt } from "@/components/art/ObjectArt";
 import { DeskClock } from "./DeskClock";
 import { DeskShelf } from "./DeskShelf";
@@ -99,6 +92,11 @@ export function RoomShell({
   items: ResumeItem[];
   children: React.ReactNode;
 }) {
+  /**
+   * 지금 화면에 맞는 무대. 가로(1600×900)와 세로(820×1440) 두 벌입니다.
+   * 카메라 계산이 전부 이 값을 쓰므로 화면을 돌리면 무대째 바뀝니다.
+   */
+  const L = useRoomLayout();
   /** 화면을 가리는 용도일 뿐입니다. 진짜 방어선은 RLS 입니다. */
   const isAdmin = useViewerIsAdmin();
   const pathname = usePathname();
@@ -148,16 +146,16 @@ export function RoomShell({
      cover — 화면을 꽉 채우고 넘치는 쪽은 잘립니다.
      contain 이면 위아래에 검은 띠가 생겨 방이 액자 속 그림처럼 보입니다. */
   const baseScale = () =>
-    Math.max(window.innerWidth / STAGE.w, window.innerHeight / STAGE.h);
+    Math.max(window.innerWidth / L.stage.w, window.innerHeight / L.stage.h);
 
   const baseShot = (): Shot => {
     const s = baseScale();
     return {
-      ox: STAGE.w / 2,
-      oy: STAGE.h / 2,
+      ox: L.stage.w / 2,
+      oy: L.stage.h / 2,
       s,
-      tx: (window.innerWidth - STAGE.w * s) / 2,
-      ty: (window.innerHeight - STAGE.h * s) / 2,
+      tx: (window.innerWidth - L.stage.w * s) / 2,
+      ty: (window.innerHeight - L.stage.h * s) / 2,
     };
   };
 
@@ -219,7 +217,7 @@ export function RoomShell({
     const aspect = paper.offsetWidth / paper.offsetHeight;
     const h = Math.min(
       window.innerHeight * 0.86,
-      (window.innerWidth * 0.52) / aspect,
+      (window.innerWidth * L.zoom.cal) / aspect,
     );
     return { w: h * aspect, h, paper };
   };
@@ -247,7 +245,7 @@ export function RoomShell({
     const aspect = body.offsetWidth / body.offsetHeight;
     const h = Math.min(
       window.innerHeight * 0.84,
-      (window.innerWidth * 0.62) / aspect,
+      (window.innerWidth * L.zoom.pad) / aspect,
     );
     return { w: h * aspect, h, body };
   };
@@ -302,7 +300,8 @@ export function RoomShell({
     }
 
     fittedTo.current = { w: vw, h: vh };
-  }, []);
+    // 무대가 바뀌면(가로 ↔ 세로) 캘린더·아이패드의 목표 크기도 달라집니다
+  }, [L]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useLayoutEffect(() => {
     fit();
@@ -310,6 +309,27 @@ export function RoomShell({
     if (screenRef.current) ro.observe(screenRef.current);
     return () => ro.disconnect();
   }, [fit]);
+
+  /* ── 화면을 돌렸을 때 ──────────────────────────
+     세로/가로가 바뀌면 **무대 자체가 교체**됩니다(820×1440 ↔ 1600×900).
+     좌표계가 통째로 달라지므로 축척과 카메라를 새 무대 기준으로 다시 잡습니다.
+     크기 변화만 처리하는 아래 resize 핸들러로는 부족합니다 —
+     무대 교체는 렌더 결과라 이벤트보다 먼저 일어날 수 있습니다. */
+  useLayoutEffect(() => {
+    if (!settled.current) return;
+    fit();
+    const shot = inCalendar
+      ? calendarShot(sidePanel)
+      : inMusic
+        ? padShot()
+        : inScreen
+          ? screenShot()
+          : baseShot();
+    if (shot) {
+      move(css(shot), null, 0);
+      lastShot.current = zoomedIn ? shot : null;
+    }
+  }, [L.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── 카메라 ─────────────────────────────── */
   const move = (target: string, via: string | null, duration: number) => {
@@ -402,7 +422,7 @@ export function RoomShell({
       duration =
         1000 +
         Math.min(
-          Math.hypot(shot.ox - prev.ox, shot.oy - prev.oy) / STAGE.w,
+          Math.hypot(shot.ox - prev.ox, shot.oy - prev.oy) / L.stage.w,
           1,
         ) *
           500;
@@ -547,7 +567,7 @@ export function RoomShell({
               <span className="wall__rail" />
             </div>
 
-            <div className="win" style={box(FURNITURE.window)}>
+            <div className="win" style={L.box(L.window)}>
               <span className="win__day" />
               <span className="win__night">
                 {STARS.map((s, i) => (
@@ -614,28 +634,28 @@ export function RoomShell({
             <div
               className="win__sill"
               style={{
-                left: FURNITURE.window.x - 18,
-                top: FURNITURE.window.y + FURNITURE.window.h + 14,
-                width: FURNITURE.window.w + 36,
+                left: L.window.x - L.windowTrim.sill,
+                top: L.window.y + L.window.h + 14,
+                width: L.window.w + L.windowTrim.sill * 2,
                 height: 16,
               }}
             />
             <div
               className="curtain"
               style={{
-                left: FURNITURE.window.x - 62,
-                top: FURNITURE.window.y - 16,
-                width: 68,
-                height: FURNITURE.window.h + 56,
+                left: L.window.x - L.windowTrim.curtain - 6,
+                top: L.window.y - 16,
+                width: L.windowTrim.curtain,
+                height: L.window.h + 56,
               }}
             />
             <div
               className="rays"
               style={{
-                left: FURNITURE.window.x - 240,
-                top: FURNITURE.window.y,
-                width: FURNITURE.window.w + 240,
-                height: 540,
+                left: L.window.x - L.windowTrim.rays,
+                top: L.window.y,
+                width: L.window.w + L.windowTrim.rays,
+                height: L.stage.h * 0.6,
               }}
             />
           </div>
@@ -679,20 +699,26 @@ export function RoomShell({
             상판이 화면 좌우를 넘어가고 아래는 서랍이 바닥까지 채웁니다.
             바닥을 보여주지 않으므로 책상 앞에 앉은 시점이 됩니다. */}
           <div className="layer l-desk">
-            <div className="desk" style={box(FURNITURE.desk)}>
+            <div className="desk" style={L.box(L.desk)}>
               <span className="desk__edge" />
               <span className="desk__grain" />
               <span className="desk__pool" />
             </div>
             <div
               className="deskFront"
-              style={{ top: FURNITURE.desk.y + FURNITURE.desk.h }}
+              style={{ top: L.desk.y + L.desk.h }}
             >
-              <span className="deskFront__drawer" style={{ left: 200 }}>
+              <span
+                className="deskFront__drawer"
+                style={{ left: L.drawerInset }}
+              >
                 <i />
                 <i />
               </span>
-              <span className="deskFront__drawer" style={{ right: 200 }}>
+              <span
+                className="deskFront__drawer"
+                style={{ right: L.drawerInset }}
+              >
                 <i />
                 <i />
               </span>
@@ -701,24 +727,36 @@ export function RoomShell({
             {/* 책상 왼쪽 책꽂이 — 바닥이 상판에 닿습니다 */}
             <DeskShelf />
 
-            <div className="keyboard" style={onDesk(PROPS.keyboard)} />
+            {/* 아래 물건들은 **세로 무대에 없는 것이 있습니다.**
+                좁은 화면에 아홉 개를 늘어놓으면 물건이 아니라 얼룩이 됩니다.
+                무엇이 놓이는지는 content/layout.ts 의 props 가 정합니다. */}
+            {L.props.keyboard && (
+              <div className="keyboard" style={L.onDesk(L.props.keyboard)} />
+            )}
             {/* 마우스는 장식입니다. 누르는 기능이 없습니다. */}
-            <div
-              className="mouse"
-              style={onDesk(PROPS.mouse)}
-              aria-hidden="true"
-            />
-            <div className="papers" style={onDesk(PROPS.papers)}>
-              <i />
-              <i />
-              <i />
-            </div>
-            <div className="mug" style={onDesk(PROPS.mug)}>
-              <span className="mug__body" />
-              <span className="mug__handle" />
-            </div>
+            {L.props.mouse && (
+              <div
+                className="mouse"
+                style={L.onDesk(L.props.mouse)}
+                aria-hidden="true"
+              />
+            )}
+            {L.props.papers && (
+              <div className="papers" style={L.onDesk(L.props.papers)}>
+                <i />
+                <i />
+                <i />
+              </div>
+            )}
+            {L.props.mug && (
+              <div className="mug" style={L.onDesk(L.props.mug)}>
+                <span className="mug__body" />
+                <span className="mug__handle" />
+              </div>
+            )}
 
-            <div className="lamp" style={onDesk(PROPS.lamp)}>
+            {L.props.lamp && (
+            <div className="lamp" style={L.onDesk(L.props.lamp)}>
               <span className="lamp__glow" />
               <svg viewBox="0 0 90 118" role="presentation">
                 <path
@@ -758,11 +796,14 @@ export function RoomShell({
                 <circle cx="70" cy="45" r="5" fill="#FFF3C4" />
               </svg>
             </div>
+            )}
 
             {/* 탁상시계 — 실제 KST 를 초 단위로 */}
-            <div className="clockSpot" style={onDesk(PROPS.clock)}>
-              <DeskClock />
-            </div>
+            {L.props.clock && (
+              <div className="clockSpot" style={L.onDesk(L.props.clock)}>
+                <DeskClock />
+              </div>
+            )}
 
             {/* 책상 오른쪽 끝 아이패드. 화면 안이 유튜브 플레이어입니다. */}
             <DeskPad
@@ -780,7 +821,7 @@ export function RoomShell({
           <div className="layer l-things">
             <div
               className="mon"
-              style={monitorBox()}
+              style={L.monitorBox()}
               data-active={inScreen ? "true" : "false"}
             >
               <span className="mon__glow" />
@@ -818,7 +859,7 @@ export function RoomShell({
                   data-thing={item.id}
                   data-seen={String(seen.has(item.id))}
                   data-active={String(activeId === item.id)}
-                  style={onDesk(spot)}
+                  style={L.onDesk(spot)}
                   onClick={() => openItem(item.id)}
                   aria-label={`${item.category} — ${item.title}`}
                   aria-expanded={activeId === item.id}

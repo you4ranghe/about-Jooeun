@@ -1,6 +1,6 @@
 "use client";
 
-import { PAD, PAD_SCREEN, padBox } from "@/content/layout";
+import { useRoomLayout } from "./useRoomLayout";
 import { useMusic } from "@/components/music/MusicProvider";
 /* 화면 안 .ytm 마크업은 /music 이 아닐 때도 늘 여기 있습니다.
    그래서 이 스타일도 늘 필요합니다 — MusicApp 에만 걸어 두면
@@ -46,10 +46,15 @@ export function DeskPad({
   /** 확대했을 때 화면 안에 뜨는 유튜브 뮤직 UI */
   children?: React.ReactNode;
 }) {
+  const L = useRoomLayout();
   const { ready, mountRef } = useMusic();
 
   return (
-    <div className="pad" style={padBox()} data-zoom={zoomed ? "true" : "false"}>
+    <div
+      className="pad"
+      style={L.padBox()}
+      data-zoom={zoomed ? "true" : "false"}
+    >
       {/* 거치대 — 본체 뒤에서 받칩니다 */}
       <span className="pad__stand" />
 
@@ -57,8 +62,8 @@ export function DeskPad({
         className="pad__body"
         ref={surfaceRef}
         style={{
-          borderRadius: `${PAD.bezel + 4}px`,
-          padding: `${PAD.bezel}px`,
+          borderRadius: `${L.pad.bezel + 4}px`,
+          padding: `${L.pad.bezel}px`,
         }}
       >
         {/* 전면 카메라 */}
@@ -67,7 +72,10 @@ export function DeskPad({
         <div
           className="pad__screen"
           ref={screenRef}
-          style={{ width: `${PAD_SCREEN.w}px`, height: `${PAD_SCREEN.h}px` }}
+          style={{
+            width: `${L.padScreen.w}px`,
+            height: `${L.padScreen.h}px`,
+          }}
         >
           {/* 무대는 늘 여기 있습니다. 플레이어가 이 안에 박혀 있고 절대 옮기지 않습니다. */}
           <div className="pad__stage" ref={stageRef}>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FURNITURE, box } from "@/content/layout";
+import { useRoomLayout } from "./useRoomLayout";
 
 /**
  * 벽에 걸린 종이 달력. 실제 이번 달(KST)을 보여주고 오늘에 표시가 붙습니다.
@@ -61,6 +61,7 @@ export function WallCalendar({
   zoomed?: boolean;
   children?: React.ReactNode;
 }) {
+  const L = useRoomLayout();
   const [m, setM] = useState<Month | null>(null);
 
   useEffect(() => {
@@ -89,7 +90,7 @@ export function WallCalendar({
   return (
     // box() 를 써야 폭·높이가 함께 들어갑니다.
     // {x,y,w,h} 를 그대로 펼치면 x·w 가 CSS 속성이 아니라 무시되어 크기가 0 이 됩니다.
-    <div className="cal" style={box(FURNITURE.calendar)}>
+    <div className="cal" style={L.box(L.calendar)}>
       {/* 벽에 박힌 못과 걸린 고리 */}
       <span className="cal__nail" />
       <span className="cal__hook" />

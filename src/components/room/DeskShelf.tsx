@@ -1,4 +1,6 @@
-import { PROPS, onDesk } from "@/content/layout";
+"use client";
+
+import { useRoomLayout } from "./useRoomLayout";
 
 /**
  * 책상 위 책꽂이.
@@ -49,8 +51,13 @@ const SIDE = 11;
 const BASE = 10;
 
 export function DeskShelf() {
+  const L = useRoomLayout();
+  const shelf = L.props.bookshelf;
+  // 세로 무대에는 책꽂이가 없습니다. 640px 안에 다 넣으면 얼룩이 됩니다.
+  if (!shelf?.h) return null;
+
   // 책꽂이 자체는 상판에 바닥을 대고 서고, 안쪽 좌표는 자기 상자(0..h) 기준입니다.
-  const { h } = PROPS.bookshelf;
+  const h = shelf.h;
   const innerLeft = SIDE + 4;
   const floorY = h - BASE; // 책들이 서는 바닥
 
@@ -63,7 +70,7 @@ export function DeskShelf() {
   });
 
   return (
-    <div className="deskShelf" style={onDesk(PROPS.bookshelf)}>
+    <div className="deskShelf" style={L.onDesk(shelf)}>
       {/* 안쪽 그늘 — 속이 깊어야 책꽂이로 보입니다 */}
       <span className="deskShelf__well" />
 
