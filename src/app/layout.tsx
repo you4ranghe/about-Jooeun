@@ -9,6 +9,7 @@ import {
   Gowun_Batang,
   Nanum_Myeongjo,
 } from "next/font/google";
+import { SITE_URL } from "@/content/site";
 import "./globals.css";
 
 /**
@@ -106,11 +107,9 @@ const blackHan = Black_Han_Sans({
 });
 
 /**
- * OG 태그의 절대 주소를 만드는 기준값입니다.
- * 틀리면 카카오톡·슬랙 링크 미리보기가 깨집니다.
- * 커스텀 도메인을 붙이면 여기만 바꾸면 됩니다.
+ * OG 태그의 절대 주소를 만드는 기준값은 content/site.ts 에 있습니다.
+ * 브라우저 창의 주소 표시줄도 같은 값을 씁니다 — 도메인을 바꿀 때 한 곳만 고칩니다.
  */
-const SITE_URL = "https://about-jooeun.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

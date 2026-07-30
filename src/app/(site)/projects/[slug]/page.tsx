@@ -9,6 +9,7 @@ import {
 } from "@/content/projects";
 import { RunEmbed } from "@/components/detail/RunEmbed";
 import { LedgerMotion } from "@/components/detail/LedgerMotion";
+import { BrowserWindow } from "@/components/desktop/BrowserWindow";
 import "@/styles/detail.css";
 
 /**
@@ -92,17 +93,24 @@ export default async function ProjectDetailPage({ params }: Props) {
   } as React.CSSProperties;
 
   return (
-    <div
-      className="led"
-      style={skin}
-      data-mode={t.mode}
-      data-display={t.display}
+    <BrowserWindow
+      title={project.title}
+      icon={project.icon ?? "globe"}
+      path={`/projects/${project.slug}`}
+      iconId={project.slug}
     >
-      <LedgerMotion />
+      <div
+        className="led"
+        style={skin}
+        data-mode={t.mode}
+        data-display={t.display}
+        data-hero={project.hero.kind}
+      >
+        <LedgerMotion />
 
       <div className="led__wrap">
         <header className="led__top">
-          <Link href="/projects">← 바탕화면</Link>
+          <span>{project.no} · {project.year}</span>
           <nav aria-label="바깥 링크">
             <a
               href={`https://github.com/${project.repo}`}
@@ -124,6 +132,14 @@ export default async function ProjectDetailPage({ params }: Props) {
           <p className="led__eyebrow">
             {project.repo} · {project.year}
           </p>
+          {/* 수치형은 숫자가 제목 자리를 차지하고 문장이 자막이 됩니다 */}
+          {project.hero.kind === "number" && (
+            <p className="led__bigNum">
+              <b>{project.hero.value}</b>
+              <span>{project.hero.unit}</span>
+            </p>
+          )}
+
           <h1 className="led__h1">
             {project.hero.lead}
             <em>{project.hero.em}</em>
@@ -194,6 +210,29 @@ export default async function ProjectDetailPage({ params }: Props) {
               뜹니다. 누르기 전에는 아무것도 불러오지 않습니다.
             </p>
             <RunEmbed url={project.evidence.url} note={project.evidence.note} />
+          </section>
+        )}
+
+        {project.evidence.kind === "code" && (
+          <section className="led__sec rise">
+            <p className="led__k">THE CODE</p>
+            <h2 className="led__h2">설계가 드러나는 몇 줄</h2>
+            <p className="led__lede">
+              저장소에 실제로 있는 코드입니다. 이 조각 하나가 이 프로젝트의 접근
+              제어 전부입니다.
+            </p>
+            <div className="led__code">
+              <div className="led__codeTop">
+                <b>{project.evidence.caption}</b>
+                <span>{project.evidence.lang}</span>
+              </div>
+              <pre>
+                <code>{project.evidence.code}</code>
+              </pre>
+            </div>
+            {project.evidence.note && (
+              <p className="led__runNote">{project.evidence.note}</p>
+            )}
           </section>
         )}
 
@@ -319,7 +358,8 @@ export default async function ProjectDetailPage({ params }: Props) {
           <span>you4ranghe · Seoul · 2026</span>
           <a href="mailto:you4ranghe@gmail.com">you4ranghe@gmail.com</a>
         </footer>
+        </div>
       </div>
-    </div>
+    </BrowserWindow>
   );
 }

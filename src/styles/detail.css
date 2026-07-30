@@ -215,6 +215,38 @@
   transform: rotate(45deg);
 }
 
+/* ── 수치형 히어로 (docs/07 §3, H-NUMBER) ──
+   숫자가 제목 자리를 차지하고, 문장은 그 숫자가 무엇인지 설명하는 자막이 됩니다.
+   그래서 이때만 h1 을 눌러 씁니다 — 둘 다 크면 둘 다 안 읽힙니다. */
+.led__bigNum {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0 0 6px;
+  font-family: var(--display);
+  line-height: 0.86;
+  color: var(--take);
+}
+.led__bigNum b {
+  font-size: clamp(96px, 19vw, 208px);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+}
+.led__bigNum span {
+  font-size: clamp(28px, 4.6vw, 52px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.led[data-hero="number"] .led__h1 {
+  font-size: clamp(24px, 3.4vw, 38px);
+  line-height: 1.34;
+  letter-spacing: -0.025em;
+}
+/* 자막이므로 줄을 나누지 않습니다. 강조색은 그대로 둡니다 */
+.led[data-hero="number"] .led__h1 em {
+  display: inline;
+}
+
 /* ── 도해형 히어로 (docs/07 §3, H-DIAGRAM) ──
    단계를 옆으로 늘어놓습니다. `faded` 가 붙은 마지막 칸은 점선으로 흐려져
    "끝났지만 사라지지 않은" 상태를 나타냅니다. */
@@ -500,6 +532,49 @@
   font-size: 15.5px;
   line-height: 1.65;
   color: var(--mid);
+}
+
+/* ── 증거 · 코드 한 조각 (docs/07 §4, E-CODE) ──
+   설계가 몇 줄로 드러날 때 씁니다. 저장소에 실제로 있는 코드만 옮깁니다. */
+.led__code {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--sunken);
+}
+.led__codeTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 14px;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.led__codeTop b {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.led__codeTop span {
+  font-family: var(--font-mono), monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  color: var(--take);
+  flex: none;
+}
+.led__code pre {
+  margin: 0;
+  padding: 20px 18px;
+  overflow-x: auto;
+  font-family: var(--font-mono), monospace;
+  font-size: 14px;
+  line-height: 1.72;
+  color: var(--fg);
+  tab-size: 2;
+}
+.led__code code {
+  font-size: inherit;
 }
 
 /* ══ 결정 대장 — 페이지마다 옷은 달라도 이 장치는 같습니다 ══ */

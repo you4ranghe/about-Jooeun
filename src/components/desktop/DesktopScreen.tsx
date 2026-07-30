@@ -40,9 +40,11 @@ export async function DesktopScreen({
 
       <DesktopIcons items={shortcuts} />
 
+      {/* 열려 있는 창. 없으면 바탕화면만 보입니다 */}
       {children}
 
-      <Taskbar />
+      {/* 작업표시줄은 창보다 위에 있습니다. 최대화해도 가려지지 않습니다 */}
+      <Taskbar apps={shortcuts} />
     </div>
   );
 }

@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import type { DesktopShortcut } from "@/content/desktop";
+import { IconArt } from "./IconArt";
 
 /**
  * 작업표시줄.
@@ -39,8 +42,15 @@ function readKst() {
   };
 }
 
-export function Taskbar() {
+export function Taskbar({ apps }: { apps: DesktopShortcut[] }) {
   const [now, setNow] = useState<ReturnType<typeof readKst> | null>(null);
+
+  /* 창이 열려 있으면 그 앱이 작업표시줄에 뜹니다.
+     주소가 곧 열린 창이므로 pathname 만 보면 됩니다 — 따로 상태를 들 필요가 없습니다. */
+  const pathname = usePathname();
+  const running = apps.find(
+    (app) => app.open.kind === "route" && app.open.href === pathname,
+  );
 
   useEffect(() => {
     setNow(readKst());
@@ -65,13 +75,24 @@ export function Taskbar() {
 
   return (
     <div className="dtBar">
-      <div className="dtBar__mid" aria-hidden="true">
-        <span className="dtBar__start">
+      <div className="dtBar__mid">
+        <span className="dtBar__start" aria-hidden="true">
           <i />
           <i />
           <i />
           <i />
         </span>
+
+        {/* 실행 중인 창. 밑줄이 "지금 열려 있음" 을 뜻합니다 */}
+        {running && (
+          <span
+            className="dtBar__app"
+            title={`${running.label} — 열려 있음`}
+            aria-label={`${running.label} 창이 열려 있습니다`}
+          >
+            <IconArt art={running.art} />
+          </span>
+        )}
       </div>
 
       <div className="dtBar__tray">

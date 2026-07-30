@@ -27,9 +27,10 @@ export function LedgerMotion() {
     if (!root) return;
     root.dataset.motion = "on";
 
-    /* 이 페이지는 창문(뷰포트)이 아니라 모니터 화면 안에서 스크롤됩니다.
-       스크롤하는 상자를 관찰 기준으로 잡아야 "화면에 들어왔다"가 맞습니다. */
-    const scroller = root.closest<HTMLElement>(".mon__stage");
+    /* 이 페이지는 뷰포트가 아니라 **브라우저 창 안**에서 스크롤됩니다.
+       (창이 없던 시절에는 모니터 화면이 스크롤 상자였습니다.)
+       실제로 굴러가는 상자를 기준으로 잡아야 "화면에 들어왔다"가 맞습니다. */
+    const scroller = root.closest<HTMLElement>(".win__body, .mon__stage");
 
     const rises = root.querySelectorAll<HTMLElement>(".rise");
     const io = new IntersectionObserver(

@@ -307,6 +307,94 @@ function Dm() {
   );
 }
 
+/**
+ * 점메추.
+ *
+ * **이건 제가 그린 게 아닙니다.** 저장소의 `icon.svg` 를 그대로 옮겼습니다
+ * (좌표·색·회전각 전부 동일). 그 사이트가 실제로 쓰는 얼굴이라
+ * 바로가기가 가리키는 곳과 아이콘이 정확히 일치합니다.
+ *
+ * 원본 주석: "식판 콘셉트 앱 아이콘: 반찬 빨강 배경 + 흰 숟가락·젓가락."
+ * viewBox 도 원본(512)을 유지합니다 — 크기는 CSS 가 정하므로 바꿀 이유가 없고,
+ * 숫자를 건드리면 옮겨온 것이 아니라 다시 그린 것이 됩니다.
+ */
+function Tray() {
+  return (
+    <svg viewBox="0 0 512 512" role="presentation">
+      <rect width="512" height="512" rx="112" fill="#DE3B21" />
+      {/* 숟가락 */}
+      <g transform="rotate(-14 224 256)" fill="#fff">
+        <rect x="208" y="150" width="32" height="236" rx="16" />
+        <ellipse cx="224" cy="172" rx="44" ry="56" />
+      </g>
+      {/* 젓가락 */}
+      <g transform="rotate(12 322 256)" fill="#fff">
+        <rect x="300" y="140" width="19" height="252" rx="9.5" />
+        <rect x="332" y="140" width="19" height="252" rx="9.5" />
+      </g>
+    </svg>
+  );
+}
+
+/**
+ * 홈노트 (ourHome).
+ *
+ * 이 사이트도 옮겨올 파비콘이 없어 그 사이트의 디자인 토큰으로 그렸습니다 —
+ * 저장소의 tailwind 설정에 "Supanova" 라는 이름으로 적혀 있는 값입니다.
+ * 먹빛 바탕 #0B0C10, 채도를 뺀 호박색 #D8B487, 부드러운 호박 #E7CFAE.
+ *
+ * 창을 두 칸으로 나눈 것은 이 앱이 **두 사람**의 것이기 때문입니다.
+ * 한 사람이 적으면 다른 사람 화면에 바로 뜹니다.
+ */
+function Home() {
+  return (
+    <svg viewBox="0 0 64 64" role="presentation">
+      <defs>
+        <radialGradient id="dtHomeGlow" cx="0.5" cy="0.62" r="0.5">
+          <stop offset="0" stopColor="#D8B487" stopOpacity="0.3" />
+          <stop offset="1" stopColor="#D8B487" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <rect x="0" y="0" width="64" height="64" rx="14" fill="#0B0C10" />
+      <rect x="0" y="0" width="64" height="64" rx="14" fill="url(#dtHomeGlow)" />
+      {/* 유리 테두리 — 이 사이트의 double-bezel 을 한 겹으로 줄인 것 */}
+      <rect
+        x="0.9"
+        y="0.9"
+        width="62.2"
+        height="62.2"
+        rx="13.2"
+        fill="none"
+        stroke="#FFFFFF"
+        strokeOpacity="0.1"
+        strokeWidth="1.2"
+      />
+
+      {/* 집 */}
+      <path
+        d="M11 30L32 13l21 17"
+        fill="none"
+        stroke="#D8B487"
+        strokeWidth="3.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M16 29v20a2 2 0 0 0 2 2h28a2 2 0 0 0 2-2V29"
+        fill="none"
+        stroke="#D8B487"
+        strokeWidth="3.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+
+      {/* 불 켜진 창 — 두 칸입니다 */}
+      <rect x="24" y="34" width="7" height="9" rx="1.4" fill="#E7CFAE" />
+      <rect x="33" y="34" width="7" height="9" rx="1.4" fill="#E7CFAE" />
+    </svg>
+  );
+}
+
 function Globe() {
   return (
     <svg viewBox="0 0 64 64" role="presentation">
@@ -422,6 +510,8 @@ const ART: Record<IconArtKey, () => React.ReactElement> = {
   library: Library,
   bonfire: Bonfire,
   dm: Dm,
+  tray: Tray,
+  home: Home,
   folder: Folder,
   doc: Doc,
   globe: Globe,

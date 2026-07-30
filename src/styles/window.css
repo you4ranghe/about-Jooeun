@@ -1,0 +1,231 @@
+/**
+ * 바탕화면 위에 뜨는 브라우저 창 (docs/06 P8).
+ *
+ * ── 창틀은 늘 같습니다 ──
+ * 창 안의 페이지는 프로젝트마다 색이 완전히 다릅니다(docs/07 §5).
+ * 그래도 흩어져 보이지 않는 이유 하나가 여기입니다 —
+ * 창틀과 바탕화면이 항상 같으니 창 안이 달라도 됩니다.
+ * 그래서 이 파일에는 프로젝트 색(--take)이 한 번도 나오지 않습니다.
+ *
+ * ── 크기 감각 ──
+ * 이 창은 모니터 화면 안(`.mon__stage`)에 그려진 뒤 통째로 축소됩니다.
+ * 여기 적는 px 은 "줌인했을 때의 실제 px" 입니다.
+ */
+
+.win {
+  position: absolute;
+  /* 위는 아이콘 두 줄을 남기고, 아래는 작업표시줄을 비켜섭니다 */
+  left: 116px;
+  right: 40px;
+  top: 34px;
+  bottom: calc(var(--dt-bar) + 22px);
+  z-index: 5;
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 10px;
+  transform-origin: center;
+
+  --win-bar: #dfe3e8;
+  --win-chrome: #f1f3f5;
+  --win-ink: #3b4249;
+  --win-line: #c9cfd6;
+
+  background: var(--win-chrome);
+  box-shadow:
+    0 24px 60px rgba(4, 12, 20, 0.45),
+    0 4px 14px rgba(4, 12, 20, 0.3),
+    0 0 0 1px rgba(0, 0, 0, 0.28);
+  transition:
+    left 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    right 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    top 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    bottom 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-radius 0.28s ease;
+}
+
+/* 최대화 — 작업표시줄만 남기고 채웁니다. 실제 Windows 도 그렇습니다 */
+.win[data-max="true"] {
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: var(--dt-bar);
+  border-radius: 0;
+}
+
+/* ── 제목 표시줄 ── */
+.win__bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex: none;
+  padding: 7px 0 0 9px;
+  background: var(--win-bar);
+}
+
+/* 탭 하나. 누를 수 있어 보이지만 이미 그 탭이라 버튼이 아닙니다 */
+.win__tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 290px;
+  padding: 8px 14px 9px;
+  border-radius: 8px 8px 0 0;
+  background: var(--win-chrome);
+  font-size: 12.5px;
+  color: var(--win-ink);
+}
+.win__favicon {
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+.win__favicon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 3px;
+}
+.win__tabName {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.win__ctrl {
+  display: flex;
+  margin-left: auto;
+  align-self: flex-start;
+}
+.win__ctrl button {
+  width: 44px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  color: var(--win-ink);
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+.win__ctrl button svg {
+  width: 11px;
+  height: 11px;
+}
+.win__ctrl button:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+.win__ctrl .win__x:hover {
+  background: #c42b1c;
+  color: #fff;
+}
+.win__ctrl button:focus-visible {
+  outline: 2px solid #2b6cb0;
+  outline-offset: -3px;
+}
+
+/* ── 주소 표시줄 ── */
+.win__nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  padding: 6px 12px 8px;
+  background: var(--win-chrome);
+  border-bottom: 1px solid var(--win-line);
+}
+.win__nav button {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--win-ink);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.win__nav button svg {
+  width: 17px;
+  height: 17px;
+}
+.win__nav button:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+.win__nav button:focus-visible {
+  outline: 2px solid #2b6cb0;
+  outline-offset: -2px;
+}
+
+.win__url {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 1;
+  min-width: 0;
+  margin-left: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px var(--win-line);
+  font-family: var(--font-mono), monospace;
+  font-size: 12.5px;
+  color: #6b7480;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.win__url b {
+  font-weight: 500;
+  color: #2c3238;
+}
+.win__lock {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  color: #6b7480;
+}
+
+/* ── 창 안 ──
+   페이지가 여기서 스크롤됩니다. 모니터 화면 전체가 아니라 창 안만 움직여야
+   창틀이 제자리에 붙어 있습니다. */
+.win__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: #fff;
+  scrollbar-width: thin;
+}
+
+/* 방(줌아웃)에서는 창 안을 굴릴 수 없습니다 — 멀리서 보는 그림입니다 */
+.room[data-screen="off"] .win__body {
+  overflow: hidden;
+}
+
+@media (max-width: 820px) {
+  .win {
+    left: 8px;
+    right: 8px;
+    top: 8px;
+  }
+  .win__tab {
+    max-width: 150px;
+  }
+  .win__nav button:nth-child(2) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .win {
+    transition: none;
+  }
+}

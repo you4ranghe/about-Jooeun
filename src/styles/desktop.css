@@ -249,6 +249,34 @@
   background: rgba(240, 250, 255, 0.9);
 }
 
+/* 실행 중인 창 — 아이콘 아래 짧은 밑줄이 Windows 의 "열려 있음" 표시입니다 */
+.dtBar__app {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+}
+.dtBar__app svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+}
+.dtBar__app::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: 15px;
+  height: 3px;
+  margin-left: -7.5px;
+  border-radius: 2px;
+  background: #7ac5e8;
+}
+
 .dtBar__tray {
   margin-left: auto;
   display: flex;

@@ -160,6 +160,20 @@ export type Evidence =
       kind: "diagram";
       nodes: { k: string; v: string; note?: string }[];
       note?: string;
+    }
+  /**
+   * 코드 한 조각 — 설계가 코드 몇 줄로 드러날 때.
+   *
+   * **20줄을 넘기지 않습니다.** 길면 저장소를 보라고 하는 편이 낫습니다.
+   * 지어낸 코드를 넣지 않습니다 — 저장소에 실제로 있는 것만 옮깁니다.
+   */
+  | {
+      kind: "code";
+      lang: string;
+      /** 이 코드가 무엇을 말하는지 한 줄 */
+      caption: string;
+      code: string;
+      note?: string;
     };
 
 /**
@@ -183,6 +197,14 @@ export type Hero =
       before: { k: string; v: string };
       after: { k: string; v: string };
     }
+  /**
+   * 수치형 — 숫자 하나가 전부를 설명할 때.
+   *
+   * **쓸 숫자가 없으면 쓰지 않습니다.** 억지로 고르면 "큰 숫자 + 작은 라벨" 이라는
+   * 어느 프로젝트에나 맞고 아무 말도 안 하는 히어로가 됩니다.
+   * `lead`·`em` 은 그 숫자가 무엇인지 설명하는 줄입니다.
+   */
+  | { kind: "number"; value: string; unit: string; lead: string; em: string }
   /**
    * 도해형 — 구조나 흐름 자체가 자랑거리일 때.
    * 단계를 옆으로 늘어놓습니다. 마지막 단계에 `faded` 를 주면
@@ -220,6 +242,8 @@ export type IconArtKey =
   | "library"
   | "bonfire"
   | "dm"
+  | "tray"
+  | "home"
   | "folder"
   | "doc"
   | "globe"
