@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 C · 열람실 — 윷놀이 온라인</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Nanum+Myeongjo:wght@700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════
+   시안 C — 열람실
+   "글씨가 작고 얇아서 안 보인다"는 지적에 정면으로 답하는 방향입니다.
+   본문 19.5px · 행간 1.9 · 한 줄 60자 안쪽. 읽으라고 만든 페이지입니다.
+
+   기억에 남을 한 가지: 여백의 주석.
+   수치·파일 이름·함수 이름 같은 증거는 본문을 끊지 않고 옆에 붙습니다.
+   본문의 작은 번호에 마우스를 올리면 해당 주석이 켜집니다.
+   좁은 화면에서는 주석이 문단 아래로 들어갑니다.
+
+   본문은 명조(세리프), 제목은 굵은 명조. 화면용 고딕을 쓰지 않은 것은
+   이 페이지가 "읽는 문서"라는 걸 첫인상에서 말하기 위해서입니다.
+   ══════════════════════════════════════════════════════════ */
+:root{
+  --paper:#E9EBE5; --paper2:#F3F4EF; --ink:#14181A; --soft:#4E565A;
+  --dim:#8A9296; --line:#CDD2CB; --cheong:#1B5E7E; --seal:#A4392F;
+  --mono:"IBM Plex Mono",Consolas,monospace;
+  --body:"Gowun Batang","Batang",serif;
+  --disp:"Nanum Myeongjo","Gowun Batang",serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--body);font-size:19.5px;font-weight:400;line-height:1.9;
+  word-break:keep-all;
+}
+:focus-visible{outline:2.5px solid var(--cheong);outline-offset:3px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(20px,4vw,52px)}
+
+/* ── 머리 ── */
+.top{display:flex;justify-content:space-between;gap:16px;padding:20px 0;
+  font-family:var(--mono);font-size:13px;color:var(--dim);border-bottom:1px solid var(--line)}
+.top a{color:inherit;text-decoration:none}
+.top a:hover{color:var(--cheong)}
+.top nav{display:flex;gap:18px}
+
+/* ── 표제 ── */
+.head{padding:clamp(48px,8vw,104px) 0 clamp(32px,4vw,52px);max-width:20ch}
+.head__k{font-family:var(--mono);font-size:13px;letter-spacing:.14em;color:var(--seal);margin:0 0 24px}
+.head h1{
+  font-family:var(--disp);font-weight:800;font-size:clamp(42px,7.2vw,86px);
+  line-height:1.16;letter-spacing:-.03em;margin:0;
+}
+.head h1 em{font-style:normal;display:block;color:var(--cheong)}
+.thesis{
+  max-width:38ch;margin:clamp(26px,3.5vw,40px) 0 0;font-size:clamp(20px,2.1vw,23px);
+  line-height:1.85;color:var(--soft);
+}
+.thesis b{color:var(--ink);font-weight:700}
+
+/* 표지 정보 — 한 줄로 흐르게 */
+.colophon{
+  display:flex;flex-wrap:wrap;gap:0 26px;padding:22px 0;margin-top:clamp(30px,4vw,46px);
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  font-family:var(--mono);font-size:13.5px;color:var(--soft);
+}
+.colophon b{color:var(--ink);font-weight:500}
+.colophon a{color:var(--cheong)}
+
+/* ── 본문 + 여백 주석 ── */
+.row{
+  display:grid;grid-template-columns:minmax(0,60ch) 250px;gap:clamp(24px,4vw,56px);
+  align-items:start;
+}
+.row + .row{margin-top:clamp(26px,3vw,38px)}
+.sec{padding:clamp(44px,6vw,78px) 0 0}
+.sec__n{
+  font-family:var(--mono);font-size:12.5px;letter-spacing:.16em;color:var(--seal);
+  margin:0 0 10px;
+}
+.sec h2{
+  font-family:var(--disp);font-weight:700;font-size:clamp(27px,3.4vw,38px);
+  line-height:1.35;letter-spacing:-.025em;margin:0 0 22px;
+}
+.sec p{margin:0 0 22px}
+.sec p:last-child{margin-bottom:0}
+.sec strong{font-weight:700;box-shadow:inset 0 -.45em 0 rgba(27,94,126,.13)}
+
+/* 본문 안 번호 */
+.ref{
+  font-family:var(--mono);font-size:.62em;font-weight:500;vertical-align:super;
+  color:var(--cheong);cursor:pointer;padding:0 1px;background:none;border:0;line-height:1;
+}
+.ref:hover{color:var(--seal)}
+
+/* 여백 주석 */
+.note{
+  font-family:var(--mono);font-size:13.5px;line-height:1.72;color:var(--soft);
+  padding-left:14px;border-left:2px solid var(--line);transition:border-color .2s,color .2s;
+}
+.note + .note{margin-top:20px}
+.note b{display:block;color:var(--ink);font-weight:500;font-size:14px;margin-bottom:3px}
+.note.on{border-left-color:var(--seal);color:var(--ink)}
+.note a{color:var(--cheong)}
+
+/* ── 결정 표 ── */
+.calls{margin-top:12px;border-top:2px solid var(--ink)}
+.call{padding:22px 0;border-bottom:1px solid var(--line)}
+.call h3{font-family:var(--disp);font-weight:700;font-size:22px;margin:0 0 12px;letter-spacing:-.02em}
+.call dl{margin:0;display:grid;grid-template-columns:76px 1fr;gap:8px 16px;font-size:17.5px}
+.call dt{font-family:var(--mono);font-size:12.5px;letter-spacing:.1em;color:var(--dim);padding-top:6px}
+.call dd{margin:0;line-height:1.78}
+.call dd.x{color:var(--soft)}
+.call dd.x b{text-decoration:line-through;text-decoration-color:var(--seal);text-decoration-thickness:1.5px;font-weight:700}
+.call dd.o b{color:var(--cheong);font-weight:700}
+
+/* ── 실행 ── */
+.run{border:1px solid var(--line);background:var(--paper2);border-radius:3px;overflow:hidden;margin-top:8px}
+.run__bar{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--line)}
+.run__bar i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.run__url{margin-left:8px;font-family:var(--mono);font-size:12.5px;color:var(--dim);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.run__stage{position:relative;aspect-ratio:16/10;display:grid;place-items:center}
+.run__stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.run__go{background:none;border:0;font:inherit;cursor:pointer;display:flex;flex-direction:column;
+  align-items:center;gap:12px;padding:24px;color:inherit}
+.run__go span{display:grid;place-items:center;width:74px;height:74px;border-radius:50%;
+  background:var(--cheong);color:#fff;font-size:25px;transition:transform .18s}
+.run__go:hover span{transform:scale(1.07)}
+.run__go b{font-family:var(--disp);font-weight:700;font-size:21px}
+.run__go small{font-family:var(--mono);font-size:12.5px;color:var(--dim)}
+
+/* ── 마무리 ── */
+.end{margin-top:clamp(44px,6vw,78px);padding:clamp(30px,4vw,44px) 0;border-top:2px solid var(--ink)}
+.end h2{font-family:var(--disp);font-weight:700;font-size:clamp(24px,3vw,32px);margin:0 0 18px}
+.end ul{margin:0;padding-left:22px;color:var(--soft);font-size:18px}
+.end li{margin-bottom:10px}
+.cta{display:flex;flex-wrap:wrap;gap:14px;margin-top:34px}
+.cta a{font-family:var(--body);font-weight:700;font-size:18px;padding:15px 30px;
+  text-decoration:none;border-radius:3px;transition:transform .15s}
+.cta a:first-child{background:var(--ink);color:var(--paper2)}
+.cta a.ghost{border:1px solid var(--ink);color:var(--ink)}
+.cta a:hover{transform:translateY(-2px)}
+.foot{padding:30px 0 60px;border-top:1px solid var(--line);margin-top:40px;
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  font-family:var(--mono);font-size:13px;color:var(--dim)}
+.foot a{color:var(--cheong)}
+
+@media (max-width:1000px){
+  .row{grid-template-columns:1fr}
+  .note{margin-top:18px;font-size:14px}
+  .row > aside{order:2}
+}
+@media (max-width:600px){
+  body{font-size:18.5px;line-height:1.85}
+  .call dl{grid-template-columns:1fr;gap:4px}
+  .call dt{padding-top:10px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <a href="index.html">← 시안 목록</a>
+    <nav>
+      <a href="https://github.com/you4ranghe/yutnori" target="_blank" rel="noopener">저장소 ↗</a>
+      <a href="https://yutnori-rho.vercel.app" target="_blank" rel="noopener">운영 사이트 ↗</a>
+    </nav>
+  </header>
+
+  <section class="head">
+    <p class="head__k">기록 01 · 윷놀이 온라인</p>
+    <h1>서버 없이<em>실시간 게임을</em>만들었습니다</h1>
+  </section>
+
+  <p class="thesis">브라우저 네 개가 같은 판을 봅니다. 그런데 그 판을 지키는 서버 프로그램은
+    한 대도 없습니다. 윷의 난수도 승패 판정도 <b>데이터베이스 함수</b>가 냅니다.
+    이 글은 그렇게 만든 이유와, 그러면서 포기한 것에 대한 기록입니다.</p>
+
+  <div class="colophon">
+    <span>저장소 <b>you4ranghe/yutnori</b></span>
+    <span>기간 <b>2026.07.22–23</b></span>
+    <span>커밋 <b>27</b></span>
+    <span>혼자 만듦</span>
+    <span><a href="https://yutnori-rho.vercel.app" target="_blank" rel="noopener">운영 중 ↗</a></span>
+  </div>
+
+  <!-- ── 1 ── -->
+  <section class="sec">
+    <div class="row">
+      <div>
+        <p class="sec__n">01</p>
+        <h2>설에 하던 놀이를 인터넷에 올리기로 했습니다</h2>
+        <p>규칙은 단순해 보이는데 예외가 많습니다. 빽도, 업기, 지름길 분기, 잡으면 한 번 더.
+          이걸 네 사람이 각자의 브라우저에서 동시에 보게 만들려면
+          <strong>어딘가 한 곳이 진짜 판을 들고 있어야</strong> 합니다.</p>
+        <p>보통은 그 자리에 서버 프로그램을 둡니다. 그런데 친구들과 하는 놀이에
+          매달 요금을 붙이고 싶지 않았고, 무료 플랜의 서버는 잠들었다 깨느라 첫 접속이 느립니다.
+          그래서 질문을 바꿨습니다 — <strong>서버 없이 그 자리를 만들 수 있을까.</strong><button class="ref" data-n="1">1</button></p>
+      </div>
+      <aside>
+        <p class="note" data-n="1"><b>결론부터</b>Postgres 함수가 그 자리를 맡았습니다.
+          방 만들기·참가·시작·던지기·퇴장이 전부 DB 함수이고, 상태 변화는
+          Realtime 구독으로 흘러갑니다.</p>
+        <p class="note"><b>저장소 구성</b>index.html · config.js · schema.sql — 세 개가 전부입니다.
+          번들러도 프레임워크도 package.json 도 없습니다.</p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ── 2 ── -->
+  <section class="sec">
+    <div class="row">
+      <div>
+        <p class="sec__n">02</p>
+        <h2>난수를 브라우저가 만들면 게임이 아닙니다</h2>
+        <p>처음에는 브라우저에서 <code>Math.random()</code> 으로 윷을 던지고
+          결과만 서로에게 알렸습니다. 잘 돌아갔습니다 —
+          개발자 도구를 열기 전까지는.<button class="ref" data-n="2">2</button></p>
+        <p>값을 바꾸면 원하는 끗수가 나왔습니다. 실시간이든 아니든,
+          <strong>판정을 믿을 수 없으면 그건 게임이 아닙니다.</strong>
+          그래서 던지기를 DB 함수로 옮겼습니다. 브라우저는 "던졌다"만 보내고
+          결과는 서버 쪽에서 정합니다.</p>
+        <p>대신 던지는 맛이 사라졌습니다. 결과가 이미 정해진 뒤에 도착하니까요.
+          그래서 결과를 먼저 받고, <strong>그 결과로 끝나는 애니메이션</strong>을 재생하는 쪽으로
+          연출을 뒤집었습니다. 보는 사람에게는 똑같이 굴러가는 윷입니다.</p>
+      </div>
+      <aside>
+        <p class="note" data-n="2"><b>throw_sticks()</b>schema.sql 안의 함수입니다.
+          결과 생성과 차례 이동이 한 트랜잭션 안에서 끝나므로,
+          두 사람이 동시에 눌러도 순서가 어긋나지 않습니다.</p>
+        <p class="note"><b>같이 옮긴 것</b>create_room · join_room · watch_room ·
+          start_game · push_state · leave_room · kick_player · send_message</p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ── 3 ── -->
+  <section class="sec">
+    <div class="row">
+      <div>
+        <p class="sec__n">03</p>
+        <h2>배경음악에 음원 파일을 쓰지 않았습니다</h2>
+        <p>노래를 깔면 좋겠는데, 파일을 쓰는 순간 저작권을 확인해야 하고 용량이 늘고
+          방문자마다 대역폭을 씁니다. 무료로 유지한다는 전제와 정면으로 부딪칩니다.</p>
+        <p>그래서 <strong>브라우저가 그 자리에서 연주하게</strong> 했습니다.
+          한국 전통 5음계로 10곡, 한 바퀴 약 11분. 같은 악기와 비슷한 빠르기라
+          오래 들어도 튀지 않습니다.<button class="ref" data-n="3">3</button>
+          "윷이야" 같은 소리도 녹음하지 않고 기기에 있는 한국어 음성으로 말하게 했습니다.</p>
+        <p>음성이 없는 기기에서는 조용히 생략하고 효과음만 남깁니다.
+          <strong>없다고 화면이 깨지지는 않아야</strong> 합니다.</p>
+      </div>
+      <aside>
+        <p class="note" data-n="3"><b>음원 파일 0개</b>내려받을 것도, 저작권도, 대역폭도 없습니다.
+          빠르기·조성·화음 진행은 index.html 안의 표를 고치면 바로 바뀝니다.</p>
+        <p class="note"><b>말하는 것</b>도 · 개 · 걸 · 윷이야 · 모야 · 빽도 ·
+          잡았다 · 골인 · 이겼어요</p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ── 4 ── -->
+  <section class="sec">
+    <div class="row">
+      <div>
+        <p class="sec__n">04</p>
+        <h2>놀자고 부른 사람에게 메일함을 열게 하지 않습니다</h2>
+        <p>가입에 이메일 인증을 붙이면 절반은 안 들어옵니다. 그렇다고 계정이 아예 없으면
+          기기를 바꿀 때 이름과 사진이 사라집니다.</p>
+        <p>아이디와 비밀번호만 받고, 내부적으로 <code>아이디@yutnori.app</code> 형태로 저장합니다.
+          실제 메일은 오가지 않습니다.<button class="ref" data-n="4">4</button>
+          가입 없이 게스트로도 놀 수 있고, 나중에 가입하면 게스트로 쓰던 이름과 사진이
+          새 계정으로 따라옵니다.</p>
+        <p>혼자 들어와도 빈 팀은 컴퓨터가 맡아 바로 시작됩니다.
+          <strong>사람이 모여야 시작되는 게임은 대개 아무도 시작하지 못합니다.</strong>
+          놀던 중에 누가 방을 만들면 알림이 뜨고, 한 번 눌러 사람과 하는 판으로 옮겨갑니다.</p>
+      </div>
+      <aside>
+        <p class="note" data-n="4"><b>대신 포기한 것</b>실제 메일을 쓰지 않으므로
+          비밀번호를 찾을 방법이 없습니다. 잊으면 새 아이디로 가입해야 합니다.</p>
+        <p class="note"><b>프로필 사진</b>128×128로 줄여 약 10KB로 저장합니다.
+          무료 용량에 부담이 없는 크기입니다.</p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ── 5 ── -->
+  <section class="sec">
+    <div class="row">
+      <div>
+        <p class="sec__n">05</p>
+        <h2>다 놀고 나면 지웁니다</h2>
+        <p>전적을 쌓으면 그럴듯해 보입니다. 그런데 무료 용량을 갉아먹고,
+          남의 대화를 계속 들고 있게 됩니다.</p>
+        <p><strong>1시간 동안 아무 진행이 없는 방은 자동으로 사라집니다.</strong>
+          던지기·이동·입퇴장·채팅이 있으면 시간이 초기화되고, 어떤 방이든 24시간이면 지워집니다.
+          채팅은 방마다 최근 100개만 남고 방과 함께 사라집니다.<button class="ref" data-n="5">5</button></p>
+        <p>비용을 줄이려고 정한 규칙이 결과적으로 보관을 최소화했습니다.
+          <strong>제약이 설계를 망친 게 아니라 선택지를 좁혀 줬습니다.</strong></p>
+      </div>
+      <aside>
+        <p class="note" data-n="5"><b>누가 청소하나</b>pg_cron 이 10분마다 돕니다.
+          권한이 없는 환경에서는 누군가 로비를 열 때 대신 청소합니다(최대 1분에 한 번).</p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- 결정 요약 -->
+  <section class="sec">
+    <div class="row">
+      <div>
+        <p class="sec__n">부록</p>
+        <h2>갈림길에서 버린 쪽</h2>
+        <div class="calls">
+          <article class="call">
+            <h3>윷의 난수</h3>
+            <dl>
+              <dt>버림</dt><dd class="x"><b>브라우저 Math.random()</b> — 개발자 도구로 조작 가능</dd>
+              <dt>택함</dt><dd class="o"><b>DB 함수</b> — 결과를 서버 쪽에서 정함</dd>
+            </dl>
+          </article>
+          <article class="call">
+            <h3>서버</h3>
+            <dl>
+              <dt>버림</dt><dd class="x"><b>Node · Spring 상시 서버</b> — 잠들거나 돈이 듦</dd>
+              <dt>택함</dt><dd class="o"><b>Postgres 함수 + Realtime</b> — 내 코드가 도는 서버 0대</dd>
+            </dl>
+          </article>
+          <article class="call">
+            <h3>배경음악</h3>
+            <dl>
+              <dt>버림</dt><dd class="x"><b>mp3 파일</b> — 저작권 · 용량 · 대역폭</dd>
+              <dt>택함</dt><dd class="o"><b>Web Audio 실시간 연주</b> — 전통 5음계 10곡</dd>
+            </dl>
+          </article>
+          <article class="call">
+            <h3>음성</h3>
+            <dl>
+              <dt>버림</dt><dd class="x"><b>직접 녹음</b> — 여섯 마디에 붙는 제작 비용</dd>
+              <dt>택함</dt><dd class="o"><b>기기 한국어 TTS</b> — 없으면 조용히 생략</dd>
+            </dl>
+          </article>
+          <article class="call">
+            <h3>가입</h3>
+            <dl>
+              <dt>버림</dt><dd class="x"><b>이메일 인증</b> — 놀이의 문턱</dd>
+              <dt>택함</dt><dd class="o"><b>아이디 + 비밀번호 · 게스트</b> — 메일은 오가지 않음</dd>
+            </dl>
+          </article>
+          <article class="call">
+            <h3>데이터</h3>
+            <dl>
+              <dt>버림</dt><dd class="x"><b>전적 영구 보관</b> — 용량과 남의 대화</dd>
+              <dt>택함</dt><dd class="o"><b>1시간 무진행 자동 삭제</b> — pg_cron 10분 주기</dd>
+            </dl>
+          </article>
+        </div>
+      </div>
+      <aside>
+        <p class="note"><b>읽는 순서</b>본문 01–05 가 이야기이고, 이 표는 결론만 모은 것입니다.
+          급하시면 이 표만 보셔도 됩니다.</p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- 실행 -->
+  <section class="sec">
+    <div class="row">
+      <div>
+        <p class="sec__n">06</p>
+        <h2>직접 해보시는 편이 빠릅니다</h2>
+        <p>스크린샷 대신 진짜입니다. 누르면 그 자리에서 운영 중인 사이트가 열립니다.
+          누르기 전에는 아무것도 불러오지 않습니다.</p>
+        <div class="run">
+          <div class="run__bar"><i></i><i></i><i></i>
+            <span class="run__url">https://yutnori-rho.vercel.app</span></div>
+          <div class="run__stage" id="stage">
+            <button class="run__go" id="go" type="button">
+              <span>▶</span><b>여기서 바로 실행</b><small>소리가 납니다</small>
+            </button>
+          </div>
+        </div>
+      </div>
+      <aside>
+        <p class="note"><b>혼자 들어가도</b>빈 팀은 컴퓨터가 맡습니다.
+          로비에서 <em>혼자 연습</em>을 눌러도 됩니다.</p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- 마무리 -->
+  <section class="end">
+    <div class="row">
+      <div>
+        <h2>남은 이야기</h2>
+        <p>서버가 없어도 <strong>권위 있는 한 곳</strong>은 반드시 있어야 했습니다.
+          "누가 진실을 갖는가"를 먼저 정하고 나니 나머지는 그 자리를 무엇으로 채우느냐의
+          문제였고, 이번에는 데이터베이스 함수가 맡을 수 있었습니다.
+          다음에 비슷한 걸 만든다면 이 질문부터 던질 겁니다.</p>
+        <div class="cta">
+          <a href="https://yutnori-rho.vercel.app" target="_blank" rel="noopener">한 판 하러 가기 ↗</a>
+          <a class="ghost" href="https://github.com/you4ranghe/yutnori" target="_blank" rel="noopener">저장소 보기 ↗</a>
+        </div>
+      </div>
+      <aside>
+        <p class="note"><b>아직 못 한 것</b></p>
+        <ul class="end__x" style="margin:10px 0 0;padding-left:20px;font-family:var(--mono);font-size:13.5px;line-height:1.7;color:var(--soft)">
+          <li>진행 중인 게임엔 참가 불가, 관전만</li>
+          <li>비공개 방 없음 — 방과 접속자가 모두에게 보임</li>
+          <li>비밀번호 찾기 없음</li>
+          <li>창을 그냥 닫으면 이탈이 늦게 반영됨</li>
+        </ul>
+      </aside>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <span>you4ranghe · Seoul · 2026</span>
+    <a href="mailto:you4ranghe@gmail.com">you4ranghe@gmail.com</a>
+  </footer>
+</div>
+
+<script>
+/* 본문 번호에 손이 닿으면 옆 주석이 켜집니다 */
+document.querySelectorAll('.ref').forEach(function(ref){
+  var note = document.querySelector('.note[data-n="'+ref.dataset.n+'"]');
+  if(!note) return;
+  var on  = function(){ note.classList.add('on'); };
+  var off = function(){ note.classList.remove('on'); };
+  ref.addEventListener('mouseenter',on);
+  ref.addEventListener('mouseleave',off);
+  ref.addEventListener('focus',on);
+  ref.addEventListener('blur',off);
+  ref.addEventListener('click',function(){
+    note.scrollIntoView({block:'center',behavior:
+      matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+    on();
+  });
+});
+
+/* 눌러야 불러옵니다 */
+document.getElementById('go').addEventListener('click',function(){
+  var f=document.createElement('iframe');
+  f.src='https://yutnori-rho.vercel.app';
+  f.title='윷놀이 온라인 — 운영 중인 사이트';
+  f.allow='autoplay; fullscreen';
+  document.getElementById('stage').appendChild(f);
+  this.remove();
+});
+</script>
+</body>
+</html>

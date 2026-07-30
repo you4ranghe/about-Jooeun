@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 B · 판 — 윷놀이 온라인</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gothic+A1:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════
+   시안 B — 판
+   프로젝트가 전통 놀이라는 사실을 화면이 먼저 말하게 합니다.
+   색은 오방색(청·적·황·백·흑)에서만 가져왔습니다. 임의로 고른 브랜드색이 아니라
+   이 놀이가 원래 입고 있던 색입니다.
+
+   기억에 남을 한 가지: 히어로에서 윷을 실제로 던져 볼 수 있습니다.
+   그리고 던진 직후, 그 난수를 브라우저가 만들었다는 사실을 그대로 알려 줍니다.
+   이 프로젝트의 핵심 판단(난수는 서버가 만든다)을 설명하는 대신 겪게 합니다.
+   ══════════════════════════════════════════════════════════ */
+:root{
+  --paper:#F4F0E4; --paper2:#EAE4D4; --ink:#171519;
+  --cheong:#1E5C86; --jeok:#C4392B; --hwang:#DFA232;
+  --fg-dim:#6B6459; --line:#D6CEBB;
+  --mono:"IBM Plex Mono",Consolas,monospace;
+  --sans:"Gothic A1","Malgun Gothic",-apple-system,sans-serif;
+  --disp:"Black Han Sans","Gothic A1",sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-size:17.5px;font-weight:400;line-height:1.78;
+  word-break:keep-all;
+}
+:focus-visible{outline:3px solid var(--jeok);outline-offset:3px}
+.wrap{max-width:1140px;margin:0 auto;padding:0 clamp(20px,4vw,48px)}
+.disp{font-family:var(--disp);font-weight:400;letter-spacing:-.01em;line-height:1.14}
+
+/* ── 머리 ── */
+.top{display:flex;justify-content:space-between;gap:16px;padding:18px 0;
+  font-family:var(--mono);font-size:13px;color:var(--fg-dim)}
+.top a{color:inherit;text-decoration:none}
+.top a:hover{color:var(--jeok)}
+.top nav{display:flex;gap:18px}
+
+/* ── 히어로 ── */
+.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(24px,4vw,56px);
+  align-items:center;padding:clamp(28px,5vw,60px) 0 clamp(36px,5vw,64px)}
+.hero__tag{display:inline-block;font-family:var(--mono);font-size:12.5px;letter-spacing:.14em;
+  background:var(--jeok);color:#fff;padding:5px 12px;margin:0 0 20px}
+.hero h1{font-family:var(--disp);font-size:clamp(44px,8.4vw,96px);line-height:1.04;
+  letter-spacing:-.02em;margin:0 0 20px;font-weight:400}
+.hero h1 em{font-style:normal;color:var(--cheong)}
+.hero__p{font-size:clamp(18px,2vw,21px);max-width:32ch;margin:0;color:#3A352E}
+.hero__p b{color:var(--jeok);font-weight:700}
+
+/* 윷판 */
+.board{width:100%;height:auto;display:block}
+.board .st{fill:var(--paper);stroke:var(--ink);stroke-width:5}
+.board .st--big{fill:var(--paper2);stroke-width:7}
+.board .rail{fill:none;stroke:var(--ink);stroke-width:3.5;opacity:.55}
+.board .mark{fill:var(--jeok)}
+.board .mark--b{fill:var(--cheong)}
+
+/* ── 윷 던지기 ── */
+.throw{background:var(--ink);color:var(--paper);margin-top:clamp(24px,4vw,44px)}
+.throw__in{display:grid;grid-template-columns:1fr auto;gap:clamp(22px,4vw,48px);
+  align-items:center;padding:clamp(30px,4.5vw,52px) 0}
+.throw h2{font-family:var(--disp);font-size:clamp(26px,3.4vw,40px);margin:0 0 12px;font-weight:400}
+.throw p{margin:0;font-size:17.5px;color:#C9C2B4;max-width:44ch}
+.throw p b{color:var(--hwang)}
+.sticks{display:flex;gap:12px;justify-content:center;margin-bottom:18px}
+.stick{width:34px;height:132px;border-radius:17px;position:relative;
+  background:linear-gradient(96deg,#E7CE95,#C39F58 55%,#8E6E32);
+  box-shadow:0 6px 0 rgba(0,0,0,.35);transition:transform .5s cubic-bezier(.3,1.4,.5,1)}
+.stick i{position:absolute;inset:9px 13px;border-radius:8px;background:#6E5222;opacity:0;transition:opacity .3s}
+.stick[data-up="flat"]{background:linear-gradient(96deg,#F2E2BC,#DCC28A)}
+.stick[data-up="flat"] i{opacity:.85}
+.stick[data-back="true"]::after{content:"";position:absolute;left:50%;top:16px;width:8px;height:8px;
+  margin-left:-4px;border-radius:50%;background:var(--jeok)}
+.rolling .stick{transform:rotate(-18deg) translateY(-16px)}
+.throw__panel{text-align:center;min-width:min(300px,74vw)}
+.throw__out{font-family:var(--disp);font-size:clamp(38px,5vw,60px);line-height:1;margin:0 0 6px;
+  color:var(--hwang);min-height:1em}
+.throw__hint{font-family:var(--mono);font-size:13px;color:#8C8676;margin:0 0 16px}
+.throw__btn{font-family:var(--sans);font-size:18px;font-weight:700;padding:14px 34px;border:0;
+  border-radius:999px;background:var(--jeok);color:#fff;cursor:pointer;transition:transform .15s}
+.throw__btn:hover{transform:translateY(-2px)}
+.throw__gotcha{margin-top:18px;padding-top:16px;border-top:1px dashed #3A3630;
+  font-size:16px;color:#C9C2B4;opacity:0;transition:opacity .5s}
+.throw__gotcha.on{opacity:1}
+.throw__gotcha b{color:var(--hwang)}
+
+/* ── 수치 ── */
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:clamp(14px,2vw,26px);padding:clamp(34px,5vw,56px) 0;border-bottom:3px solid var(--ink)}
+.nums div{border-left:4px solid var(--cheong);padding-left:14px}
+.nums dt{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--fg-dim);margin-bottom:4px}
+.nums dd{margin:0;font-family:var(--disp);font-size:clamp(26px,3.2vw,38px);line-height:1.1}
+.nums dd small{font-family:var(--sans);font-size:14px;font-weight:400;color:var(--fg-dim);margin-left:4px}
+
+/* ── 섹션 ── */
+.sec{padding:clamp(46px,7vw,86px) 0}
+.sec__k{font-family:var(--mono);font-size:12.5px;letter-spacing:.16em;color:var(--jeok);margin:0 0 12px}
+.sec h2{font-family:var(--disp);font-size:clamp(30px,4.4vw,52px);margin:0 0 16px;font-weight:400}
+.sec__lede{font-size:19px;max-width:56ch;margin:0 0 clamp(26px,4vw,42px);color:#3A352E}
+
+/* 결정 */
+.calls{display:grid;gap:clamp(16px,2.4vw,26px)}
+.call{display:grid;grid-template-columns:74px 1fr;gap:clamp(16px,2.4vw,28px);
+  background:var(--paper2);border-top:5px solid var(--cheong);padding:clamp(22px,3vw,32px)}
+.call:nth-child(even){border-top-color:var(--jeok)}
+.call__no{font-family:var(--disp);font-size:clamp(34px,4.6vw,54px);line-height:.9;color:var(--cheong);opacity:.5}
+.call:nth-child(even) .call__no{color:var(--jeok)}
+.call h3{font-size:clamp(20px,2.4vw,25px);font-weight:700;margin:0 0 12px;letter-spacing:-.02em;line-height:1.4}
+.call p{margin:0 0 12px}
+.call p:last-child{margin-bottom:0}
+.call__x{color:var(--fg-dim)}
+.call__x b{font-weight:700;text-decoration:line-through;text-decoration-color:var(--jeok);
+  text-decoration-thickness:2px}
+.call__o b{color:var(--cheong);font-weight:700}
+
+/* 청색 띠 — 만든 것 */
+.band{background:var(--cheong);color:#F2F6F9}
+.band .sec__k{color:var(--hwang)}
+.band .sec__lede{color:#CFE0EC}
+.feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:2px;background:rgba(255,255,255,.22)}
+.feats li{list-style:none;background:var(--cheong);padding:24px 26px}
+.feats b{display:block;font-family:var(--disp);font-size:21px;font-weight:400;margin-bottom:8px}
+.feats p{margin:0;font-size:16.5px;color:#D3E2ED;line-height:1.72}
+
+/* 실행 */
+.run{border:3px solid var(--ink);background:var(--paper2)}
+.run__bar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:3px solid var(--ink)}
+.run__bar i{width:11px;height:11px;border-radius:50%;background:var(--ink);opacity:.25}
+.run__url{margin-left:8px;font-family:var(--mono);font-size:12.5px;color:var(--fg-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.run__stage{position:relative;aspect-ratio:16/10;display:grid;place-items:center}
+.run__stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.run__go{background:none;border:0;cursor:pointer;font:inherit;display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px}
+.run__go span{display:grid;place-items:center;width:82px;height:82px;border-radius:50%;background:var(--jeok);color:#fff;font-size:28px;transition:transform .18s}
+.run__go:hover span{transform:scale(1.08)}
+.run__go b{font-family:var(--disp);font-size:22px;font-weight:400}
+.run__go small{font-family:var(--mono);font-size:12.5px;color:var(--fg-dim)}
+
+/* 마무리 */
+.close{display:grid;grid-template-columns:1.2fr 1fr;gap:clamp(20px,3vw,40px)}
+.close h3{font-family:var(--mono);font-size:12.5px;letter-spacing:.14em;color:var(--jeok);margin:0 0 12px;font-weight:400}
+.close p{margin:0;font-size:19px;line-height:1.8}
+.close ul{margin:0;padding-left:20px;font-size:17px;color:#3A352E}
+.close li{margin-bottom:8px}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:clamp(28px,4vw,44px)}
+.cta a{font-family:var(--disp);font-size:19px;font-weight:400;padding:16px 30px;text-decoration:none;transition:transform .15s}
+.cta a:first-child{background:var(--ink);color:var(--paper)}
+.cta a.ghost{border:3px solid var(--ink);color:var(--ink)}
+.cta a:hover{transform:translateY(-3px)}
+.foot{border-top:3px solid var(--ink);padding:28px 0 56px;display:flex;justify-content:space-between;
+  flex-wrap:wrap;gap:12px;font-family:var(--mono);font-size:13.5px;color:var(--fg-dim)}
+.foot a{color:var(--jeok)}
+
+@media (max-width:880px){
+  .hero{grid-template-columns:1fr}
+  .hero__art{max-width:340px;margin:0 auto}
+  .throw__in{grid-template-columns:1fr}
+  .close{grid-template-columns:1fr}
+  .call{grid-template-columns:1fr;gap:8px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <a href="index.html">← 시안 목록</a>
+    <nav>
+      <a href="https://github.com/you4ranghe/yutnori" target="_blank" rel="noopener">저장소 ↗</a>
+      <a href="https://yutnori-rho.vercel.app" target="_blank" rel="noopener">운영 사이트 ↗</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div>
+      <p class="hero__tag">2026.07 · 이틀 · 혼자</p>
+      <h1 class="disp">설에 하던 놀이를<br><em>서버 없이</em><br>인터넷에 올렸습니다.</h1>
+      <p class="hero__p">브라우저 네 개가 같은 판을 봅니다. 그런데 그 판을 지키는
+        서버 프로그램은 한 대도 없습니다. 윷의 난수도 승패도
+        <b>데이터베이스 함수</b>가 냅니다.</p>
+    </div>
+    <div class="hero__art">
+      <svg class="board" viewBox="0 0 600 600" role="img" aria-label="윷판">
+        <g class="rail">
+          <path d="M90 90h420v420H90z"/>
+          <path d="M510 90L90 510M90 90l420 420"/>
+        </g>
+        <!-- 네 귀 -->
+        <circle class="st st--big" cx="510" cy="90" r="34"/>
+        <circle class="st st--big" cx="510" cy="510" r="34"/>
+        <circle class="st st--big" cx="90" cy="510" r="34"/>
+        <circle class="st st--big" cx="90" cy="90" r="34"/>
+        <circle class="st st--big" cx="300" cy="300" r="34"/>
+        <!-- 위 -->
+        <circle class="st" cx="174" cy="90" r="20"/><circle class="st" cx="258" cy="90" r="20"/>
+        <circle class="st" cx="342" cy="90" r="20"/><circle class="st" cx="426" cy="90" r="20"/>
+        <!-- 오른쪽 -->
+        <circle class="st" cx="510" cy="174" r="20"/><circle class="st" cx="510" cy="258" r="20"/>
+        <circle class="st" cx="510" cy="342" r="20"/><circle class="st" cx="510" cy="426" r="20"/>
+        <!-- 아래 -->
+        <circle class="st" cx="426" cy="510" r="20"/><circle class="st" cx="342" cy="510" r="20"/>
+        <circle class="st" cx="258" cy="510" r="20"/><circle class="st" cx="174" cy="510" r="20"/>
+        <!-- 왼쪽 -->
+        <circle class="st" cx="90" cy="426" r="20"/><circle class="st" cx="90" cy="342" r="20"/>
+        <circle class="st" cx="90" cy="258" r="20"/><circle class="st" cx="90" cy="174" r="20"/>
+        <!-- 지름길 -->
+        <circle class="st" cx="440" cy="160" r="18"/><circle class="st" cx="370" cy="230" r="18"/>
+        <circle class="st" cx="230" cy="370" r="18"/><circle class="st" cx="160" cy="440" r="18"/>
+        <circle class="st" cx="160" cy="160" r="18"/><circle class="st" cx="230" cy="230" r="18"/>
+        <circle class="st" cx="370" cy="370" r="18"/><circle class="st" cx="440" cy="440" r="18"/>
+        <!-- 말 두 개 -->
+        <circle class="mark" cx="258" cy="90" r="11"/>
+        <circle class="mark--b" cx="370" cy="370" r="11"/>
+      </svg>
+    </div>
+  </section>
+</div>
+
+<!-- ══ 던져 보기 ══ -->
+<section class="throw">
+  <div class="wrap">
+    <div class="throw__in">
+      <div>
+        <h2 class="disp">한 번 던져 보세요.</h2>
+        <p>윷가락 네 개 중 배(평평한 면)가 몇 개 위로 오느냐로 끗수가 정해집니다.
+          하나에 빨간 점이 있는 것이 <b>빽도</b>입니다.</p>
+        <div class="throw__gotcha" id="gotcha">
+          <p>방금 그 결과는 <b>이 브라우저가</b> 만들었습니다.
+            개발자 도구를 열면 원하는 값으로 바꿀 수 있다는 뜻입니다.
+            그래서 실제 서비스에서는 이 계산을 <b>데이터베이스 함수</b>가 합니다 —
+            아래 결정 01 이 그 이야기입니다.</p>
+        </div>
+      </div>
+      <div class="throw__panel">
+        <div class="sticks" id="sticks">
+          <span class="stick" data-up="round"><i></i></span>
+          <span class="stick" data-up="round"><i></i></span>
+          <span class="stick" data-up="round"><i></i></span>
+          <span class="stick" data-up="round" data-back="true"><i></i></span>
+        </div>
+        <p class="throw__out" id="out">?</p>
+        <p class="throw__hint" id="hint">배 0 · 등 4</p>
+        <button class="throw__btn" id="btn" type="button">윷 던지기</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <dl class="nums">
+    <div><dt>LANGUAGE</dt><dd>HTML<small>바닐라</small></dd></div>
+    <div><dt>커밋</dt><dd>27</dd></div>
+    <div><dt>빌드 단계</dt><dd>0<small>번들러 없음</small></dd></div>
+    <div><dt>월 운영비</dt><dd>0<small>원</small></dd></div>
+    <div><dt>소스 파일</dt><dd>3<small>개</small></dd></div>
+  </dl>
+
+  <!-- 결정 -->
+  <section class="sec">
+    <p class="sec__k">DECISIONS</p>
+    <h2 class="disp">여섯 번 갈렸습니다.</h2>
+    <p class="sec__lede">기능은 저장소를 열면 보입니다. 여기 적는 것은
+      무엇을 버렸고 왜 버렸는지입니다.</p>
+
+    <div class="calls">
+      <article class="call">
+        <span class="call__no">01</span>
+        <div>
+          <h3>윷의 난수를 누가 만드는가</h3>
+          <p class="call__x">버림 — <b>브라우저에서 Math.random()</b>. 개발자 도구를 열면 원하는 끗수가 나옵니다. 방금 위에서 직접 해보신 그 방식입니다.</p>
+          <p class="call__o">택함 — <b>DB 함수 throw_sticks()</b>. 결과를 서버 쪽에서 정하고 브라우저는 그 결과로 끝나는 애니메이션만 재생합니다. 던지는 맛은 연출로 되살렸습니다.</p>
+        </div>
+      </article>
+
+      <article class="call">
+        <span class="call__no">02</span>
+        <div>
+          <h3>그 서버를 무엇으로 세울까</h3>
+          <p class="call__x">버림 — <b>Node · Spring 상시 서버</b>. 익숙하지만 계속 떠 있어야 하고, 무료 플랜에서는 잠들거나 돈이 듭니다.</p>
+          <p class="call__o">택함 — <b>Postgres 함수 + Realtime</b>. 방 만들기·참가·시작·던지기·퇴장이 전부 DB 함수입니다. 상태 변화는 구독으로 흘러갑니다.</p>
+        </div>
+      </article>
+
+      <article class="call">
+        <span class="call__no">03</span>
+        <div>
+          <h3>배경음악을 어떻게 넣을까</h3>
+          <p class="call__x">버림 — <b>mp3 파일 재생</b>. 저작권을 확인해야 하고 용량과 대역폭이 붙습니다.</p>
+          <p class="call__o">택함 — <b>Web Audio 실시간 연주</b>. 전통 5음계로 10곡, 한 바퀴 약 11분을 브라우저가 직접 연주합니다. 파일 0개.</p>
+        </div>
+      </article>
+
+      <article class="call">
+        <span class="call__no">04</span>
+        <div>
+          <h3>"윷이야" 소리를 어떻게 낼까</h3>
+          <p class="call__x">버림 — <b>직접 녹음</b>. 여섯 마디를 위해 녹음·편집·호스팅이 붙습니다.</p>
+          <p class="call__o">택함 — <b>기기 한국어 TTS</b>. 도·개·걸·윷이야·모야·빽도를 기기가 말합니다. 한국어 음성이 없으면 조용히 생략하고 효과음만 남습니다.</p>
+        </div>
+      </article>
+
+      <article class="call">
+        <span class="call__no">05</span>
+        <div>
+          <h3>가입 문턱을 어디에 둘까</h3>
+          <p class="call__x">버림 — <b>이메일 인증</b>. 놀자고 부른 친구에게 메일함을 열게 하면 절반은 안 들어옵니다.</p>
+          <p class="call__o">택함 — <b>아이디 + 비밀번호, 게스트 허용</b>. 아이디를 내부적으로 <code>아이디@yutnori.app</code> 으로 바꿔 저장합니다. 실제 메일은 오가지 않습니다.</p>
+        </div>
+      </article>
+
+      <article class="call">
+        <span class="call__no">06</span>
+        <div>
+          <h3>다 놀고 난 데이터를 어떻게 할까</h3>
+          <p class="call__x">버림 — <b>전적을 계속 쌓기</b>. 그럴듯하지만 무료 용량을 갉아먹고 남의 대화를 계속 들고 있게 됩니다.</p>
+          <p class="call__o">택함 — <b>1시간 무진행이면 자동 삭제</b>. <code>pg_cron</code> 이 10분마다 돌고, 권한이 없으면 누군가 로비를 열 때 대신 청소합니다.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+</div>
+
+<!-- 청색 띠 -->
+<section class="band">
+  <div class="wrap sec">
+    <p class="sec__k">WHAT'S IN IT</p>
+    <h2 class="disp">혼자 와도 놀 수 있습니다.</h2>
+    <p class="sec__lede">사람이 모여야 시작되는 게임은 대개 아무도 시작하지 못합니다.
+      빈자리를 컴퓨터가 먼저 채우고, 사람이 오면 자리를 비켜 주게 했습니다.</p>
+    <ul class="feats">
+      <li><b>빈 팀은 컴퓨터가</b><p>혼자 방을 만들어도 바로 시작됩니다. 기다리는 화면이 없습니다.</p></li>
+      <li><b>친구가 오면 알림</b><p>컴퓨터와 놀던 중 누가 들어오면 "함께 놀까요?"가 뜹니다.</p></li>
+      <li><b>초대 코드 없음</b><p>로비의 방을 누르면 바로 입장. 시작된 방은 관전으로.</p></li>
+      <li><b>20초 자동 진행</b><p>자리를 비워도 판이 멈추지 않습니다. 32초면 차례를 넘깁니다.</p></li>
+      <li><b>중간에 나가도</b><p>팀이 비면 상대 승, 한 명이라도 남으면 2:1로 계속합니다.</p></li>
+      <li><b>새로고침해도 그 방</b><p>같은 브라우저로 열면 하던 방으로 돌아갑니다.</p></li>
+    </ul>
+  </div>
+</section>
+
+<div class="wrap">
+  <!-- 실행 -->
+  <section class="sec">
+    <p class="sec__k">RUN IT</p>
+    <h2 class="disp">진짜로 돌아갑니다.</h2>
+    <p class="sec__lede">스크린샷이 아닙니다. 누르면 그 자리에서 운영 중인 사이트가 열립니다.
+      누르기 전에는 아무것도 불러오지 않습니다.</p>
+    <div class="run">
+      <div class="run__bar"><i></i><i></i><i></i>
+        <span class="run__url">https://yutnori-rho.vercel.app</span></div>
+      <div class="run__stage" id="stage">
+        <button class="run__go" id="go" type="button">
+          <span>▶</span><b>여기서 바로 실행</b><small>소리가 납니다</small>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 마무리 -->
+  <section class="sec close">
+    <div>
+      <h3>배운 것</h3>
+      <p>서버가 없어도 <b>권위 있는 한 곳</b>은 반드시 있어야 했습니다.
+        "누가 진실을 갖는가"를 먼저 정하고 나니 나머지는 그 자리를 무엇으로 채우느냐의 문제였고,
+        이번에는 데이터베이스 함수가 그 자리를 맡을 수 있었습니다.</p>
+    </div>
+    <div>
+      <h3>아직 못 한 것</h3>
+      <ul>
+        <li>진행 중인 게임에는 참가 불가, 관전만 됩니다</li>
+        <li>방과 접속자가 모두에게 보입니다. 비공개 방이 없습니다</li>
+        <li>실제 메일을 쓰지 않아 비밀번호를 찾을 수 없습니다</li>
+        <li>나가기 없이 창을 닫으면 이탈이 늦게 반영됩니다</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="cta">
+    <a href="https://yutnori-rho.vercel.app" target="_blank" rel="noopener">한 판 하러 가기 ↗</a>
+    <a class="ghost" href="https://github.com/you4ranghe/yutnori" target="_blank" rel="noopener">저장소 보기 ↗</a>
+  </div>
+
+  <footer class="foot">
+    <span>you4ranghe · Seoul · 2026</span>
+    <a href="mailto:you4ranghe@gmail.com">you4ranghe@gmail.com</a>
+  </footer>
+</div>
+
+<script>
+/* ── 윷 던지기 ──
+   배(평평한 면)가 몇 개 위로 오느냐로 끗수가 정해집니다.
+   빽도는 표시된 가락 하나만 배로 섰을 때입니다. */
+(function(){
+  var sticks=[].slice.call(document.querySelectorAll('.stick'));
+  var out=document.getElementById('out'), hint=document.getElementById('hint');
+  var btn=document.getElementById('btn'), box=document.getElementById('sticks');
+  var gotcha=document.getElementById('gotcha');
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function land(){
+    var flats=0, backOnly=false;
+    sticks.forEach(function(s){
+      var flat=Math.random()<0.5;
+      s.dataset.up=flat?'flat':'round';
+      if(flat){flats++; if(s.dataset.back==='true') backOnly=true;}
+    });
+    var name;
+    if(flats===0) name='모';
+    else if(flats===1) name=backOnly?'빽도':'도';
+    else if(flats===2) name='개';
+    else if(flats===3) name='걸';
+    else name='윷';
+    out.textContent=name;
+    hint.textContent='배 '+flats+' · 등 '+(4-flats)+(name==='빽도'?' · 한 칸 뒤로':'');
+    gotcha.classList.add('on');
+  }
+
+  btn.addEventListener('click',function(){
+    if(reduce){ land(); return; }
+    box.classList.add('rolling');
+    out.textContent='…';
+    setTimeout(function(){ box.classList.remove('rolling'); land(); },420);
+  });
+})();
+
+/* 눌러야 불러옵니다 */
+document.getElementById('go').addEventListener('click',function(){
+  var f=document.createElement('iframe');
+  f.src='https://yutnori-rho.vercel.app';
+  f.title='윷놀이 온라인 — 운영 중인 사이트';
+  f.allow='autoplay; fullscreen';
+  document.getElementById('stage').appendChild(f);
+  this.remove();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 A · 결정 대장 — 윷놀이 온라인</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════
+   시안 A — 결정 대장
+   이 페이지는 "무엇을 만들었나"가 아니라 "무엇을 버렸나"로 짜여 있습니다.
+   기능 목록은 어느 저장소에나 있지만, 버린 선택지와 그 이유는
+   만든 사람만 알고 있습니다. 그게 채용 담당자가 실제로 사고 싶은 것입니다.
+
+   기억에 남을 한 가지: 페이지를 세로로 관통하는 한 줄.
+   그 줄이 "실제로 걸어간 길"이고, 버린 길은 왼쪽에서 끊깁니다.
+   ══════════════════════════════════════════════════════════ */
+:root{
+  --ink:#0E1216; --ink2:#151B21; --panel:#1A222A; --line:#27313B;
+  --fg:#EAEFF4; --mid:#9DAAB8; --dim:#65727F;
+  --take:#19A697;          /* 택한 길 — 프로젝트 색에서 옵니다 */
+  --drop:#8C5F63;          /* 버린 길 */
+  --mono:"IBM Plex Mono",Consolas,monospace;
+  --sans:"Gothic A1","Malgun Gothic",-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--ink);color:var(--fg);
+  font-family:var(--sans);font-weight:400;font-size:17px;line-height:1.75;
+  letter-spacing:-.005em;word-break:keep-all;
+}
+:focus-visible{outline:2.5px solid var(--take);outline-offset:3px;border-radius:4px}
+a{color:inherit}
+.wrap{max-width:1080px;margin:0 auto;padding:0 clamp(20px,4vw,44px)}
+
+/* ── 머리 ─────────────────────────────── */
+.top{
+  display:flex;justify-content:space-between;align-items:center;gap:16px;
+  padding:18px 0;border-bottom:1px solid var(--line);
+  font-family:var(--mono);font-size:13px;color:var(--dim);
+}
+.top a{text-decoration:none;transition:color .15s}
+.top a:hover{color:var(--fg)}
+.top nav{display:flex;gap:20px}
+
+/* ── 히어로 ───────────────────────────── */
+.hero{padding:clamp(52px,9vw,104px) 0 clamp(40px,6vw,64px)}
+.hero__eyebrow{
+  font-family:var(--mono);font-size:13px;letter-spacing:.1em;color:var(--take);
+  margin:0 0 22px;
+}
+.hero__h1{
+  font-size:clamp(38px,7.4vw,82px);font-weight:900;line-height:1.06;
+  letter-spacing:-.035em;margin:0 0 8px;
+}
+.hero__h1 em{font-style:normal;color:var(--take)}
+.hero__sub{
+  font-size:clamp(19px,2.3vw,25px);font-weight:400;line-height:1.6;
+  color:var(--mid);max-width:30ch;margin:22px 0 0;
+}
+.hero__sub b{color:var(--fg);font-weight:700}
+
+/* 저장소 수치 — 작게 쓰되 등폭으로 줄을 맞춥니다 */
+.facts{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(122px,1fr));
+  gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;
+  overflow:hidden;margin-top:clamp(36px,5vw,52px);
+}
+.facts div{background:var(--ink2);padding:16px 18px}
+.facts dt{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;color:var(--dim);margin-bottom:6px}
+.facts dd{margin:0;font-size:19px;font-weight:700;letter-spacing:-.01em}
+.facts dd small{font-size:13px;font-weight:400;color:var(--mid);margin-left:3px}
+
+/* ── 공통 섹션 ────────────────────────── */
+.sec{padding:clamp(48px,8vw,92px) 0;border-top:1px solid var(--line)}
+.sec__k{
+  font-family:var(--mono);font-size:13px;letter-spacing:.12em;color:var(--dim);
+  margin:0 0 10px;
+}
+.sec__h{
+  font-size:clamp(27px,3.6vw,38px);font-weight:900;letter-spacing:-.03em;
+  line-height:1.25;margin:0 0 14px;
+}
+.sec__lede{font-size:18.5px;color:var(--mid);max-width:56ch;margin:0 0 clamp(28px,4vw,44px)}
+
+/* ── 실행해 보기 ──────────────────────── */
+.demo{
+  position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;
+  background:linear-gradient(150deg,#132028,#0F171D);
+}
+.demo__bar{
+  display:flex;align-items:center;gap:9px;padding:11px 14px;
+  border-bottom:1px solid var(--line);background:#0F161B;
+}
+.demo__bar i{width:11px;height:11px;border-radius:50%;background:#2B3742}
+.demo__url{
+  flex:1;margin-left:8px;font-family:var(--mono);font-size:12.5px;color:var(--dim);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.demo__stage{position:relative;aspect-ratio:16/10;display:grid;place-items:center}
+.demo__stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.demo__run{
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  background:none;border:0;color:inherit;cursor:pointer;padding:26px;font:inherit;
+}
+.demo__run span:first-child{
+  display:grid;place-items:center;width:76px;height:76px;border-radius:50%;
+  background:var(--take);color:#06211E;font-size:26px;
+  transition:transform .18s ease,box-shadow .18s ease;
+  box-shadow:0 0 0 0 rgba(25,166,151,.4);
+}
+.demo__run:hover span:first-child{transform:scale(1.07);box-shadow:0 0 0 14px rgba(25,166,151,.09)}
+.demo__run b{font-size:19px;font-weight:700}
+.demo__run small{font-family:var(--mono);font-size:12.5px;color:var(--dim)}
+.demo__note{margin:14px 0 0;font-size:15px;color:var(--dim)}
+
+/* ══ 결정 대장 — 이 페이지의 중심 ══════════ */
+.forks{position:relative;display:grid;gap:clamp(30px,4vw,46px)}
+/* 세로로 관통하는 한 줄 = 실제로 걸어간 길 */
+.forks::before{
+  content:"";position:absolute;left:calc(50% - 1px);top:14px;bottom:14px;width:2px;
+  background:linear-gradient(180deg,transparent,var(--take) 6%,var(--take) 94%,transparent);
+  transform-origin:top;transform:scaleY(var(--grow,0));
+  transition:transform 1.4s cubic-bezier(.2,.7,.2,1);
+}
+.fork{position:relative;display:grid;grid-template-columns:1fr 84px 1fr;align-items:start}
+.fork__q{
+  grid-column:1 / -1;text-align:center;margin:0 auto 22px;max-width:34ch;
+  font-size:clamp(21px,2.6vw,27px);font-weight:700;letter-spacing:-.02em;line-height:1.4;
+}
+.fork__q span{
+  display:block;font-family:var(--mono);font-size:12.5px;font-weight:400;
+  letter-spacing:.14em;color:var(--dim);margin-bottom:9px;
+}
+/* 분기점 */
+.fork__dot{
+  grid-column:2;justify-self:center;margin-top:34px;width:15px;height:15px;border-radius:50%;
+  background:var(--take);box-shadow:0 0 0 5px var(--ink),0 0 0 7px rgba(25,166,151,.3);
+}
+.side{padding:20px 22px;border-radius:12px;border:1px solid var(--line)}
+/* 왼쪽 = 버린 길. 색이 빠지고 이름에 줄이 그어집니다 */
+.side--drop{
+  background:#141A1E;border-style:dashed;color:var(--dim);
+  position:relative;
+}
+.side--drop::after{
+  content:"";position:absolute;right:-42px;top:41px;width:42px;height:2px;
+  background:repeating-linear-gradient(90deg,var(--drop) 0 5px,transparent 5px 10px);
+}
+.side--take{background:var(--panel);border-color:rgba(25,166,151,.34);position:relative}
+.side--take::after{
+  content:"";position:absolute;left:-42px;top:41px;width:42px;height:2px;background:var(--take);
+}
+.side__k{
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.13em;margin:0 0 10px;
+}
+.side--drop .side__k{color:var(--drop)}
+.side--take .side__k{color:var(--take)}
+.side__t{font-size:19.5px;font-weight:700;letter-spacing:-.015em;line-height:1.42;margin:0 0 10px}
+.side--drop .side__t{text-decoration:line-through;text-decoration-thickness:1.5px;text-decoration-color:var(--drop)}
+.side--take .side__t{color:var(--fg)}
+.side__p{margin:0;font-size:16px;line-height:1.72}
+.side--take .side__p{color:var(--mid)}
+
+/* ── 만든 것 ──────────────────────────── */
+.built{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.built li{list-style:none;background:var(--ink2);padding:22px 24px}
+.built b{display:block;font-size:18px;font-weight:700;letter-spacing:-.015em;margin-bottom:7px}
+.built p{margin:0;font-size:16px;color:var(--mid);line-height:1.7}
+
+/* ── 배운 것 · 아쉬운 것 ──────────────── */
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:clamp(18px,3vw,32px)}
+.pair section{padding:28px 30px;border-radius:14px;background:var(--ink2);border:1px solid var(--line)}
+.pair h3{font-family:var(--mono);font-size:12.5px;letter-spacing:.13em;color:var(--dim);margin:0 0 14px;font-weight:400}
+.pair p{margin:0 0 14px;font-size:17.5px;line-height:1.78}
+.pair p:last-child{margin-bottom:0}
+.pair ul{margin:0;padding-left:20px;font-size:16.5px;color:var(--mid)}
+.pair li{margin-bottom:9px}
+.pair--regret section{border-left:3px solid var(--drop)}
+
+/* ── 파일 ─────────────────────────────── */
+.files{font-family:var(--mono);font-size:15px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.files div{display:flex;gap:16px;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--ink2)}
+.files div:last-child{border-bottom:0}
+.files b{color:var(--take);font-weight:500;min-width:132px}
+.files span{color:var(--mid);font-family:var(--sans);font-size:16px}
+
+/* ── 꼬리 ─────────────────────────────── */
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:clamp(30px,4vw,44px)}
+.cta a{
+  display:inline-flex;align-items:center;gap:9px;padding:15px 26px;border-radius:10px;
+  font-size:17px;font-weight:700;text-decoration:none;transition:transform .15s,background .15s;
+}
+.cta a:first-child{background:var(--take);color:#06211E}
+.cta a:first-child:hover{transform:translateY(-2px)}
+.cta a.ghost{border:1px solid var(--line);color:var(--fg)}
+.cta a.ghost:hover{border-color:var(--take);color:var(--take)}
+.foot{border-top:1px solid var(--line);padding:34px 0 60px;color:var(--dim);font-size:15px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px}
+.foot a{color:var(--take);text-decoration:none}
+
+/* ── 등장 ─────────────────────────────── */
+.rise{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.rise.in{opacity:1;transform:none}
+
+@media (max-width:820px){
+  body{font-size:16.5px}
+  .fork{grid-template-columns:1fr;gap:14px}
+  .forks::before{left:11px}
+  .fork__q{text-align:left;margin-left:0;padding-left:34px}
+  .fork__dot{grid-column:1;justify-self:start;margin:0 0 0 4px;position:absolute;top:6px;left:0}
+  .side{margin-left:34px}
+  .side--drop::after,.side--take::after{display:none}
+  .pair{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .rise{opacity:1;transform:none}
+  .forks::before{transform:scaleY(1)}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <a href="index.html">← 시안 목록</a>
+    <nav>
+      <a href="https://github.com/you4ranghe/yutnori" target="_blank" rel="noopener">저장소 ↗</a>
+      <a href="https://yutnori-rho.vercel.app" target="_blank" rel="noopener">운영 사이트 ↗</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <p class="hero__eyebrow">you4ranghe / yutnori · 2026.07</p>
+    <h1 class="hero__h1">서버를 두지<br>않았습니다.<br><em>데이터베이스가<br>서버입니다.</em></h1>
+    <p class="hero__sub">실시간 4인 윷놀이입니다. 상시 서버 프로세스가 하나도 없고,
+      윷을 던지는 난수와 승패 판정을 전부 <b>Postgres 함수</b>가 냅니다.
+      브라우저는 결과를 받아 애니메이션만 재생합니다.</p>
+
+    <dl class="facts">
+      <div><dt>LANGUAGE</dt><dd>HTML<small>바닐라 JS</small></dd></div>
+      <div><dt>COMMITS</dt><dd>27</dd></div>
+      <div><dt>BUILD STEP</dt><dd>0<small>번들러 없음</small></dd></div>
+      <div><dt>월 운영비</dt><dd>0<small>원</small></dd></div>
+      <div><dt>기간</dt><dd>2일<small>07.22–23</small></dd></div>
+    </dl>
+  </section>
+
+  <!-- ── 실행해 보기 ── -->
+  <section class="sec rise">
+    <p class="sec__k">RUN IT</p>
+    <h2 class="sec__h">읽기 전에 한 판 해보세요.</h2>
+    <p class="sec__lede">스크린샷 대신 진짜입니다. 누르면 그 자리에서 운영 중인 사이트가 뜹니다.
+      누르기 전에는 아무것도 불러오지 않습니다.</p>
+
+    <div class="demo">
+      <div class="demo__bar">
+        <i></i><i></i><i></i>
+        <span class="demo__url">https://yutnori-rho.vercel.app</span>
+      </div>
+      <div class="demo__stage" id="stage">
+        <button class="demo__run" id="run" type="button">
+          <span>▶</span>
+          <b>여기서 바로 실행</b>
+          <small>yutnori-rho.vercel.app</small>
+        </button>
+      </div>
+    </div>
+    <p class="demo__note">소리가 납니다. 배경음악은 음원 파일이 아니라 브라우저가 그 자리에서 연주하는 것입니다.</p>
+  </section>
+
+  <!-- ══ 결정 대장 ══ -->
+  <section class="sec">
+    <p class="sec__k">DECISIONS · 6</p>
+    <h2 class="sec__h">여섯 번 갈렸고, 여섯 번 왼쪽을 버렸습니다.</h2>
+    <p class="sec__lede">가운데 이어진 선이 실제로 걸어간 길입니다.
+      왼쪽은 진지하게 고려했다가 버린 쪽이고, 버린 이유까지 적어 뒀습니다.</p>
+
+    <div class="forks" id="forks">
+
+      <article class="fork rise">
+        <h3 class="fork__q"><span>DECISION 01</span>윷의 난수를 누가 만드는가</h3>
+        <div class="side side--drop">
+          <p class="side__k">버린 길</p>
+          <p class="side__t">브라우저에서 Math.random()</p>
+          <p class="side__p">개발자 도구를 열면 원하는 끗수를 만들 수 있습니다.
+            판정을 믿을 수 없으면 실시간이든 아니든 게임이 아닙니다.</p>
+        </div>
+        <span class="fork__dot"></span>
+        <div class="side side--take">
+          <p class="side__k">택한 길</p>
+          <p class="side__t">DB 함수 throw_sticks()</p>
+          <p class="side__p">난수를 서버 쪽에서 만들고 클라이언트는 결과만 받습니다.
+            대신 "던지는 맛"이 사라지므로, 결과를 먼저 정하고
+            그 결과로 끝나는 애니메이션을 재생합니다.</p>
+        </div>
+      </article>
+
+      <article class="fork rise">
+        <h3 class="fork__q"><span>DECISION 02</span>그 서버를 무엇으로 세울까</h3>
+        <div class="side side--drop">
+          <p class="side__k">버린 길</p>
+          <p class="side__t">Node · Spring 상시 서버</p>
+          <p class="side__p">익숙하지만 상시로 떠 있어야 하고, 무료 플랜에서는 잠들거나
+            돈이 듭니다. 친구들과 하는 놀이에 월 요금을 붙이고 싶지 않았습니다.</p>
+        </div>
+        <span class="fork__dot"></span>
+        <div class="side side--take">
+          <p class="side__k">택한 길</p>
+          <p class="side__t">Postgres 함수 + Realtime</p>
+          <p class="side__p">방 만들기·참가·시작·던지기·퇴장을 전부 DB 함수로 두고,
+            상태 변화는 Realtime 구독으로 흘려보냅니다.
+            내 코드가 도는 서버는 한 대도 없습니다.</p>
+        </div>
+      </article>
+
+      <article class="fork rise">
+        <h3 class="fork__q"><span>DECISION 03</span>배경음악을 어떻게 넣을까</h3>
+        <div class="side side--drop">
+          <p class="side__k">버린 길</p>
+          <p class="side__t">mp3 파일 재생</p>
+          <p class="side__p">저작권을 확인해야 하고, 용량이 늘고, 방문자마다 대역폭을 씁니다.
+            무료로 유지한다는 전제와 정면으로 부딪칩니다.</p>
+        </div>
+        <span class="fork__dot"></span>
+        <div class="side side--take">
+          <p class="side__k">택한 길</p>
+          <p class="side__t">Web Audio 실시간 연주</p>
+          <p class="side__p">한국 전통 5음계로 10곡을 브라우저가 직접 연주합니다.
+            한 바퀴 약 11분. 내려받을 파일도, 저작권도, 대역폭도 0입니다.
+            빠르기와 화음 진행은 코드 안 표를 고치면 바로 바뀝니다.</p>
+        </div>
+      </article>
+
+      <article class="fork rise">
+        <h3 class="fork__q"><span>DECISION 04</span>"윷이야" 소리를 어떻게 낼까</h3>
+        <div class="side side--drop">
+          <p class="side__k">버린 길</p>
+          <p class="side__t">직접 녹음한 음성 파일</p>
+          <p class="side__p">여섯 마디를 위해 녹음·편집·호스팅이 붙습니다.
+            목소리를 바꾸고 싶어지면 그 일을 다시 해야 합니다.</p>
+        </div>
+        <span class="fork__dot"></span>
+        <div class="side side--take">
+          <p class="side__k">택한 길</p>
+          <p class="side__t">기기에 있는 한국어 TTS</p>
+          <p class="side__p">도·개·걸·윷이야·모야·빽도를 기기가 말합니다. 음성 파일 0개.
+            한국어 음성이 없는 기기에서는 조용히 생략하고 효과음만 남깁니다 —
+            없다고 화면이 깨지지 않습니다.</p>
+        </div>
+      </article>
+
+      <article class="fork rise">
+        <h3 class="fork__q"><span>DECISION 05</span>가입 문턱을 어디에 둘까</h3>
+        <div class="side side--drop">
+          <p class="side__k">버린 길</p>
+          <p class="side__t">이메일 인증 후 로그인</p>
+          <p class="side__p">놀자고 부른 친구에게 메일함을 열게 만드는 순간
+            절반은 안 들어옵니다.</p>
+        </div>
+        <span class="fork__dot"></span>
+        <div class="side side--take">
+          <p class="side__k">택한 길</p>
+          <p class="side__t">아이디 + 비밀번호, 게스트 허용</p>
+          <p class="side__p">아이디를 내부적으로 <code>아이디@yutnori.app</code> 으로 바꿔 저장하고
+            실제 메일은 오가지 않습니다. 가입 없이 게스트로도 놀 수 있고,
+            나중에 가입하면 쓰던 이름과 사진이 새 계정으로 옮겨집니다.</p>
+        </div>
+      </article>
+
+      <article class="fork rise">
+        <h3 class="fork__q"><span>DECISION 06</span>다 놀고 난 데이터를 어떻게 할까</h3>
+        <div class="side side--drop">
+          <p class="side__k">버린 길</p>
+          <p class="side__t">전적으로 계속 쌓아두기</p>
+          <p class="side__p">기록이 남으면 그럴듯하지만, 무료 용량을 갉아먹고
+            남의 대화를 계속 들고 있게 됩니다.</p>
+        </div>
+        <span class="fork__dot"></span>
+        <div class="side side--take">
+          <p class="side__k">택한 길</p>
+          <p class="side__t">1시간 무진행이면 자동 삭제</p>
+          <p class="side__p">던지기·이동·입퇴장·채팅이 있으면 시간이 초기화되고,
+            아무 일도 없으면 방과 채팅이 함께 사라집니다.
+            <code>pg_cron</code> 이 10분마다 돌고, 권한이 없는 환경에서는
+            누군가 로비를 열 때 대신 청소합니다.</p>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ── 만든 것 ── -->
+  <section class="sec rise">
+    <p class="sec__k">WHAT'S IN IT</p>
+    <h2 class="sec__h">혼자 와도 놀 수 있게 만들었습니다.</h2>
+    <p class="sec__lede">사람이 모여야 시작되는 게임은 대개 아무도 시작하지 못합니다.
+      빈자리를 컴퓨터가 먼저 채우고, 사람이 오면 자리를 비켜 주는 쪽으로 짰습니다.</p>
+    <ul class="built">
+      <li><b>빈 팀은 컴퓨터가</b><p>혼자 방을 만들어도 바로 시작됩니다. 기다리는 화면이 없습니다.</p></li>
+      <li><b>친구가 오면 알림</b><p>컴퓨터와 놀던 중 누가 들어오면 "함께 놀까요?"가 뜨고, 한 번 눌러 대기방으로 돌아갑니다.</p></li>
+      <li><b>초대 코드 없음</b><p>로비에 열린 방이 그대로 보이고 누르면 들어갑니다. 시작된 방은 관전으로 들어갑니다.</p></li>
+      <li><b>20초 자동 진행</b><p>자리를 비워도 판이 멈추지 않습니다. 32초가 지나면 방장 화면에서 차례를 넘깁니다.</p></li>
+      <li><b>중간에 나가도</b><p>나간 사람 팀이 비면 상대 승, 한 명이라도 남으면 2:1로 계속합니다.</p></li>
+      <li><b>새로고침해도 그 방</b><p>같은 브라우저로 다시 열면 하던 방으로 돌아갑니다. 관전 중이었으면 관전으로.</p></li>
+    </ul>
+  </section>
+
+  <!-- ── 파일 ── -->
+  <section class="sec rise">
+    <p class="sec__k">FILES · 3</p>
+    <h2 class="sec__h">저장소를 열면 세 개가 전부입니다.</h2>
+    <div class="files">
+      <div><b>index.html</b><span>로비 · 게임 · 채팅 · 프로필 전체 화면</span></div>
+      <div><b>config.js</b><span>Supabase 접속 정보</span></div>
+      <div><b>schema.sql</b><span>테이블 · RLS · 서버 역할을 하는 함수 전부</span></div>
+    </div>
+    <p class="demo__note">번들러도, 프레임워크도, package.json 도 없습니다. Vercel 은 파일을 그대로 올려 둡니다.</p>
+  </section>
+
+  <!-- ── 배운 것 · 아쉬운 것 ── -->
+  <section class="sec rise">
+    <div class="pair">
+      <section>
+        <h3>배운 것</h3>
+        <p>서버가 없어도 <b>권위 있는 한 곳</b>은 반드시 있어야 한다는 걸 확인했습니다.
+          "누가 진실을 갖는가"를 먼저 정하면 나머지는 그 자리를 무엇으로 채우느냐의 문제였고,
+          이번에는 그 자리를 데이터베이스 함수가 맡을 수 있었습니다.</p>
+      </section>
+      <section class="pair--regret">
+        <h3>아직 못 한 것</h3>
+        <ul>
+          <li>진행 중인 게임에는 참가할 수 없고 관전만 됩니다</li>
+          <li>방 목록과 접속자가 모두에게 보입니다. 완전한 비공개 방이 없습니다</li>
+          <li>실제 메일을 쓰지 않으므로 비밀번호를 찾을 방법이 없습니다</li>
+          <li>나가기 버튼 없이 창을 닫으면 이탈이 즉시 반영되지 않습니다</li>
+        </ul>
+      </section>
+    </div>
+    <div class="cta">
+      <a href="https://yutnori-rho.vercel.app" target="_blank" rel="noopener">한 판 하러 가기 ↗</a>
+      <a class="ghost" href="https://github.com/you4ranghe/yutnori" target="_blank" rel="noopener">저장소 보기 ↗</a>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <span>you4ranghe · Seoul</span>
+    <a href="mailto:you4ranghe@gmail.com">you4ranghe@gmail.com</a>
+  </footer>
+</div>
+
+<script>
+/* 눌러야 불러옵니다. 누르기 전에는 통신이 없습니다. */
+document.getElementById('run').addEventListener('click', function(){
+  var f = document.createElement('iframe');
+  f.src = 'https://yutnori-rho.vercel.app';
+  f.title = '윷놀이 온라인 — 운영 중인 사이트';
+  f.allow = 'autoplay; fullscreen';
+  document.getElementById('stage').appendChild(f);
+  this.remove();
+});
+
+/* 등장 + 가운데 선이 자라는 것 */
+var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(!reduce){
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{rootMargin:'0px 0px -12% 0px'});
+  document.querySelectorAll('.rise').forEach(function(el){ io.observe(el); });
+
+  var forks = document.getElementById('forks');
+  var io2 = new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ forks.style.setProperty('--grow',1); io2.disconnect(); } });
+  },{rootMargin:'0px 0px -20% 0px'});
+  io2.observe(forks);
+}
+</script>
+</body>
+</html>

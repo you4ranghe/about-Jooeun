@@ -1,14 +1,26 @@
 import type { Metadata } from "next";
+import { Fragment } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getProjectBySlug, getProjectSlugs, getPublishedProjects } from "@/content/projects";
-import "@/styles/gallery.css";
+import {
+  getProjectBySlug,
+  getProjectSlugs,
+  getPublishedProjects,
+} from "@/content/projects";
+import { RunEmbed } from "@/components/detail/RunEmbed";
+import { LedgerMotion } from "@/components/detail/LedgerMotion";
+import "@/styles/detail.css";
 
 /**
- * 프로젝트 상세.
+ * 프로젝트 상세 — 결정 대장 (docs/07).
+ *
+ * 기능 목록이 아니라 **버린 선택지**로 짜여 있습니다.
+ * 기능은 저장소를 열면 보이지만, 무엇을 버렸고 왜 버렸는지는 만든 사람만 압니다.
  *
  * 여기가 링크 공유의 목적지입니다. 채용 담당자가 동료에게 보낼 주소가
  * /projects/yutnori 처럼 존재해야 포트폴리오가 제 역할을 합니다.
+ *
+ * 화면은 모니터 안 바탕화면 위에 뜹니다. 창틀은 다음 단계(S-05)에서 붙습니다.
  */
 
 /**
@@ -57,171 +69,257 @@ export default async function ProjectDetailPage({ params }: Props) {
 
   const all = await getPublishedProjects();
   const index = all.findIndex((p) => p.slug === project.slug);
-  const prev = all[(index - 1 + all.length) % all.length];
-  const next = all[(index + 1) % all.length];
+  // 저장소가 하나뿐이면 이전/다음은 자기 자신입니다. 그럴 때는 아예 내립니다.
+  const prev = all.length > 1 ? all[(index - 1 + all.length) % all.length] : null;
+  const next = all.length > 1 ? all[(index + 1) % all.length] : null;
 
-  const color = { "--c": project.color } as React.CSSProperties;
+  /* 그 사이트의 옷을 입힙니다 (docs/07 §5).
+     색을 CSS 에 두지 않고 여기서 넣는 이유: 프로젝트가 늘 때마다
+     스타일시트를 고치는 게 아니라 projects.ts 한 곳만 채우면 되게 하려고요. */
+  const t = project.theme;
+  const skin = {
+    "--bg": t.bg,
+    "--surface": t.surface,
+    "--sunken": t.sunken,
+    "--fg": t.fg,
+    "--mid": t.mid,
+    "--dim": t.dim,
+    "--line": t.line,
+    "--take": t.accent,
+    "--on-take": t.onAccent,
+    "--drop": t.drop,
+    "--radius": t.radius,
+  } as React.CSSProperties;
 
   return (
-    <div className="gal" style={color}>
-      <header className="gal__top">
-        <Link className="gal__home" href="/projects">
-          ← 전체 목록
-        </Link>
-        <nav className="gal__links" aria-label="주요">
-          <Link href="/">작업실</Link>
-          <a href={`https://github.com/${project.repo}`} target="_blank" rel="noopener">
-            GitHub ↗
-          </a>
-        </nav>
-      </header>
+    <div
+      className="led"
+      style={skin}
+      data-mode={t.mode}
+      data-display={t.display}
+    >
+      <LedgerMotion />
 
-      <main>
-        <section className="det__hero" style={color}>
-          <p className="det__cat">
-            {project.no} · {project.year}
+      <div className="led__wrap">
+        <header className="led__top">
+          <Link href="/projects">← 바탕화면</Link>
+          <nav aria-label="바깥 링크">
+            <a
+              href={`https://github.com/${project.repo}`}
+              target="_blank"
+              rel="noopener"
+            >
+              저장소 ↗
+            </a>
+            {project.live && (
+              <a href={project.live} target="_blank" rel="noopener">
+                운영 사이트 ↗
+              </a>
+            )}
+          </nav>
+        </header>
+
+        {/* ── 히어로 (docs/07 §3) ── */}
+        <section className="led__hero">
+          <p className="led__eyebrow">
+            {project.repo} · {project.year}
           </p>
-          <h1 className="det__h1">{project.title}</h1>
-          <p className="det__sum">{project.summary}</p>
+          <h1 className="led__h1">
+            {project.hero.lead}
+            <em>{project.hero.em}</em>
+          </h1>
+
+          {/* 대비형은 명제 아래에 바뀌기 전과 후를 나란히 놓습니다 */}
+          {project.hero.kind === "contrast" && (
+            <div className="led__swap">
+              <div className="led__swapRow led__swapRow--before">
+                <span>{project.hero.before.k}</span>
+                <b>{project.hero.before.v}</b>
+              </div>
+              <span className="led__swapArrow" aria-hidden="true" />
+              <div className="led__swapRow led__swapRow--after">
+                <span>{project.hero.after.k}</span>
+                <b>{project.hero.after.v}</b>
+              </div>
+            </div>
+          )}
+
+          {/* 도해형은 흐름을 옆으로 늘어놓습니다 */}
+          {project.hero.kind === "flow" && (
+            <div className="led__flow">
+              {project.hero.steps.map((step, i) => (
+                <Fragment key={step.k}>
+                  {i > 0 && (
+                    <span className="led__flowArrow" aria-hidden="true" />
+                  )}
+                  <div
+                    className="led__step"
+                    data-faded={String(Boolean(step.faded))}
+                  >
+                    <em>{step.k}</em>
+                    <b>{step.v}</b>
+                    {step.note && <small>{step.note}</small>}
+                  </div>
+                </Fragment>
+              ))}
+            </div>
+          )}
+
+          <p className="led__sub">{project.summary}</p>
+
+          <dl className="led__facts">
+            {project.facts.map((fact) => (
+              <div key={fact.label}>
+                <dt>{fact.label}</dt>
+                <dd>
+                  {fact.value}
+                  {fact.note && <small>{fact.note}</small>}
+                </dd>
+              </div>
+            ))}
+          </dl>
+
+          <p className="led__colophon">
+            {project.period} · {project.role} · {project.tags.join(" · ")}
+          </p>
         </section>
 
-        {/* GitHub 메타데이터 — 2단계에서 RepositoryProvider 가 채웁니다 */}
-        <dl className="gh" style={color}>
-          <div>
-            <dt>Repository</dt>
-            <dd>{project.repo}</dd>
-          </div>
-          <div>
-            <dt>Language</dt>
-            <dd>
-              <span className="gh__dot" />
-              {project.meta.language}
-            </dd>
-          </div>
-          <div>
-            <dt>Stars</dt>
-            <dd>★ {project.meta.stars}</dd>
-          </div>
-          <div>
-            <dt>Forks</dt>
-            <dd>⑂ {project.meta.forks}</dd>
-          </div>
-          <div>
-            <dt>Commits</dt>
-            <dd>{project.meta.commits}</dd>
-          </div>
-          <div>
-            <dt>Last commit</dt>
-            <dd>{project.meta.lastCommit}</dd>
-          </div>
-          <div>
-            <dt>License</dt>
-            <dd>{project.meta.license}</dd>
-          </div>
-        </dl>
+        {/* ── 증거 (docs/07 §4) ── */}
+        {project.evidence.kind === "run" && (
+          <section className="led__sec rise">
+            <p className="led__k">RUN IT</p>
+            <h2 className="led__h2">읽기 전에 직접 열어 보세요.</h2>
+            <p className="led__lede">
+              스크린샷 대신 진짜입니다. 누르면 그 자리에서 운영 중인 사이트가
+              뜹니다. 누르기 전에는 아무것도 불러오지 않습니다.
+            </p>
+            <RunEmbed url={project.evidence.url} note={project.evidence.note} />
+          </section>
+        )}
 
-        <div className="det__body">
-          <div>
-            <section className="sec">
-              <h2 className="sec__k">화면</h2>
-              {/* TODO: 스프린트 3 에서 실제 스크린샷으로 교체 */}
-              <div className="shot">SCREENSHOT</div>
-              <div className="shot">SCREENSHOT</div>
-            </section>
-
-            <section className="sec">
-              <h2 className="sec__k">어떤 문제였나</h2>
-              {project.overview.map((p, i) => (
-                <p key={i}>{p}</p>
+        {project.evidence.kind === "diagram" && (
+          <section className="led__sec rise">
+            <p className="led__k">HOW IT WORKS</p>
+            <h2 className="led__h2">붙여넣은 다음에 벌어지는 일</h2>
+            <p className="led__lede">
+              로그인 뒤에서 도는 화면이라 열어 보여 드릴 수 없습니다. 대신 안에서
+              무슨 순서로 무엇이 도는지를 적습니다.
+            </p>
+            <ol className="led__pipe">
+              {project.evidence.nodes.map((node) => (
+                <li key={node.k}>
+                  <em>{node.k}</em>
+                  <b>{node.v}</b>
+                  {node.note && <small>{node.note}</small>}
+                </li>
               ))}
-            </section>
+            </ol>
+            {project.evidence.note && (
+              <p className="led__runNote">{project.evidence.note}</p>
+            )}
+          </section>
+        )}
 
-            <section className="sec">
-              <h2 className="sec__k">무엇을 했나</h2>
-              <ul>
-                {project.did.map((line, i) => (
-                  // 저장소 안의 신뢰된 문자열이며 <b> 만 씁니다
-                  <li key={i} dangerouslySetInnerHTML={{ __html: line }} />
-                ))}
-              </ul>
-            </section>
+        {/* ══ 결정 대장 ══ */}
+        <section className="led__sec">
+          <p className="led__k">DECISIONS · {project.decisions.length}</p>
+          <h2 className="led__h2">
+            {project.decisions.length}번 갈렸고, 그때마다 왼쪽을 버렸습니다.
+          </h2>
+          <p className="led__lede">
+            가운데 이어진 선이 실제로 걸어간 길입니다. 왼쪽은 진지하게
+            고려했다가 버린 쪽이고, 버린 이유까지 적어 뒀습니다.
+          </p>
 
-            <section className="sec">
-              <h2 className="sec__k">판단이 갈렸던 지점</h2>
-              {project.questions.map((qa) => (
-                <div className="qa" key={qa.question}>
-                  <h3 className="qa__q">{qa.question}</h3>
-                  <p className="qa__a">{qa.answer}</p>
+          <div className="led__forks">
+            {project.decisions.map((decision, i) => (
+              <article className="led__fork rise" key={decision.ask}>
+                <h3 className="led__ask">
+                  <span>DECISION {String(i + 1).padStart(2, "0")}</span>
+                  {decision.ask}
+                </h3>
+                <div className="led__side led__side--drop">
+                  <p className="led__sideK">버린 길</p>
+                  <p className="led__sideT">{decision.dropped.title}</p>
+                  <p className="led__sideP">{decision.dropped.why}</p>
                 </div>
-              ))}
-            </section>
+                <span className="led__dot" aria-hidden="true" />
+                <div className="led__side led__side--take">
+                  <p className="led__sideK">택한 길</p>
+                  <p className="led__sideT">{decision.taken.title}</p>
+                  <p className="led__sideP">{decision.taken.why}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
 
-            <section className="sec">
-              <h2 className="sec__k">배운 것</h2>
+        {/* ── 만든 것 ── */}
+        <section className="led__sec rise">
+          <p className="led__k">WHAT&apos;S IN IT</p>
+          <h2 className="led__h2">만든 것</h2>
+          <ul className="led__built">
+            {project.built.map((item) => (
+              <li key={item.title}>
+                <b>{item.title}</b>
+                <p>{item.body}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* ── 마무리 ── */}
+        <section className="led__sec rise">
+          <div className="led__pair">
+            <section>
+              <h3>배운 것</h3>
               <p>{project.learned}</p>
             </section>
-
-            {/* 잘한 것만 적힌 포트폴리오보다 한계를 아는 사람이 더 믿음직합니다 */}
-            <section className="sec">
-              <h2 className="sec__k">아쉬운 것</h2>
-              <p>{project.regret}</p>
+            <section className="led__pair--limits">
+              <h3>아직 못 한 것</h3>
+              <ul>
+                {project.limits.map((limit) => (
+                  <li key={limit}>{limit}</li>
+                ))}
+              </ul>
             </section>
           </div>
 
-          <aside>
-            <div className="aside__box">
-              <h2 className="aside__k">개요</h2>
-              <dl className="meta">
-                <dt>기간</dt>
-                <dd>{project.period}</dd>
-                <dt>역할</dt>
-                <dd>{project.role}</dd>
-              </dl>
-            </div>
-            <div className="aside__box">
-              <h2 className="aside__k">기술</h2>
-              <ul className="stack">
-                {project.tags.map((t) => (
-                  <li key={t}>{t}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="cta">
-              <a href={`https://github.com/${project.repo}`} target="_blank" rel="noopener">
-                GitHub 저장소 ↗
+          <div className="led__cta">
+            {project.live && (
+              <a href={project.live} target="_blank" rel="noopener">
+                직접 써보기 ↗
               </a>
-              {project.live && (
-                <a className="ghost" href={project.live} target="_blank" rel="noopener">
-                  배포된 사이트 ↗
-                </a>
-              )}
-            </div>
-          </aside>
-        </div>
+            )}
+            <a
+              className="ghost"
+              href={`https://github.com/${project.repo}`}
+              target="_blank"
+              rel="noopener"
+            >
+              저장소 보기 ↗
+            </a>
+          </div>
+        </section>
 
-        <nav className="pager" aria-label="다른 프로젝트">
-          <Link href={`/projects/${prev.slug}`}>
-            <span className="pager__k">← 이전</span>
-            <span className="pager__t">{prev.title}</span>
-          </Link>
-          <Link href={`/projects/${next.slug}`}>
-            <span className="pager__k">다음 →</span>
-            <span className="pager__t">{next.title}</span>
-          </Link>
-        </nav>
-      </main>
+        {prev && next && (
+          <nav className="led__pager" aria-label="다른 프로젝트">
+            <Link href={`/projects/${prev.slug}`}>
+              <span>← 이전</span>
+              <b>{prev.title}</b>
+            </Link>
+            <Link href={`/projects/${next.slug}`}>
+              <span>다음 →</span>
+              <b>{next.title}</b>
+            </Link>
+          </nav>
+        )}
 
-      <footer className="gal__foot">
-        <div>
-          <p className="gal__footH">이 프로젝트가 궁금하시면</p>
+        <footer className="led__foot">
+          <span>you4ranghe · Seoul · 2026</span>
           <a href="mailto:you4ranghe@gmail.com">you4ranghe@gmail.com</a>
-        </div>
-        <div className="gal__footM">
-          github.com/you4ranghe
-          <br />
-          Seoul, KR · 2026
-        </div>
-      </footer>
+        </footer>
+      </div>
     </div>
   );
 }

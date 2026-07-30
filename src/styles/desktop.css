@@ -152,12 +152,17 @@
   flex: none;
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
 }
-.dtIcon__art svg {
+/* 배지를 빼야 합니다.
+   `.dtIcon__art svg` 는 특정도가 (0,1,1) 이라 `.dtIcon__badge` (0,1,0) 를 이깁니다.
+   빼지 않으면 바로가기 화살표가 46px 로 부풀어 아이콘 전체를 덮습니다 —
+   모든 아이콘이 "흰 사각형에 화살표" 하나로 보이게 됩니다. */
+.dtIcon__art > svg:not(.dtIcon__badge) {
   display: block;
   width: 100%;
   height: 100%;
 }
-.dtIcon__badge {
+.dtIcon__art > .dtIcon__badge {
+  display: block;
   position: absolute;
   left: -2px;
   bottom: -1px;

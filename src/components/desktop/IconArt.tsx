@@ -14,51 +14,295 @@ import type { IconArtKey } from "@/content/types";
  * 크기는 64×64 기준이고 실제 크기는 CSS 가 정합니다.
  */
 
+/**
+ * 윷놀이 온라인.
+ *
+ * 지어낸 그림이 아니라 **그 사이트가 실제로 쓰는 앱 아이콘**을 옮긴 것입니다
+ * (저장소의 `icon-192.png`). 남색 바탕에 흰 윷판, 가운데만 청록입니다.
+ *
+ * 바탕화면 바로가기는 그 사이트의 얼굴을 그대로 달고 있어야
+ * 눌렀을 때 나오는 것과 아이콘이 이어집니다. 예쁜 그림을 새로 그리면
+ * 그 순간 아이콘이 사이트가 아니라 이 포트폴리오의 장식이 됩니다.
+ *
+ * PNG 를 그대로 쓰지 않은 이유: 이미지 파일을 늘리지 않기로 했고(docs/04),
+ * SVG 면 방에서 축소돼도 흐려지지 않습니다.
+ */
 function Yut() {
+  /** 판의 네 귀 (남·북·동·서 꼭짓점) */
+  const corners = [
+    [13, 13],
+    [51, 13],
+    [51, 51],
+    [13, 51],
+  ] as const;
+
+  /** 변 위의 작은 칸 — 귀와 귀 사이를 4등분 */
+  const edges = [
+    [22.5, 13],
+    [32, 13],
+    [41.5, 13],
+    [51, 22.5],
+    [51, 32],
+    [51, 41.5],
+    [41.5, 51],
+    [32, 51],
+    [22.5, 51],
+    [13, 41.5],
+    [13, 32],
+    [13, 22.5],
+  ] as const;
+
+  /** 지름길 — 귀에서 가운데로 가는 길목 둘씩 */
+  const shortcuts = [
+    [19.3, 19.3],
+    [25.7, 25.7],
+    [44.7, 19.3],
+    [38.3, 25.7],
+    [44.7, 44.7],
+    [38.3, 38.3],
+    [19.3, 44.7],
+    [25.7, 38.3],
+  ] as const;
+
   return (
     <svg viewBox="0 0 64 64" role="presentation">
       <defs>
-        <linearGradient id="dtYutTile" x1="0" y1="0" x2="0.4" y2="1">
-          <stop offset="0" stopColor="#12756B" />
-          <stop offset="1" stopColor="#07403C" />
-        </linearGradient>
-        <linearGradient id="dtYutStick" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#E8CE94" />
-          <stop offset="0.45" stopColor="#CBA65C" />
-          <stop offset="1" stopColor="#9C7734" />
+        <linearGradient id="dtYutBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#2B2F63" />
+          <stop offset="1" stopColor="#14172F" />
         </linearGradient>
       </defs>
-      <rect x="4" y="4" width="56" height="56" rx="13" fill="url(#dtYutTile)" />
-      {/* 타일 위쪽 광택 — 앱 아이콘처럼 보이게 하는 한 겹 */}
-      <path
-        d="M4 17a13 13 0 0 1 13-13h30a13 13 0 0 1 13 13v6c-9 5-17 7-28 7S12 27 4 23z"
-        fill="#FFFFFF"
-        opacity="0.09"
-      />
-      {/* 윷가락 넷. 한쪽이 평평한 단면을 어두운 선으로 냅니다 */}
-      <g transform="rotate(-13 32 32)">
-        {[12, 22.5, 33, 43.5].map((x) => (
-          <g key={x}>
-            <rect
-              x={x}
-              y="15"
-              width="8.5"
-              height="34"
-              rx="4.25"
-              fill="url(#dtYutStick)"
-            />
-            <rect
-              x={x + 5.4}
-              y="17"
-              width="1.6"
-              height="30"
-              rx="0.8"
-              fill="#6B4E1E"
-              opacity="0.55"
-            />
-          </g>
+      <rect x="0" y="0" width="64" height="64" rx="14" fill="url(#dtYutBg)" />
+
+      {/* 길 — 네 변과 두 지름길 */}
+      <g
+        stroke="#FFFFFF"
+        strokeOpacity="0.3"
+        strokeWidth="1.7"
+        fill="none"
+        strokeLinecap="round"
+      >
+        <path d="M13 13h38v38H13z" />
+        <path d="M13 13l38 38M51 13L13 51" />
+      </g>
+
+      {/* 작은 칸 */}
+      <g fill="#D7D9EE">
+        {edges.map(([x, y]) => (
+          <circle key={`e${x}-${y}`} cx={x} cy={y} r="2.6" />
+        ))}
+        {shortcuts.map(([x, y]) => (
+          <circle key={`s${x}-${y}`} cx={x} cy={y} r="2.2" />
         ))}
       </g>
+
+      {/* 네 귀 — 크고 흰 칸 */}
+      <g fill="#FFFFFF">
+        {corners.map(([x, y]) => (
+          <circle key={`c${x}-${y}`} cx={x} cy={y} r="5.6" />
+        ))}
+      </g>
+
+      {/* 가운데 방 — 이 아이콘에서 유일하게 색이 있는 곳 */}
+      <circle cx="32" cy="32" r="6.2" fill="#FFFFFF" />
+      <circle cx="32" cy="32" r="3.1" fill="#00C2A8" />
+    </svg>
+  );
+}
+
+/**
+ * 인터페이퍼 — 바우치 서재.
+ *
+ * 이 사이트는 파비콘이 기본값이라 옮겨올 원본이 없습니다(`web/public` 에 아이콘 없음).
+ * 그래서 **그 사이트의 시그니처**를 그렸습니다 — 책 표지가 가운데 한 권만 또렷하고
+ * 양옆은 기울어 흐려지는 Coverflow 캐러셀입니다.
+ *
+ * 색도 지어내지 않고 그 사이트의 팔레트에서 가져왔습니다.
+ * 따뜻한 회백 바탕(#F4F1EC) · 먹(#26231F) · 강조 차콜(#4A443E) ·
+ * 다크모드 모래(#D8C8AB). 남색인 윷놀이 옆에 두면 확실히 구분됩니다.
+ */
+function Library() {
+  return (
+    <svg viewBox="0 0 64 64" role="presentation">
+      <defs>
+        <linearGradient id="dtLibBg" x1="0" y1="0" x2="0.3" y2="1">
+          <stop offset="0" stopColor="#FBF9F5" />
+          <stop offset="1" stopColor="#EDE7DC" />
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="64" height="64" rx="14" fill="url(#dtLibBg)" />
+
+      {/* 바깥 두 권 — 기울고 작고 흐림 */}
+      <g opacity="0.42">
+        <rect
+          x="6.5"
+          y="22"
+          width="13"
+          height="24"
+          rx="1.6"
+          fill="#4A443E"
+          transform="rotate(-13 13 34)"
+        />
+        <rect
+          x="44.5"
+          y="22"
+          width="13"
+          height="24"
+          rx="1.6"
+          fill="#4A443E"
+          transform="rotate(13 51 34)"
+        />
+      </g>
+
+      {/* 안쪽 두 권 */}
+      <g opacity="0.72">
+        <rect
+          x="15"
+          y="18.5"
+          width="15"
+          height="29"
+          rx="1.8"
+          fill="#26231F"
+          transform="rotate(-7 22.5 33)"
+        />
+        <rect
+          x="34"
+          y="18.5"
+          width="15"
+          height="29"
+          rx="1.8"
+          fill="#26231F"
+          transform="rotate(7 41.5 33)"
+        />
+      </g>
+
+      {/* 가운데 한 권만 반듯하고 또렷합니다 */}
+      <rect x="23" y="14" width="18" height="36" rx="2" fill="#26231F" />
+      {/* 책등 — 표지와 등을 가르는 선 */}
+      <rect x="26.4" y="14" width="1.5" height="36" rx="0.75" fill="#0F0D0B" />
+      {/* 제목 자리. 이 사이트의 책 제목은 명조입니다 */}
+      <g fill="#D8C8AB">
+        <rect x="30" y="21" width="8" height="2" rx="1" />
+        <rect x="30" y="26" width="6" height="2" rx="1" />
+      </g>
+
+      {/* 바닥 반사 — Coverflow 의 그 반짝임 */}
+      <rect
+        x="14"
+        y="51.5"
+        width="36"
+        height="3"
+        rx="1.5"
+        fill="#26231F"
+        opacity="0.14"
+      />
+    </svg>
+  );
+}
+
+/**
+ * 불멍 감정 소각장.
+ *
+ * 이 사이트도 파비콘이 없어 옮겨올 원본이 없습니다.
+ * 대신 이름 그대로 **불**을 그렸습니다 — 근처가 캄캄하고 불만 따뜻한,
+ * 그 사이트의 인상 그대로입니다.
+ *
+ * 색은 실제 화면에서 뽑았습니다. 바탕 #04050A, 불빛 #FFAA5A,
+ * 글자로 쓰이는 크림 #FFF4E6. 남색(윷놀이)·회백(인터페이퍼)과 나란히 놓으면
+ * 셋이 확실히 구분됩니다.
+ */
+function Bonfire() {
+  return (
+    <svg viewBox="0 0 64 64" role="presentation">
+      <defs>
+        <radialGradient id="dtFireGlow" cx="0.5" cy="0.68" r="0.55">
+          <stop offset="0" stopColor="#FFAA5A" stopOpacity="0.42" />
+          <stop offset="1" stopColor="#FFAA5A" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id="dtFlame" x1="0.5" y1="1" x2="0.5" y2="0">
+          <stop offset="0" stopColor="#FF8A3C" />
+          <stop offset="0.55" stopColor="#FFC178" />
+          <stop offset="1" stopColor="#FFF0D2" />
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="64" height="64" rx="14" fill="#04050A" />
+      <rect x="0" y="0" width="64" height="64" rx="14" fill="url(#dtFireGlow)" />
+
+      {/* 장작 두 개 */}
+      <g stroke="#5A4433" strokeWidth="4.6" strokeLinecap="round">
+        <path d="M17 50l30-6" />
+        <path d="M17 44l30 6" />
+      </g>
+
+      {/* 불꽃 — 바깥 한 겹, 안쪽 한 겹 */}
+      <path
+        d="M32 14c6 7 10 11 10 17a10 10 0 0 1-20 0c0-3 1.6-5.4 3.4-7.6.6 1.9 1.8 3.2 3.2 3.6-1.1-4.6.6-9.4 3.4-13z"
+        fill="url(#dtFlame)"
+      />
+      <path
+        d="M32 27c2.6 3.2 4.2 5 4.2 7.4a4.2 4.2 0 0 1-8.4 0c0-2.4 1.6-4.2 4.2-7.4z"
+        fill="#FFF4E6"
+        opacity="0.9"
+      />
+
+      {/* 불티 */}
+      <g fill="#FFCE95">
+        <circle cx="45" cy="21" r="1.6" opacity="0.85" />
+        <circle cx="20" cy="27" r="1.2" opacity="0.6" />
+        <circle cx="47" cy="33" r="1" opacity="0.45" />
+      </g>
+    </svg>
+  );
+}
+
+/**
+ * MomsUp — 협찬 관리 에이전트.
+ *
+ * 이 사이트도 옮겨올 파비콘이 없습니다. 대신 하는 일을 그렸습니다 —
+ * **받은 DM 한 통이 정리된 문서로 바뀌는 것**이 이 제품의 전부입니다.
+ * 말풍선 안에 줄이 반듯하게 서 있고, 옆에 반짝임 하나.
+ *
+ * 색은 실제 화면에서 뽑은 분홍입니다(#EC4899 · #F9A8D4 · #FB7185).
+ * 남색 · 회백 · 검정에 이어 넷째 아이콘이라 확실히 튀어야 했습니다.
+ */
+function Dm() {
+  return (
+    <svg viewBox="0 0 64 64" role="presentation">
+      <defs>
+        <linearGradient id="dtDmBg" x1="0" y1="0" x2="0.6" y2="1">
+          <stop offset="0" stopColor="#FB7185" />
+          <stop offset="0.5" stopColor="#F472B6" />
+          <stop offset="1" stopColor="#EC4899" />
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="64" height="64" rx="14" fill="url(#dtDmBg)" />
+      <path
+        d="M4 17a13 13 0 0 1 13-13h30a13 13 0 0 1 13 13v5c-9 5-17 7-28 7S12 26 4 22z"
+        fill="#FFFFFF"
+        opacity="0.14"
+      />
+
+      {/* 말풍선 — 받은 DM */}
+      <path
+        d="M14 16h36a5 5 0 0 1 5 5v20a5 5 0 0 1-5 5H31l-10 8v-8h-7a5 5 0 0 1-5-5V21a5 5 0 0 1 5-5z"
+        fill="#FFFFFF"
+      />
+      {/* 정리된 줄 — 들어올 때는 뭉친 글이었지만 나갈 때는 목록입니다 */}
+      <g fill="#EC4899">
+        <rect x="21" y="24" width="22" height="3.2" rx="1.6" />
+        <rect x="21" y="31" width="26" height="3.2" rx="1.6" />
+        <rect x="21" y="38" width="16" height="3.2" rx="1.6" />
+      </g>
+      <g fill="#FBCFE8">
+        <circle cx="47" cy="25.6" r="2.2" />
+        <circle cx="47" cy="39.6" r="2.2" />
+      </g>
+
+      {/* 반짝임 — AI 가 손을 댔다는 표시 */}
+      <path
+        d="M49 8.5l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z"
+        fill="#FFF1F6"
+      />
     </svg>
   );
 }
@@ -175,6 +419,9 @@ function Trash() {
 
 const ART: Record<IconArtKey, () => React.ReactElement> = {
   yut: Yut,
+  library: Library,
+  bonfire: Bonfire,
+  dm: Dm,
   folder: Folder,
   doc: Doc,
   globe: Globe,

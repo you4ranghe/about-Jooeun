@@ -5,6 +5,9 @@ import {
   IBM_Plex_Mono,
   Black_Han_Sans,
   Nanum_Pen_Script,
+  Gothic_A1,
+  Gowun_Batang,
+  Nanum_Myeongjo,
 } from "next/font/google";
 import "./globals.css";
 
@@ -58,6 +61,42 @@ const nanumPen = Nanum_Pen_Script({
   display: "swap",
 });
 
+/**
+ * 프로젝트 상세의 표제 — 굵은 고딕.
+ *
+ * 본문(Plex Sans KR)은 500 까지만 있어서 큰 제목이 물러 보입니다.
+ * 표제만 900 으로 세우려고 따로 받습니다. 700 은 카드 제목용입니다.
+ * 포스터체(Black Han Sans)를 쓰지 않은 이유: 상세는 읽는 문서라
+ * 표제까지 포스터가 되면 본문이 부속처럼 보입니다 (docs/07 §7.1).
+ */
+const gothicA1 = Gothic_A1({
+  variable: "--font-strong",
+  subsets: ["latin"],
+  weight: ["700", "900"],
+  display: "swap",
+});
+
+/**
+ * 명조 표제 — 책을 다루는 사이트의 상세페이지용.
+ *
+ * 상세페이지는 그 프로젝트 사이트의 글씨를 입습니다(docs/07 §5).
+ * 인터페이퍼(바우치 서재)가 책 제목에 Gowun Batang 을 쓰므로 같은 걸 씁니다.
+ */
+const gowunBatang = Gowun_Batang({
+  variable: "--font-serif",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+});
+
+/** 불멍 감정 소각장이 표제에 쓰는 명조. 같은 명조라도 인상이 달라 따로 받습니다 */
+const nanumMyeongjo = Nanum_Myeongjo({
+  variable: "--font-myeongjo",
+  subsets: ["latin"],
+  weight: ["700", "800"],
+  display: "swap",
+});
+
 /** 갤러리의 큰 표제 — 두꺼운 한글 */
 const blackHan = Black_Han_Sans({
   variable: "--font-heavy",
@@ -107,7 +146,7 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${jua.variable} ${plexKr.variable} ${plexMono.variable} ${blackHan.variable} ${nanumPen.variable} antialiased`}
+      className={`${jua.variable} ${plexKr.variable} ${plexMono.variable} ${blackHan.variable} ${nanumPen.variable} ${gothicA1.variable} ${gowunBatang.variable} ${nanumMyeongjo.variable} antialiased`}
     >
       <body>{children}</body>
     </html>

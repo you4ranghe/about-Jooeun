@@ -1,0 +1,882 @@
+/**
+ * 프로젝트 상세 — 결정 대장 (docs/07).
+ *
+ * ── 이 파일에는 색이 없습니다 ──
+ * 색·폰트·모서리는 전부 `projects.ts` 의 theme 이 인라인 변수로 넣어 줍니다.
+ * 상세페이지는 **그 프로젝트 사이트의 옷을 입습니다.** 윷놀이는 남색에 청록,
+ * 인터페이퍼는 회백 종이에 명조입니다. 두 페이지는 같아 보이면 안 됩니다.
+ *
+ * 처음에는 반대로 만들었습니다 — 바탕을 고정하고 강조색 하나만 바꿨더니
+ * 12개가 전부 "같은 페이지의 다른 테마" 로 보였습니다. 경계를 옮겼습니다.
+ *
+ * ── 그러면 한 사람의 포트폴리오로 어떻게 읽히나 ──
+ * 색이 아니라 **정보 순서와 결정 대장이라는 장치**가 같아서입니다.
+ * 히어로 → 증거 → 결정(버린 길/택한 길) → 만든 것 → 배운 것/못 한 것.
+ * 잡지의 특집면이 특집마다 색을 바꾸면서도 한 권으로 읽히는 것과 같습니다.
+ *
+ * ── 여기서 고정인 것 ──
+ * 본문 17px·400 이상, 행간 1.75, 한 줄 56자. 어떤 옷을 입어도 이건 안 바꿉니다.
+ */
+
+.led {
+  /* theme 이 안 들어와도 화면이 깨지지는 않도록 기본값을 둡니다 */
+  --bg: #0e1216;
+  --surface: #1a222a;
+  --sunken: #141a1e;
+  --fg: #eaeff4;
+  --mid: #9daab8;
+  --dim: #65727f;
+  --line: #27313b;
+  --take: #19a697;
+  --on-take: #06211e;
+  --drop: #8c5f63;
+  --radius: 12px;
+  --display: var(--font-strong), var(--font-body), sans-serif;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body), "Malgun Gothic", sans-serif;
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.75;
+  letter-spacing: -0.005em;
+  word-break: keep-all;
+}
+/* 명조를 쓰는 사이트는 표제가 책 제목처럼 보입니다.
+   같은 명조라도 얼굴이 다르므로 그 사이트가 쓰는 것을 그대로 씁니다. */
+.led[data-display="batang"] {
+  --display: var(--font-serif), "Batang", serif;
+}
+.led[data-display="myeongjo"] {
+  --display: var(--font-myeongjo), "Batang", serif;
+}
+
+.led__wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 4vw, 44px);
+}
+.led :focus-visible {
+  outline: 2.5px solid var(--take);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.led a {
+  color: inherit;
+}
+.led code {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.92em;
+}
+
+/* ── 머리 ── */
+.led__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono), monospace;
+  font-size: 13px;
+  color: var(--dim);
+}
+.led__top a {
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.led__top a:hover {
+  color: var(--fg);
+}
+.led__top nav {
+  display: flex;
+  gap: 20px;
+}
+
+/* ── 히어로 ── */
+.led__hero {
+  padding: clamp(52px, 9vw, 104px) 0 clamp(40px, 6vw, 64px);
+}
+.led__eyebrow {
+  margin: 0 0 22px;
+  font-family: var(--font-mono), monospace;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  color: var(--take);
+}
+.led__h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(38px, 7.4vw, 78px);
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+}
+/* 명조는 900 이 없고, 있어도 그만큼 눌러 쓰면 획이 뭉갭니다 */
+.led:not([data-display="gothic"]) .led__h1 {
+  font-weight: 700;
+  line-height: 1.16;
+  letter-spacing: -0.025em;
+}
+.led__h1 em {
+  display: block;
+  font-style: normal;
+  color: var(--take);
+}
+.led__sub {
+  max-width: 34ch;
+  margin: 24px 0 0;
+  font-size: clamp(18px, 2.2vw, 23px);
+  line-height: 1.62;
+  color: var(--mid);
+}
+
+/* ── 대비형 히어로 (docs/07 §3, H-BEFORE) ──
+   바뀌기 전이 위, 지금이 아래. 좌우로 놓지 않고 위아래로 쌓았습니다 —
+   좌우면 대등한 비교로 보이는데, 이건 **버리고 옮겨 간** 이야기입니다. */
+.led__swap {
+  position: relative;
+  margin: clamp(28px, 4vw, 40px) 0 0;
+  padding-left: 26px;
+}
+.led__swap::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  background: linear-gradient(180deg, var(--drop), var(--take));
+}
+.led__swapRow {
+  position: relative;
+  padding: 7px 0;
+}
+.led__swapRow::before {
+  content: "";
+  position: absolute;
+  left: -26px;
+  top: 17px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.led__swapRow--before::before {
+  background: var(--bg);
+  box-shadow: inset 0 0 0 2px var(--drop);
+}
+.led__swapRow--after::before {
+  background: var(--take);
+}
+.led__swapRow span {
+  display: block;
+  margin-bottom: 2px;
+  font-family: var(--font-mono), monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+}
+.led__swapRow--before span {
+  color: var(--drop);
+}
+.led__swapRow--after span {
+  color: var(--take);
+}
+.led__swapRow b {
+  font-size: clamp(17px, 2vw, 21px);
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+}
+.led__swapRow--before b {
+  color: var(--dim);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: color-mix(in srgb, var(--drop) 70%, transparent);
+}
+.led__swapRow--after b {
+  color: var(--fg);
+}
+.led__swapArrow {
+  display: block;
+  position: relative;
+  height: 14px;
+}
+.led__swapArrow::before {
+  content: "";
+  position: absolute;
+  left: -25px;
+  top: 3px;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid var(--take);
+  border-bottom: 2px solid var(--take);
+  transform: rotate(45deg);
+}
+
+/* ── 도해형 히어로 (docs/07 §3, H-DIAGRAM) ──
+   단계를 옆으로 늘어놓습니다. `faded` 가 붙은 마지막 칸은 점선으로 흐려져
+   "끝났지만 사라지지 않은" 상태를 나타냅니다. */
+.led__flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 10px;
+  margin: clamp(28px, 4vw, 40px) 0 0;
+}
+.led__step {
+  flex: 1 1 190px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.led__step[data-faded="true"] {
+  background: var(--sunken);
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--take) 40%, transparent);
+}
+.led__step em {
+  display: block;
+  margin-bottom: 7px;
+  font-style: normal;
+  font-family: var(--font-mono), monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  color: var(--take);
+  overflow-wrap: anywhere;
+}
+.led__step b {
+  display: block;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+}
+.led__step small {
+  display: block;
+  margin-top: 5px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--mid);
+}
+/* 칸 사이의 화살표 */
+.led__flowArrow {
+  align-self: center;
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid var(--take);
+  border-bottom: 2px solid var(--take);
+  transform: rotate(-45deg);
+}
+
+/* ── 수치 다섯 ── */
+.led__facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(122px, 1fr));
+  gap: 1px;
+  margin: clamp(36px, 5vw, 52px) 0 0;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.led__facts div {
+  background: var(--surface);
+  padding: 16px 18px;
+}
+.led__facts dt {
+  margin-bottom: 6px;
+  font-family: var(--font-mono), monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  color: var(--dim);
+}
+.led__facts dd {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.led__facts dd small {
+  margin-left: 4px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--mid);
+}
+.led__colophon {
+  margin: 18px 0 0;
+  font-family: var(--font-mono), monospace;
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--dim);
+}
+
+/* ── 공통 섹션 ── */
+.led__sec {
+  padding: clamp(48px, 8vw, 92px) 0;
+  border-top: 1px solid var(--line);
+}
+.led__k {
+  margin: 0 0 10px;
+  font-family: var(--font-mono), monospace;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: var(--dim);
+}
+.led__h2 {
+  margin: 0 0 14px;
+  font-family: var(--display);
+  font-size: clamp(26px, 3.6vw, 38px);
+  font-weight: 900;
+  line-height: 1.28;
+  letter-spacing: -0.03em;
+}
+.led:not([data-display="gothic"]) .led__h2 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.led__lede {
+  max-width: 56ch;
+  margin: 0 0 clamp(28px, 4vw, 44px);
+  font-size: 18.5px;
+  color: var(--mid);
+}
+
+/* ── 증거 · 눌러서 실행 ── */
+.led__run {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+}
+.led__runBar {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--sunken);
+}
+.led__runBar i {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--line);
+}
+.led__runBar span {
+  flex: 1;
+  margin-left: 8px;
+  font-family: var(--font-mono), monospace;
+  font-size: 12.5px;
+  color: var(--dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.led__runStage {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  display: grid;
+  place-items: center;
+}
+.led__runStage iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.led__runGo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 26px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.led__runGo span {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: var(--take);
+  color: var(--on-take);
+  font-size: 26px;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+.led__runGo:hover span {
+  transform: scale(1.07);
+  box-shadow: 0 0 0 14px color-mix(in srgb, var(--take) 12%, transparent);
+}
+.led__runGo b {
+  font-size: 19px;
+  font-weight: 700;
+}
+.led__runGo small {
+  font-family: var(--font-mono), monospace;
+  font-size: 12.5px;
+  color: var(--dim);
+}
+.led__runNote {
+  margin: 14px 0 0;
+  font-size: 15px;
+  color: var(--dim);
+}
+
+/* ── 증거 · 구조도 (docs/07 §4, E-DIAGRAM) ──
+   열어 볼 수 없는 것을 위한 증거입니다.
+   히어로의 도해형이 가로로 흐른다면 이쪽은 세로로 내려갑니다 —
+   같은 페이지에 둘이 있어도 서로 다른 것으로 읽혀야 합니다. */
+.led__pipe {
+  counter-reset: pipe;
+  position: relative;
+  margin: 0;
+  padding: 0 0 0 46px;
+  list-style: none;
+}
+.led__pipe::before {
+  content: "";
+  position: absolute;
+  left: 15px;
+  top: 18px;
+  bottom: 18px;
+  width: 2px;
+  background: linear-gradient(
+    180deg,
+    var(--take),
+    color-mix(in srgb, var(--take) 25%, transparent)
+  );
+}
+.led__pipe li {
+  counter-increment: pipe;
+  position: relative;
+  padding: 14px 0;
+}
+.led__pipe li::before {
+  content: counter(pipe);
+  position: absolute;
+  left: -46px;
+  top: 15px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--take);
+  color: var(--on-take);
+  font-family: var(--font-mono), monospace;
+  font-size: 13px;
+  font-weight: 500;
+}
+.led__pipe b {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.4;
+}
+.led__pipe em {
+  display: inline-block;
+  margin-bottom: 6px;
+  font-style: normal;
+  font-family: var(--font-mono), monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  color: var(--take);
+}
+.led__pipe small {
+  display: block;
+  margin-top: 5px;
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--mid);
+}
+
+/* ══ 결정 대장 — 페이지마다 옷은 달라도 이 장치는 같습니다 ══ */
+.led__forks {
+  position: relative;
+  display: grid;
+  gap: clamp(30px, 4vw, 46px);
+}
+/* 세로로 관통하는 한 줄 = 실제로 걸어간 길 */
+.led__forks::before {
+  content: "";
+  position: absolute;
+  left: calc(50% - 1px);
+  top: 14px;
+  bottom: 14px;
+  width: 2px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--take) 6%,
+    var(--take) 94%,
+    transparent
+  );
+}
+/* 움직임이 켜진 경우에만 자랍니다. JS 가 없어도 선은 그대로 보입니다 */
+.led[data-motion="on"] .led__forks::before {
+  transform: scaleY(var(--grow, 0));
+  transform-origin: top;
+  transition: transform 1.4s var(--ease);
+}
+
+.led__fork {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 84px 1fr;
+  align-items: start;
+}
+.led__ask {
+  grid-column: 1 / -1;
+  max-width: 34ch;
+  margin: 0 auto 22px;
+  text-align: center;
+  font-size: clamp(20px, 2.6vw, 27px);
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+}
+.led:not([data-display="gothic"]) .led__ask {
+  font-family: var(--display);
+}
+.led__ask span {
+  display: block;
+  margin-bottom: 9px;
+  font-family: var(--font-mono), monospace;
+  font-size: 12.5px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  color: var(--dim);
+}
+.led__dot {
+  grid-column: 2;
+  justify-self: center;
+  margin-top: 34px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--take);
+  box-shadow:
+    0 0 0 5px var(--bg),
+    0 0 0 7px color-mix(in srgb, var(--take) 32%, transparent);
+}
+
+.led__side {
+  position: relative;
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+/* 왼쪽 = 버린 길. 한 겹 눌리고 이름에 줄이 그어집니다 */
+.led__side--drop {
+  background: var(--sunken);
+  border-style: dashed;
+  color: var(--dim);
+}
+.led__side--drop::after {
+  content: "";
+  position: absolute;
+  right: -42px;
+  top: 41px;
+  width: 42px;
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--drop) 0 5px,
+    transparent 5px 10px
+  );
+}
+.led__side--take {
+  background: var(--surface);
+  border-color: color-mix(in srgb, var(--take) 34%, transparent);
+}
+.led__side--take::after {
+  content: "";
+  position: absolute;
+  left: -42px;
+  top: 41px;
+  width: 42px;
+  height: 2px;
+  background: var(--take);
+}
+.led__sideK {
+  margin: 0 0 10px;
+  font-family: var(--font-mono), monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.13em;
+}
+.led__side--drop .led__sideK {
+  color: var(--drop);
+}
+.led__side--take .led__sideK {
+  color: var(--take);
+}
+.led__sideT {
+  margin: 0 0 10px;
+  font-size: 19.5px;
+  font-weight: 700;
+  line-height: 1.42;
+  letter-spacing: -0.015em;
+}
+.led__side--drop .led__sideT {
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: var(--drop);
+}
+.led__side--take .led__sideT {
+  color: var(--fg);
+}
+.led__sideP {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.72;
+}
+.led__side--take .led__sideP {
+  color: var(--mid);
+}
+
+/* ── 만든 것 ── */
+.led__built {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(268px, 1fr));
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.led__built li {
+  list-style: none;
+  background: var(--surface);
+  padding: 22px 24px;
+}
+.led__built b {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.led__built p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--mid);
+}
+
+/* ── 배운 것 · 아직 못 한 것 ── */
+.led__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(18px, 3vw, 32px);
+}
+.led__pair section {
+  padding: 28px 30px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.led__pair h3 {
+  margin: 0 0 14px;
+  font-family: var(--font-mono), monospace;
+  font-size: 12.5px;
+  font-weight: 400;
+  letter-spacing: 0.13em;
+  color: var(--dim);
+}
+.led__pair p {
+  margin: 0;
+  font-size: 17.5px;
+  line-height: 1.78;
+}
+.led__pair ul {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 16.5px;
+  color: var(--mid);
+}
+.led__pair li {
+  margin-bottom: 9px;
+}
+.led__pair li:last-child {
+  margin-bottom: 0;
+}
+.led__pair--limits {
+  border-left: 3px solid var(--drop);
+}
+
+/* ── 꼬리 ── */
+.led__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: clamp(30px, 4vw, 44px);
+}
+.led__cta a {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 15px 26px;
+  border-radius: calc(var(--radius) - 2px);
+  font-size: 17px;
+  font-weight: 700;
+  text-decoration: none;
+  background: var(--take);
+  color: var(--on-take);
+  transition:
+    transform 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+.led__cta a.ghost {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--fg);
+}
+.led__cta a:hover {
+  transform: translateY(-2px);
+}
+.led__cta a.ghost:hover {
+  border-color: var(--take);
+  color: var(--take);
+}
+
+.led__pager {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--line);
+  border-top: 1px solid var(--line);
+}
+.led__pager a {
+  display: block;
+  padding: 26px 24px;
+  background: var(--bg);
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.led__pager a:hover {
+  background: var(--surface);
+}
+.led__pager a:last-child {
+  text-align: right;
+}
+.led__pager span {
+  display: block;
+  margin-bottom: 5px;
+  font-family: var(--font-mono), monospace;
+  font-size: 12.5px;
+  color: var(--dim);
+}
+.led__pager b {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.led__foot {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 34px 0 60px;
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+  color: var(--dim);
+}
+.led__foot a {
+  color: var(--take);
+  text-decoration: none;
+}
+
+/* ── 밝은 화면일 때 ──
+   어두운 화면에서는 "한 겹 올라온 것"을 밝기로 냈지만,
+   밝은 종이에서는 그 방법이 안 통합니다. 카드가 배경과 같은 흰색이 되면
+   경계가 사라지므로 옅은 그림자로 띄웁니다. */
+.led[data-mode="light"] .led__facts div,
+.led[data-mode="light"] .led__built li,
+.led[data-mode="light"] .led__pair section,
+.led[data-mode="light"] .led__side--take,
+.led[data-mode="light"] .led__run {
+  box-shadow: 0 1px 2px rgba(38, 35, 31, 0.05);
+}
+.led[data-mode="light"] .led__runBar i {
+  background: color-mix(in srgb, var(--dim) 45%, transparent);
+}
+
+/* ── 등장 ──
+   기본이 "보이는 상태" 입니다. JS 가 data-motion 을 켤 때만 숨겼다가 띄웁니다.
+   그래야 스크립트가 실패해도 본문이 사라지지 않습니다. */
+.led[data-motion="on"] .rise {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s var(--ease);
+}
+.led[data-motion="on"] .rise.in {
+  opacity: 1;
+  transform: none;
+}
+
+@media (max-width: 820px) {
+  .led {
+    font-size: 16.5px;
+  }
+  .led__fork {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .led__forks::before {
+    left: 11px;
+  }
+  .led__ask {
+    margin-left: 0;
+    padding-left: 34px;
+    text-align: left;
+  }
+  .led__dot {
+    position: absolute;
+    top: 6px;
+    left: 4px;
+    grid-column: 1;
+    justify-self: start;
+    margin: 0;
+  }
+  .led__side {
+    margin-left: 34px;
+  }
+  .led__side--drop::after,
+  .led__side--take::after {
+    display: none;
+  }
+  .led__pair {
+    grid-template-columns: 1fr;
+  }
+  .led__pager {
+    grid-template-columns: 1fr;
+  }
+  .led__pager a:last-child {
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .led *,
+  .led *::before {
+    transition: none !important;
+    animation: none !important;
+  }
+}
