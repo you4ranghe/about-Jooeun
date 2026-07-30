@@ -1073,28 +1073,9 @@ export async function getDesktopProjects(): Promise<Project[]> {
   return list.filter((p) => p.desktop);
 }
 
-/** 목록 위에 붙는 요약 수치. */
-export async function getProjectStats() {
-  const list = await getPublishedProjects();
-  const languages = new Set(list.map((p) => p.meta.language));
-  return {
-    count: list.length,
-    deployed: list.filter((p) => p.live !== "").length,
-    languages: [...languages],
-  };
-}
-
-/** 필터 칩에 쓸 태그 목록. 등장 횟수 순으로 정렬합니다. */
-export async function getTagsByFrequency(limit = 7): Promise<string[]> {
-  const list = await getPublishedProjects();
-  const tally = new Map<string, number>();
-  for (const project of list) {
-    for (const tag of project.tags) {
-      tally.set(tag, (tally.get(tag) ?? 0) + 1);
-    }
-  }
-  return [...tally.entries()]
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .slice(0, limit)
-    .map(([tag]) => tag);
-}
+/*
+ * 2026-07-30 에 getProjectStats() 와 getTagsByFrequency() 를 지웠습니다.
+ * 둘 다 갤러리 목록 화면(밴드 + 태그 필터)만 쓰던 함수인데,
+ * /projects 가 바탕화면이 되면서 그 화면이 사라졌습니다.
+ * 폴더 창(docs/06 S-07)을 만들 때 필요하면 그때 다시 만듭니다 — 각각 열 줄짜리입니다.
+ */

@@ -3,7 +3,6 @@ import {
   Jua,
   IBM_Plex_Sans_KR,
   IBM_Plex_Mono,
-  Black_Han_Sans,
   Nanum_Pen_Script,
   Gothic_A1,
   Gowun_Batang,
@@ -98,13 +97,11 @@ const nanumMyeongjo = Nanum_Myeongjo({
   display: "swap",
 });
 
-/** 갤러리의 큰 표제 — 두꺼운 한글 */
-const blackHan = Black_Han_Sans({
-  variable: "--font-heavy",
-  subsets: ["latin"],
-  weight: "400",
-  display: "swap",
-});
+/*
+ * 2026-07-30 에 Black Han Sans(--font-heavy)를 내렸습니다.
+ * 갤러리 목록의 큰 표제 전용이었는데 그 화면이 사라져 쓰는 곳이 0곳이 됐습니다.
+ * 포스터체가 다시 필요하면 그때 올립니다 — 지금 남은 일곱은 전부 쓰입니다.
+ */
 
 /**
  * OG 태그의 절대 주소를 만드는 기준값은 content/site.ts 에 있습니다.
@@ -145,7 +142,7 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${jua.variable} ${plexKr.variable} ${plexMono.variable} ${blackHan.variable} ${nanumPen.variable} ${gothicA1.variable} ${gowunBatang.variable} ${nanumMyeongjo.variable} antialiased`}
+      className={`${jua.variable} ${plexKr.variable} ${plexMono.variable} ${nanumPen.variable} ${gothicA1.variable} ${gowunBatang.variable} ${nanumMyeongjo.variable} antialiased`}
     >
       <body>{children}</body>
     </html>
