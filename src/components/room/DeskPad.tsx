@@ -47,7 +47,7 @@ export function DeskPad({
   children?: React.ReactNode;
 }) {
 
-  const { ready, mountRef } = useMusic();
+  const { ready, armed, arm, mountRef } = useMusic();
 
   return (
     <div
@@ -81,7 +81,23 @@ export function DeskPad({
           <div className="pad__stage" ref={stageRef}>
             <div className="ytm">
               <div className="ytm__video">
+                {/* 이 자리는 늘 여기 있습니다. 플레이어가 만들어지면 이 안에
+                    박히고 절대 옮기지 않습니다 — 옮기면 음악이 끊깁니다. */}
                 <div ref={mountRef} />
+                {/* 켜기 전. 아직 유튜브로 나간 요청이 한 건도 없습니다 */}
+                {!armed && (
+                  <button
+                    type="button"
+                    className="ytm__wake"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      arm();
+                    }}
+                  >
+                    <span>▶</span>
+                    음악 켜기
+                  </button>
+                )}
               </div>
               {children}
             </div>

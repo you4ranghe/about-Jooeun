@@ -40,6 +40,15 @@ interface MusicApi {
   current: Track | null;
   status: PlayStatus;
   ready: boolean;
+  /**
+   * 플레이어를 만들었는가.
+   *
+   * false 면 유튜브로 나간 요청이 **아직 한 건도 없습니다.**
+   * 화면은 이 값을 보고 플레이어 자리에 "켜기" 를 그릴지 정합니다.
+   */
+  armed: boolean;
+  /** 플레이어를 만듭니다. 사용자가 손댔을 때만 부릅니다 */
+  arm: () => void;
   /** 플레이어가 들어앉을 자리. DeskPad 가 이 ref 를 아이패드 화면에 답니다. */
   mountRef: React.RefObject<HTMLDivElement | null>;
   select: (t: Track) => void;
@@ -111,11 +120,33 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     currentRef.current = current;
   }, [current]);
 
+  /**
+   * 플레이어를 만드는 시점.
+   *
+   * ⚠️ 예전에는 방이 뜨자마자 만들었습니다. 그러면 **소리를 켜지 않은 방문자도**
+   *    youtube.com 에 요청을 보내고 쿠키를 받습니다. 자동재생은 안 했지만
+   *    접속 자체는 하고 있었고, 첫 로딩도 그만큼 무거웠습니다.
+   *
+   * 이제 사용자가 음악에 처음 손댈 때(재생·곡 선택·이전·다음) 만듭니다.
+   * 그 전까지 유튜브로 나가는 요청은 **한 건도 없습니다.**
+   *
+   * 플레이어가 만들어지면 `armed` 가 true 가 되고, 화면은 그걸 보고
+   * 자리를 비워 둘지 플레이어를 보여줄지 정합니다.
+   */
+  const [armed, setArmed] = useState(false);
+  const arming = useRef(false);
+
+  const arm = useCallback(() => {
+    if (arming.current || !PLAYLIST.length) return;
+    arming.current = true;
+    setArmed(true);
+  }, []);
+
   useEffect(() => {
-    if (!PLAYLIST.length) return;
+    if (!armed || !PLAYLIST.length) return;
     let dead = false;
 
-    // 자식(DeskPad)이 먼저 그려지므로 이 시점에 mountRef 는 채워져 있습니다.
+    // armed 가 되면 화면이 먼저 그려지므로 이 시점에 mountRef 는 채워져 있습니다.
     void loadYouTubeApi().then(() => {
       if (dead || !mountRef.current) return;
       const YT = (
@@ -125,7 +156,8 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       ).YT;
 
       player.current = new YT.Player(mountRef.current, {
-        videoId: PLAYLIST[0].id,
+        // 켜기 전에 곡을 골랐을 수 있습니다. 그 곡으로 시작합니다
+        videoId: (currentRef.current ?? PLAYLIST[0]).id,
         playerVars: { rel: 0, modestbranding: 1, playsinline: 1 },
         events: {
           onReady: () => !dead && setReady(true),
@@ -145,17 +177,22 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       player.current?.destroy();
       player.current = null;
     };
-  }, []);
+  }, [armed]);
 
   /* 재생 위치를 따라 읽지 않습니다.
      진행 막대는 영상 안 유튜브 컨트롤이 이미 그리고 있어서,
      0.5초마다 도는 타이머로 같은 값을 또 만들 이유가 없습니다. */
 
-  const select = useCallback((t: Track) => {
-    setCurrent(t);
-    // 사용자가 목록에서 고른 것이므로 바로 틀어도 됩니다
-    player.current?.loadVideoById(t.id);
-  }, []);
+  const select = useCallback(
+    (t: Track) => {
+      arm();
+      setCurrent(t);
+      /* 아직 플레이어가 없으면 여기서는 곡만 정해 둡니다.
+         플레이어가 만들어질 때 이 곡으로 시작합니다(videoId 를 current 로 줍니다). */
+      player.current?.loadVideoById(t.id);
+    },
+    [arm],
+  );
 
   /** 목록을 순환합니다. 마지막 곡이 끝나면 처음으로 돌아갑니다. */
   const step = useCallback(
@@ -178,10 +215,15 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   const togglePlay = useCallback(() => {
     const p = player.current;
-    if (!p) return;
+    /* 아직 안 켰으면 여기서 켭니다. 플레이어가 만들어지면서 바로 재생됩니다 —
+       사용자가 누른 것이므로 자동재생 금지 원칙에 어긋나지 않습니다. */
+    if (!p) {
+      arm();
+      return;
+    }
     if (status === "playing") p.pauseVideo();
     else p.playVideo();
-  }, [status]);
+  }, [status, arm]);
 
   return (
     <Ctx.Provider
@@ -189,6 +231,8 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
         current,
         status,
         ready,
+        armed,
+        arm,
         mountRef,
         select,
         togglePlay,

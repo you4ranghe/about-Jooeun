@@ -308,6 +308,35 @@
   height: 100%;
   border: 0;
 }
+/* 켜기 전. 이 상태에서는 유튜브로 나간 요청이 한 건도 없습니다 */
+.phMusic__wake {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 0;
+  background: #0b0f16;
+  color: rgba(255, 255, 255, 0.8);
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+.phMusic__wake span {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 17px;
+}
+.phMusic__wake:active {
+  background: #121826;
+}
+
 .phMusic__bar {
   display: flex;
   align-items: center;

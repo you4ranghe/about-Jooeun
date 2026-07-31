@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { Profile } from "@/content/resume";
 
 /**
@@ -32,9 +33,9 @@ export function AboutApp({
         <p className="phDoc__lede">{profile.role}</p>
 
         {isAdmin && (
-          <a className="phDoc__admin" href="/admin/profile">
+          <Link className="phDoc__admin" href="/admin/profile">
             ✎ 소개 고치기
-          </a>
+          </Link>
         )}
       </header>
 

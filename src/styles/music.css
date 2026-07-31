@@ -35,6 +35,40 @@
 .pad[data-zoom="true"] .ytm__video {
   inset: 0 var(--ytm-queue) var(--ytm-bar) 0;
 }
+/* ── 켜기 전 ──
+   예전에는 방이 뜨자마자 플레이어를 만들었습니다. 그러면 소리를 켜지 않은
+   방문자도 youtube.com 에 요청을 보내고 쿠키를 받습니다.
+   지금은 이 버튼을 눌러야 만들어집니다 — 그 전에는 나간 요청이 한 건도 없습니다. */
+.ytm__wake {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 0;
+  background: #07090d;
+  color: rgba(255, 255, 255, 0.82);
+  font-family: var(--font-body), sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.16s;
+}
+.ytm__wake span {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.13);
+  font-size: 19px;
+}
+.ytm__wake:hover {
+  background: #0d1118;
+}
+
 .ytm__video > div,
 .ytm__video iframe {
   width: 100%;

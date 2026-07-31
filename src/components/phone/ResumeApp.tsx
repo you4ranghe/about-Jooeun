@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { ResumeItem } from "@/content/types";
 import { ObjectArt } from "@/components/art/ObjectArt";
 
@@ -37,9 +38,9 @@ export function ResumeApp({
 
         {/* 관리자에게만 보이는 문. 폰에서도 주소를 외워 칠 일이 없어야 합니다 */}
         {isAdmin && (
-          <a className="phDoc__admin" href="/admin/resume">
+          <Link className="phDoc__admin" href="/admin/resume">
             ✎ 이력서 고치기
-          </a>
+          </Link>
         )}
       </header>
 

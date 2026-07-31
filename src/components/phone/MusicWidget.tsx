@@ -17,13 +17,22 @@ import { useMusic } from "@/components/music/MusicProvider";
  * 채용 담당자는 사무실에서 소리를 켜고 봅니다. 반드시 눌러야 소리가 납니다.
  */
 export function MusicWidget() {
-  const { current, status, ready, mountRef, next, prev } = useMusic();
+  const { current, status, ready, armed, arm, mountRef, next, prev } =
+    useMusic();
 
   return (
     <div className="phMusic">
       <div className="phMusic__screen">
         {/* 플레이어가 들어앉는 자리. 이 노드는 절대 옮기지 않습니다 */}
         <div ref={mountRef} />
+
+        {/* 켜기 전. 이 상태에서는 유튜브로 나간 요청이 한 건도 없습니다 */}
+        {!armed && (
+          <button type="button" className="phMusic__wake" onClick={arm}>
+            <span>▶</span>
+            음악 켜기
+          </button>
+        )}
       </div>
 
       <div className="phMusic__bar">

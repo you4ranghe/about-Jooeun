@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
 import type { ResumeItem } from "@/content/types";
 import type { Profile } from "@/content/resume";
 import { SPOTS, ROOM as L } from "@/content/layout";
@@ -1112,9 +1113,9 @@ export function RoomShell({
                   기획(docs/09 §5)에서 "들어가는 문은 화면 안에" 라고 정한 자리입니다 —
                   주소를 외워 치는 것 말고 길이 있어야 합니다. */}
               {isAdmin && (
-                <a className="sheet__admin" href="/admin/resume">
+                <Link className="sheet__admin" href="/admin/resume">
                   ✎ 이력서 고치기
-                </a>
+                </Link>
               )}
               <ul className="sheet__list">
                 {items.map((item) => (
