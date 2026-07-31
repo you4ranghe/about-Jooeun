@@ -1,6 +1,7 @@
 "use client";
 
 import type { ResumeItem } from "@/content/types";
+import type { Profile } from "@/content/resume";
 import type { PhoneAppItem } from "@/content/phone";
 import { RoomShell } from "@/components/room/RoomShell";
 import { PhoneShell } from "@/components/phone/PhoneShell";
@@ -24,10 +25,12 @@ import { useIsPhone } from "@/components/phone/useIsPhone";
  */
 export function SiteShell({
   items,
+  profile,
   apps,
   children,
 }: {
   items: ResumeItem[];
+  profile: Profile;
   apps: PhoneAppItem[];
   children: React.ReactNode;
 }) {
@@ -35,10 +38,14 @@ export function SiteShell({
 
   if (phone) {
     return (
-      <PhoneShell items={items} apps={apps}>
+      <PhoneShell items={items} profile={profile} apps={apps}>
         {children}
       </PhoneShell>
     );
   }
-  return <RoomShell items={items}>{children}</RoomShell>;
+  return (
+    <RoomShell items={items} profile={profile}>
+      {children}
+    </RoomShell>
+  );
 }

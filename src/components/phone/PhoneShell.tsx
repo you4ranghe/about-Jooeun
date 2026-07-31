@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import type { ResumeItem } from "@/content/types";
+import type { Profile } from "@/content/resume";
 import type { PhoneAppItem } from "@/content/phone";
 import { useSky } from "@/components/room/useSky";
 import { useViewerIsAdmin } from "@/components/room/useViewerIsAdmin";
@@ -49,10 +50,12 @@ const SHEET_TITLE: Record<Sheet, string> = {
 
 export function PhoneShell({
   items,
+  profile,
   apps,
   children,
 }: {
   items: ResumeItem[];
+  profile: Profile;
   apps: PhoneAppItem[];
   children: React.ReactNode;
 }) {
@@ -144,7 +147,11 @@ export function PhoneShell({
           >
             {sheet === "resume" && <ResumeApp items={items} />}
             {sheet === "about" && (
-              <AboutApp projects={apps.length - 1} resumeCount={items.length} />
+              <AboutApp
+                profile={profile}
+                projects={apps.length - 1}
+                resumeCount={items.length}
+              />
             )}
             {sheet === "weather" && <WeatherApp sky={sky} />}
             {sheet === "timeline" && <TimelineApp apps={apps} />}

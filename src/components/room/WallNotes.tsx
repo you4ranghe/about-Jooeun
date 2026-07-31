@@ -1,6 +1,7 @@
 "use client";
 
 import { ROOM as L } from "@/content/layout";
+import type { Profile } from "@/content/resume";
 import type { Sky } from "./useSky";
 
 /**
@@ -18,6 +19,7 @@ import type { Sky } from "./useSky";
  * 기울기도 메모마다 다르게 줍니다. 전부 반듯하면 붙인 게 아니라 인쇄한 것 같습니다.
  */
 export function WallNotes({
+  profile,
   readCount,
   total,
   onOpenResume,
@@ -26,6 +28,7 @@ export function WallNotes({
   onCycleLight,
   lightLabel,
 }: {
+  profile: Profile;
   readCount: number;
   total: number;
   onOpenResume: () => void;
@@ -52,8 +55,9 @@ export function WallNotes({
         }}
       >
         <span className="note__tape" />
-        <h1 className="note__name">you4ranghe의 작업실</h1>
-        <p className="note__role">backend engineer · 4 yrs · seoul</p>
+        {/* 이름과 직함은 DB 에서 옵니다. /admin/profile 에서 고칩니다 (docs/09) */}
+        <h1 className="note__name">{profile.name || "이름을 채워 주세요"}</h1>
+        <p className="note__role">{profile.role}</p>
       </div>
 
       {/* ── 이력서 ──

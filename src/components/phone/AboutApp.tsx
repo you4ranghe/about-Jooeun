@@ -1,5 +1,7 @@
 "use client";
 
+import type { Profile } from "@/content/resume";
+
 /**
  * 소개 앱.
  *
@@ -12,9 +14,11 @@
  * 어차피 홈 화면이 나오기 때문입니다.
  */
 export function AboutApp({
+  profile,
   projects,
   resumeCount,
 }: {
+  profile: Profile;
   projects: number;
   resumeCount: number;
 }) {
@@ -22,8 +26,8 @@ export function AboutApp({
     <div className="phDoc">
       <header className="phDoc__top">
         <p className="phDoc__k">ABOUT</p>
-        <h1 className="phDoc__h1">you4ranghe의 작업실</h1>
-        <p className="phDoc__lede">backend engineer · 4 yrs · seoul</p>
+        <h1 className="phDoc__h1">{profile.name || "이름을 채워 주세요"}</h1>
+        <p className="phDoc__lede">{profile.role}</p>
       </header>
 
       <dl className="phAbout">
@@ -57,14 +61,18 @@ export function AboutApp({
       <section className="phAbout__sec">
         <h2>연락</h2>
         <div className="phLinks">
-          <a href="mailto:you4ranghe@gmail.com">you4ranghe@gmail.com</a>
-          <a
-            href="https://github.com/you4ranghe"
-            target="_blank"
-            rel="noopener"
-          >
-            github.com/you4ranghe ↗
-          </a>
+          {profile.email && (
+            <a href={`mailto:${profile.email}`}>{profile.email}</a>
+          )}
+          {profile.github && (
+            <a
+              href={`https://github.com/${profile.github}`}
+              target="_blank"
+              rel="noopener"
+            >
+              github.com/{profile.github} ↗
+            </a>
+          )}
         </div>
       </section>
 

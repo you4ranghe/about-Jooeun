@@ -9,6 +9,7 @@ import {
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import type { ResumeItem } from "@/content/types";
+import type { Profile } from "@/content/resume";
 import { SPOTS, ROOM as L } from "@/content/layout";
 import { ObjectArt } from "@/components/art/ObjectArt";
 import { DeskClock } from "./DeskClock";
@@ -86,9 +87,11 @@ const STARS = Array.from({ length: 34 }, (_, i) => {
 
 export function RoomShell({
   items,
+  profile,
   children,
 }: {
   items: ResumeItem[];
+  profile: Profile;
   children: React.ReactNode;
 }) {
   /** 화면을 가리는 용도일 뿐입니다. 진짜 방어선은 RLS 입니다. */
@@ -638,6 +641,7 @@ export function RoomShell({
           <div className="layer l-wall">
             {/* 화면에 떠 있던 HUD 를 벽으로 옮긴 것들 */}
             <WallNotes
+              profile={profile}
               readCount={readCount}
               total={items.length}
               onOpenResume={() => setListOpen(true)}

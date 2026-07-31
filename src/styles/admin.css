@@ -1,0 +1,328 @@
+/**
+ * 관리자 화면 (docs/09).
+ *
+ * 방도 폰도 아닌 **평범한 폼**입니다. 여기서 멋을 부릴 이유가 없습니다 —
+ * 보는 사람은 한 명이고 하는 일은 글을 채우는 것뿐입니다.
+ * 대신 폰에서 손대야 하므로 입력칸을 크게, 손가락이 닿을 만큼 띄웁니다.
+ */
+
+.adm {
+  min-height: 100dvh;
+  background: #f4f2ee;
+  color: #24201b;
+  font-family: var(--font-body), "Malgun Gothic", sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+.adm__top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px clamp(16px, 4vw, 32px);
+  border-bottom: 1px solid #e0dbd1;
+  background: #fff;
+}
+.adm__home {
+  font-weight: 700;
+  text-decoration: none;
+  color: inherit;
+}
+.adm__top nav {
+  display: flex;
+  gap: 16px;
+  margin-left: auto;
+  font-size: 15px;
+}
+.adm__top nav a {
+  color: #6b6155;
+  text-decoration: none;
+}
+.adm__top nav a:hover {
+  color: #b4574a;
+}
+
+.adm__main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: clamp(20px, 5vw, 40px) clamp(16px, 4vw, 32px) 80px;
+}
+
+.adm__head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.adm__h1 {
+  margin: 0;
+  font-size: clamp(24px, 4vw, 31px);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+.adm__back {
+  margin-left: auto;
+  color: #6b6155;
+  text-decoration: none;
+  font-size: 15px;
+  flex: none;
+}
+
+/* ── 첫 화면 ── */
+.adm__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+.adm__card {
+  display: block;
+  padding: 20px 22px;
+  border: 1px solid #e0dbd1;
+  border-radius: 14px;
+  background: #fff;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s;
+}
+.adm__card:hover {
+  border-color: #b4574a;
+}
+.adm__card b {
+  display: block;
+  font-size: 19px;
+}
+.adm__card span {
+  display: block;
+  margin-top: 3px;
+  color: #b4574a;
+  font-weight: 700;
+}
+.adm__card small {
+  display: block;
+  margin-top: 8px;
+  font-size: 13.5px;
+  color: #8a8072;
+  line-height: 1.6;
+}
+
+/* ── 목록 ── */
+.adm__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid #e0dbd1;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+.adm__list li + li {
+  border-top: 1px solid #eee9e0;
+}
+.adm__list a {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 15px 18px;
+  color: inherit;
+  text-decoration: none;
+}
+.adm__list a:hover {
+  background: #faf8f4;
+}
+.adm__list li[data-off="true"] a {
+  opacity: 0.55;
+}
+.adm__sort {
+  flex: none;
+  width: 30px;
+  font-family: var(--font-mono), monospace;
+  font-size: 13px;
+  color: #a89e90;
+  text-align: right;
+}
+.adm__t {
+  flex: 1;
+  min-width: 0;
+}
+.adm__t b {
+  display: block;
+  font-size: 16.5px;
+  font-weight: 700;
+}
+.adm__t small {
+  display: block;
+  font-size: 12.5px;
+  color: #8a8072;
+}
+.adm__draft {
+  flex: none;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #eee9e0;
+  font-size: 12px;
+  color: #8a8072;
+}
+
+/* ── 폼 ── */
+.adm__form {
+  display: grid;
+  gap: 20px;
+  padding: clamp(18px, 4vw, 28px);
+  border: 1px solid #e0dbd1;
+  border-radius: 14px;
+  background: #fff;
+}
+.adm__form label {
+  display: block;
+}
+.adm__form label > span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.adm__form input,
+.adm__form select,
+.adm__form textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d9d3c8;
+  border-radius: 10px;
+  background: #fdfcfa;
+  color: inherit;
+  font: inherit;
+  /* 아이폰은 16px 미만 입력칸에 자동으로 확대합니다 */
+  font-size: 16px;
+}
+.adm__form textarea {
+  font-family: var(--font-mono), monospace;
+  font-size: 14.5px;
+  line-height: 1.7;
+  resize: vertical;
+}
+.adm__form input:focus,
+.adm__form select:focus,
+.adm__form textarea:focus {
+  outline: 2px solid #b4574a;
+  outline-offset: 1px;
+  border-color: transparent;
+}
+.adm__form input[readonly] {
+  background: #f2efe9;
+  color: #8a8072;
+}
+.adm__form label > small {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  color: #8a8072;
+  line-height: 1.6;
+}
+.adm__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.adm__check {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #f7f4ee;
+}
+.adm__check input {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+.adm__check span {
+  font-weight: 700;
+  margin: 0 !important;
+}
+.adm__check small {
+  width: 100%;
+  margin: 0;
+  font-size: 13px;
+  color: #8a8072;
+}
+
+.adm__actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.adm__btn {
+  display: inline-block;
+  padding: 13px 28px;
+  border: 0;
+  border-radius: 10px;
+  background: #24201b;
+  color: #faf8f4;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+.adm__btn:hover {
+  background: #b4574a;
+}
+
+/* 지우기는 눈에 띄되 먼저 눈에 들지는 않게 */
+.adm__danger {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid #e0dbd1;
+}
+.adm__danger button {
+  padding: 11px 20px;
+  border: 1px solid #d3a29a;
+  border-radius: 10px;
+  background: none;
+  color: #b4574a;
+  font: inherit;
+  cursor: pointer;
+}
+.adm__danger button:hover {
+  background: #b4574a;
+  color: #fff;
+}
+.adm__danger small {
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #8a8072;
+}
+
+.adm__note {
+  margin-top: 26px;
+  font-size: 14px;
+  color: #8a8072;
+  line-height: 1.75;
+}
+.adm__empty {
+  padding: 28px 22px;
+  border: 1px dashed #d9d3c8;
+  border-radius: 14px;
+  background: #fff;
+  color: #6b6155;
+  text-align: center;
+}
+.adm__error {
+  padding: 14px 18px;
+  border-radius: 10px;
+  background: #fbeae7;
+  color: #93392e;
+  font-size: 14.5px;
+}
+
+@media (max-width: 560px) {
+  .adm__pair {
+    grid-template-columns: 1fr;
+  }
+}
