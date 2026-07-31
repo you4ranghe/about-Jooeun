@@ -1,6 +1,6 @@
 "use client";
 
-import { useRoomLayout } from "./useRoomLayout";
+import { ROOM as L } from "@/content/layout";
 
 /**
  * 책상 위 책꽂이.
@@ -51,7 +51,7 @@ const SIDE = 11;
 const BASE = 10;
 
 export function DeskShelf() {
-  const L = useRoomLayout();
+
   const shelf = L.props.bookshelf;
   // 세로 무대에는 책꽂이가 없습니다. 640px 안에 다 넣으면 얼룩이 됩니다.
   if (!shelf?.h) return null;

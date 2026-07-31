@@ -142,8 +142,30 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
+      /* 아래 인라인 스크립트가 첫 페인트 전에 data-shell 을 심습니다.
+         서버가 보낸 HTML 에는 없는 속성이라 리액트가 불일치로 봅니다 —
+         **일부러 만든 차이**이므로 이 요소의 속성 검사만 끕니다.
+         한 겹만 적용되므로 안쪽 내용은 그대로 검사받습니다. */
+      suppressHydrationWarning
       className={`${jua.variable} ${plexKr.variable} ${plexMono.variable} ${nanumPen.variable} ${gothicA1.variable} ${gowunBatang.variable} ${nanumMyeongjo.variable} antialiased`}
     >
+      <head>
+        {/*
+          그리기 전에 어떤 셸인지 심어 둡니다 (docs/08 §6).
+
+          서버는 화면 크기를 모르므로 SSR 은 서재를 그립니다. 그대로 두면
+          폰에서 **방이 한 번 번쩍한 뒤** 홈 화면으로 바뀝니다.
+          이 한 줄이 첫 페인트 전에 html[data-shell] 을 정해 주고,
+          CSS 가 맞지 않는 셸을 감춥니다. 리액트는 그 뒤에 조용히 교체합니다.
+
+          인터페이퍼(02)가 다크모드 깜빡임을 막은 것과 같은 수법입니다.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{document.documentElement.dataset.shell=matchMedia("(max-width: 900px)").matches?"phone":"room"}catch(e){}`,
+          }}
+        />
+      </head>
       <body>{children}</body>
     </html>
   );

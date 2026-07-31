@@ -1,6 +1,6 @@
 "use client";
 
-import { useRoomLayout } from "./useRoomLayout";
+import { ROOM as L } from "@/content/layout";
 import type { Sky } from "./useSky";
 
 /**
@@ -34,7 +34,7 @@ export function WallNotes({
   onCycleLight: () => void;
   lightLabel: string;
 }) {
-  const N = useRoomLayout().notes;
+  const N = L.notes;
   const pct = total > 0 ? (readCount / total) * 100 : 0;
 
   return (

@@ -505,7 +505,65 @@ function Trash() {
   );
 }
 
+/**
+ * 캘린더 앱 — 아이폰 홈 화면용 (docs/08).
+ *
+ * 흰 타일에 빨간 머리띠. 아이폰 캘린더는 오늘 날짜를 아이콘에 찍지만
+ * 여기서는 격자만 둡니다 — 서버가 그리는 그림이라 날짜를 넣으면
+ * **배포한 날이 굳어 버립니다.** 벽걸이 캘린더에서 이미 겪은 문제입니다.
+ */
+function CalendarIcon() {
+  return (
+    <svg viewBox="0 0 64 64" role="presentation">
+      <rect x="0" y="0" width="64" height="64" rx="14" fill="#FFFFFF" />
+      <path d="M0 14A14 14 0 0 1 14 0h36a14 14 0 0 1 14 14v5H0z" fill="#E5453B" />
+      <g fill="#D8D5D0">
+        {[0, 1, 2, 3].map((r) =>
+          [0, 1, 2, 3, 4].map((c) => (
+            <rect
+              key={`${r}-${c}`}
+              x={9 + c * 9.6}
+              y={26 + r * 8.4}
+              width="6.4"
+              height="5"
+              rx="1.4"
+            />
+          )),
+        )}
+      </g>
+      {/* 오늘 자리 하나만 색을 둡니다. 숫자를 적지 않으니 날짜가 굳지 않습니다 */}
+      <rect x="37.8" y="34.4" width="6.4" height="5" rx="1.4" fill="#E5453B" />
+    </svg>
+  );
+}
+
+/** 메일 — 독에 놓입니다. 파란 타일에 흰 봉투 */
+function Mail() {
+  return (
+    <svg viewBox="0 0 64 64" role="presentation">
+      <defs>
+        <linearGradient id="dtMailBg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#5BC0F8" />
+          <stop offset="1" stopColor="#1D82E8" />
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="64" height="64" rx="14" fill="url(#dtMailBg)" />
+      <rect x="12" y="20" width="40" height="26" rx="4.5" fill="#FFFFFF" />
+      <path
+        d="M13.5 23.5l16.4 12.6a3.4 3.4 0 0 0 4.2 0L50.5 23.5"
+        fill="none"
+        stroke="#1D82E8"
+        strokeWidth="3.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 const ART: Record<IconArtKey, () => React.ReactElement> = {
+  calendar: CalendarIcon,
+  mail: Mail,
   yut: Yut,
   library: Library,
   bonfire: Bonfire,

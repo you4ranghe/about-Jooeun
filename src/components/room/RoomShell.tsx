@@ -9,8 +9,7 @@ import {
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import type { ResumeItem } from "@/content/types";
-import { SPOTS } from "@/content/layout";
-import { useRoomLayout } from "./useRoomLayout";
+import { SPOTS, ROOM as L } from "@/content/layout";
 import { ObjectArt } from "@/components/art/ObjectArt";
 import { DeskClock } from "./DeskClock";
 import { DeskShelf } from "./DeskShelf";
@@ -92,11 +91,6 @@ export function RoomShell({
   items: ResumeItem[];
   children: React.ReactNode;
 }) {
-  /**
-   * 지금 화면에 맞는 무대. 가로(1600×900)와 세로(820×1440) 두 벌입니다.
-   * 카메라 계산이 전부 이 값을 쓰므로 화면을 돌리면 무대째 바뀝니다.
-   */
-  const L = useRoomLayout();
   /** 화면을 가리는 용도일 뿐입니다. 진짜 방어선은 RLS 입니다. */
   const isAdmin = useViewerIsAdmin();
   const pathname = usePathname();
@@ -300,8 +294,7 @@ export function RoomShell({
     }
 
     fittedTo.current = { w: vw, h: vh };
-    // 무대가 바뀌면(가로 ↔ 세로) 캘린더·아이패드의 목표 크기도 달라집니다
-  }, [L]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   useLayoutEffect(() => {
     fit();
@@ -309,27 +302,6 @@ export function RoomShell({
     if (screenRef.current) ro.observe(screenRef.current);
     return () => ro.disconnect();
   }, [fit]);
-
-  /* ── 화면을 돌렸을 때 ──────────────────────────
-     세로/가로가 바뀌면 **무대 자체가 교체**됩니다(820×1440 ↔ 1600×900).
-     좌표계가 통째로 달라지므로 축척과 카메라를 새 무대 기준으로 다시 잡습니다.
-     크기 변화만 처리하는 아래 resize 핸들러로는 부족합니다 —
-     무대 교체는 렌더 결과라 이벤트보다 먼저 일어날 수 있습니다. */
-  useLayoutEffect(() => {
-    if (!settled.current) return;
-    fit();
-    const shot = inCalendar
-      ? calendarShot(sidePanel)
-      : inMusic
-        ? padShot()
-        : inScreen
-          ? screenShot()
-          : baseShot();
-    if (shot) {
-      move(css(shot), null, 0);
-      lastShot.current = zoomedIn ? shot : null;
-    }
-  }, [L.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── 카메라 ─────────────────────────────── */
   const move = (target: string, via: string | null, duration: number) => {

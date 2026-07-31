@@ -244,6 +244,8 @@ export type IconArtKey =
   | "dm"
   | "tray"
   | "home"
+  | "calendar"
+  | "mail"
   | "folder"
   | "doc"
   | "globe"

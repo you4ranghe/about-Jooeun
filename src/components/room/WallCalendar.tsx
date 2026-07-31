@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRoomLayout } from "./useRoomLayout";
+import { ROOM as L } from "@/content/layout";
 
 /**
  * 벽에 걸린 종이 달력. 실제 이번 달(KST)을 보여주고 오늘에 표시가 붙습니다.
@@ -61,7 +61,7 @@ export function WallCalendar({
   zoomed?: boolean;
   children?: React.ReactNode;
 }) {
-  const L = useRoomLayout();
+
   const [m, setM] = useState<Month | null>(null);
 
   useEffect(() => {

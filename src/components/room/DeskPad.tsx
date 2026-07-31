@@ -1,6 +1,6 @@
 "use client";
 
-import { useRoomLayout } from "./useRoomLayout";
+import { ROOM as L } from "@/content/layout";
 import { useMusic } from "@/components/music/MusicProvider";
 /* 화면 안 .ytm 마크업은 /music 이 아닐 때도 늘 여기 있습니다.
    그래서 이 스타일도 늘 필요합니다 — MusicApp 에만 걸어 두면
@@ -46,7 +46,7 @@ export function DeskPad({
   /** 확대했을 때 화면 안에 뜨는 유튜브 뮤직 UI */
   children?: React.ReactNode;
 }) {
-  const L = useRoomLayout();
+
   const { ready, mountRef } = useMusic();
 
   return (

@@ -9,7 +9,7 @@ import {
 } from "@/content/projects";
 import { RunEmbed } from "@/components/detail/RunEmbed";
 import { LedgerMotion } from "@/components/detail/LedgerMotion";
-import { BrowserWindow } from "@/components/desktop/BrowserWindow";
+import { AppFrame } from "@/components/shell/AppFrame";
 import "@/styles/detail.css";
 
 /**
@@ -93,7 +93,7 @@ export default async function ProjectDetailPage({ params }: Props) {
   } as React.CSSProperties;
 
   return (
-    <BrowserWindow
+    <AppFrame
       title={project.title}
       icon={project.icon ?? "globe"}
       path={`/projects/${project.slug}`}
@@ -360,6 +360,6 @@ export default async function ProjectDetailPage({ params }: Props) {
         </footer>
         </div>
       </div>
-    </BrowserWindow>
+    </AppFrame>
   );
 }
