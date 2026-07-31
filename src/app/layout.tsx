@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   Jua,
   IBM_Plex_Sans_KR,
@@ -107,6 +107,26 @@ const nanumMyeongjo = Nanum_Myeongjo({
  * OG 태그의 절대 주소를 만드는 기준값은 content/site.ts 에 있습니다.
  * 브라우저 창의 주소 표시줄도 같은 값을 씁니다 — 도메인을 바꿀 때 한 곳만 고칩니다.
  */
+
+/**
+ * 화면 설정 — 폰에서 꼭 필요한 두 가지입니다 (docs/08).
+ *
+ * `viewportFit: "cover"` 가 없으면 `env(safe-area-inset-*)` 이 **전부 0** 입니다.
+ * 그러면 상태 표시줄이 노치 아래로 들어가고 홈 인디케이터가 기기 것과 겹칩니다.
+ * 아이폰 홈 화면인 척하는 화면에서 그건 바로 티가 납니다.
+ *
+ * `themeColor` 는 브라우저 주소창 색입니다. 낮과 밤 값을 따로 줘서
+ * 화면 위쪽 띠가 배경과 이어지게 합니다 — 안 맞으면 흰 띠가 얹힌 것처럼 보입니다.
+ */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#2b5a8c" },
+    { media: "(prefers-color-scheme: dark)", color: "#101828" },
+  ],
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

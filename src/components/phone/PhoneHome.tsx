@@ -6,6 +6,7 @@ import type { ResumeItem } from "@/content/types";
 import { PHONE_DOCK, type PhoneAppItem } from "@/content/phone";
 import type { Sky } from "@/components/room/useSky";
 import { IconArt } from "@/components/desktop/IconArt";
+import { MusicWidget } from "./MusicWidget";
 
 /**
  * 홈 화면 — 위젯 둘, 앱 아이콘, 독 (docs/08 §3).
@@ -53,10 +54,18 @@ export function PhoneHome({
   apps,
   sky,
   items,
+  isAdmin,
+  onOpenSheet,
+  onLocked,
 }: {
   apps: PhoneAppItem[];
   sky: Sky;
   items: ResumeItem[];
+  isAdmin: boolean;
+  /** 주소가 없는 앱 — 이력서·소개 */
+  onOpenSheet: (s: "resume" | "about") => void;
+  /** 관리자 전용 앱을 눌렀을 때 */
+  onLocked: (title: string) => void;
 }) {
   const router = useRouter();
   const [now, setNow] = useState<ReturnType<typeof readKst> | null>(null);
@@ -81,6 +90,8 @@ export function PhoneHome({
 
   return (
     <div className="phHome">
+      {/* 굴러가는 영역. 독은 이 바깥이라 늘 아래에 붙어 있습니다 */}
+      <div className="phHome__scroll">
       {/* ── 위젯 둘 ── */}
       <div className="phWidgets">
         <div className="phW phW--clock">
@@ -118,7 +129,13 @@ export function PhoneHome({
             type="button"
             className="phIcon"
             data-appicon={app.id}
-            onClick={() => router.push(app.href)}
+            /* 관리자 전용 앱은 보내기 전에 막습니다.
+               그냥 보내면 미들웨어가 로그인 페이지로 튕겨 냅니다 */
+            onClick={() =>
+              app.guard === "admin" && !isAdmin
+                ? onLocked(app.title)
+                : router.push(app.href)
+            }
             aria-label={`${app.title} 열기`}
           >
             <span className="phIcon__art">
@@ -127,16 +144,43 @@ export function PhoneHome({
             <span className="phIcon__label">{app.label}</span>
           </button>
         ))}
+
+        {/* 주소 없이 열리는 앱 둘. 격자에서는 다른 아이콘과 같아 보입니다 */}
+        <button
+          type="button"
+          className="phIcon"
+          data-appicon="resume"
+          onClick={() => onOpenSheet("resume")}
+          aria-label={`이력서 열기 — ${items.length}가지`}
+        >
+          <span className="phIcon__art">
+            <IconArt art="doc" />
+          </span>
+          <span className="phIcon__label">이력서</span>
+        </button>
+
+        <button
+          type="button"
+          className="phIcon"
+          data-appicon="about"
+          onClick={() => onOpenSheet("about")}
+          aria-label="소개 열기"
+        >
+          <span className="phIcon__art">
+            <IconArt art="card" />
+          </span>
+          <span className="phIcon__label">소개</span>
+        </button>
       </div>
 
-      {/* 이력서는 다음 단계에서 앱이 됩니다. 그때까지는 이 줄이 유일한 입구입니다 */}
-      <p className="phHome__note">
-        저장소 {apps.length - 1}개 · 이력서 {items.length}가지는 준비 중입니다
-      </p>
+      {/* ── 재생 중 ──
+          앱이 아니라 위젯입니다. 플레이어를 옮기면 음악이 끊깁니다 */}
+      <MusicWidget />
 
       <span className="phDots" aria-hidden="true">
         <i data-on="true" />
       </span>
+      </div>
 
       {/* ── 독 ── */}
       <div className="phDock">

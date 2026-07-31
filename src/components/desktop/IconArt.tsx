@@ -561,9 +561,37 @@ function Mail() {
   );
 }
 
+/**
+ * 소개 — 이름과 하는 일이 적힌 명함 한 장.
+ *
+ * 방에서는 벽에 테이프로 붙인 종이였습니다(`note--brand`).
+ * 폰에는 벽이 없으니 손에 쥐는 것으로 바꿨습니다. 종이 색은 그 메모에서 가져왔습니다.
+ */
+function Card() {
+  return (
+    <svg viewBox="0 0 64 64" role="presentation">
+      <rect x="0" y="0" width="64" height="64" rx="14" fill="#3D3229" />
+      <rect x="9" y="16" width="46" height="32" rx="3.5" fill="#FBF6E9" />
+      {/* 사람 */}
+      <circle cx="23" cy="28" r="5.4" fill="#B4574A" />
+      <path
+        d="M14.5 40.5c1.4-4.2 4.6-6.3 8.5-6.3s7.1 2.1 8.5 6.3z"
+        fill="#B4574A"
+      />
+      {/* 이름 줄 */}
+      <g fill="#6B6155">
+        <rect x="36" y="25" width="15" height="3" rx="1.5" />
+        <rect x="36" y="31" width="12" height="2.4" rx="1.2" />
+        <rect x="36" y="36.5" width="14" height="2.4" rx="1.2" />
+      </g>
+    </svg>
+  );
+}
+
 const ART: Record<IconArtKey, () => React.ReactElement> = {
   calendar: CalendarIcon,
   mail: Mail,
+  card: Card,
   yut: Yut,
   library: Library,
   bonfire: Bonfire,

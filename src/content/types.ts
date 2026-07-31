@@ -246,6 +246,7 @@ export type IconArtKey =
   | "home"
   | "calendar"
   | "mail"
+  | "card"
   | "folder"
   | "doc"
   | "globe"

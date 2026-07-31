@@ -1,8 +1,6 @@
 "use client";
 
 import { useLayoutEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import type { PhoneAppItem } from "@/content/phone";
 
 /**
  * 전체화면 앱 (docs/08 §4).
@@ -23,20 +21,30 @@ const CLOSE_MS = 240;
 const SEED = 0.4;
 
 export function PhoneApp({
-  app,
+  id,
+  title,
+  onClose,
   children,
 }: {
-  app: PhoneAppItem;
+  /** 어느 아이콘에서 자라날지. 홈 화면의 `data-appicon` 과 맞춥니다 */
+  id: string;
+  title: string;
+  /**
+   * 닫는 방법은 앱마다 다릅니다.
+   *   주소가 있는 앱(프로젝트·캘린더) → 홈 주소로 이동
+   *   주소가 없는 앱(이력서·소개)     → 상태를 내림
+   * 그래서 닫는 일은 부모가 정합니다.
+   */
+  onClose: () => void;
   children: React.ReactNode;
 }) {
-  const router = useRouter();
   const ref = useRef<HTMLDivElement>(null);
   const closing = useRef(false);
   const touchY = useRef<number | null>(null);
 
   const flip = (el: HTMLElement) => {
     const spot = document.querySelector<HTMLElement>(
-      `[data-appicon="${app.id}"]`,
+      `[data-appicon="${id}"]`,
     );
     if (!spot) return null;
     const a = spot.getBoundingClientRect();
@@ -66,7 +74,7 @@ export function PhoneApp({
       ],
       { duration: OPEN_MS, easing: EASE },
     );
-  }, [app.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const close = () => {
     if (closing.current) return;
@@ -77,7 +85,7 @@ export function PhoneApp({
     const d = el && !reduce ? flip(el) : null;
 
     if (!el || !d) {
-      router.push("/");
+      onClose();
       return;
     }
     const anim = el.animate(
@@ -91,7 +99,7 @@ export function PhoneApp({
       ],
       { duration: CLOSE_MS, easing: "cubic-bezier(.4,0,.7,.2)", fill: "forwards" },
     );
-    anim.onfinish = () => router.push("/");
+    anim.onfinish = onClose;
   };
 
   return (
@@ -118,7 +126,7 @@ export function PhoneApp({
         type="button"
         className="phApp__home"
         onClick={close}
-        aria-label={`${app.title} 닫기`}
+        aria-label={`${title} 닫기`}
       >
         <span />
       </button>

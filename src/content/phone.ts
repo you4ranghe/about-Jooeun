@@ -20,6 +20,14 @@ export interface PhoneAppItem {
   title: string;
   art: IconArtKey;
   href: string;
+  /**
+   * 눌러도 되는 사람이 정해져 있는가.
+   *
+   * `/calendar` 는 미들웨어가 막습니다. 그냥 보내면 **로그인 페이지로 튕겨 나갑니다** —
+   * 아이콘을 눌렀는데 다른 사이트로 나가는 것처럼 보입니다.
+   * 방에서 관리자 여부를 먼저 보고 안내를 띄웠던 것과 같은 처리가 폰에도 필요합니다.
+   */
+  guard?: "admin";
 }
 
 export interface PhoneDockItem {
@@ -55,6 +63,7 @@ export async function getPhoneApps(): Promise<PhoneAppItem[]> {
       title: "캘린더",
       art: "calendar" as IconArtKey,
       href: "/calendar",
+      guard: "admin" as const,
     },
   ];
 }
