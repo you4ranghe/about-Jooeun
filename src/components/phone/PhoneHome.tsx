@@ -62,8 +62,8 @@ export function PhoneHome({
   sky: Sky;
   items: ResumeItem[];
   isAdmin: boolean;
-  /** 주소가 없는 앱 — 이력서·소개 */
-  onOpenSheet: (s: "resume" | "about") => void;
+  /** 주소가 없는 앱 — 이력서·소개·날씨 */
+  onOpenSheet: (s: "resume" | "about" | "weather" | "timeline") => void;
   /** 관리자 전용 앱을 눌렀을 때 */
   onLocked: (title: string) => void;
 }) {
@@ -94,15 +94,32 @@ export function PhoneHome({
       <div className="phHome__scroll">
       {/* ── 위젯 둘 ── */}
       <div className="phWidgets">
-        <div className="phW phW--clock">
+        {/* 시계를 누르면 "만든 시간" — 저장소를 언제 얼마나 걸려 만들었는지.
+            알람·타이머를 흉내 내면 전부 가짜가 되므로, 이 사이트에 진짜로
+            있는 시간 데이터를 보여줍니다 */}
+        <button
+          type="button"
+          className="phW phW--clock"
+          data-appicon="timeline"
+          onClick={() => onOpenSheet("timeline")}
+          aria-label="만든 시간 보기"
+        >
           <span className="phW__k">서울</span>
           <span className="phW__time">
             {now ? `${now.hh}:${now.mm}` : "--:--"}
           </span>
           <span className="phW__sub">{now?.date ?? " "}</span>
-        </div>
+          <span className="phW__phase">만든 시간 →</span>
+        </button>
 
-        <div className="phW phW--sky">
+        {/* 날씨는 눌러서 이번 주를 봅니다 */}
+        <button
+          type="button"
+          className="phW phW--sky"
+          data-appicon="weather"
+          onClick={() => onOpenSheet("weather")}
+          aria-label="이번 주 서울 날씨 보기"
+        >
           <span className="phW__k">오늘 서울</span>
           {sky.label ? (
             <>
@@ -117,8 +134,8 @@ export function PhoneHome({
               <span className="phW__sub">날씨를 못 불러왔어요</span>
             </>
           )}
-          <span className="phW__phase">{PHASE_WORD[sky.phase]}</span>
-        </div>
+          <span className="phW__phase">{PHASE_WORD[sky.phase]} · 이번 주 →</span>
+        </button>
       </div>
 
       {/* ── 앱 ── */}

@@ -35,7 +35,13 @@ const ENDPOINT =
   `https://api.open-meteo.com/v1/forecast` +
   `?latitude=${SEOUL.lat}&longitude=${SEOUL.lon}` +
   `&current=temperature_2m,weather_code,cloud_cover` +
-  `&daily=sunrise,sunset&timezone=Asia%2FSeoul&forecast_days=1`;
+  `&daily=sunrise,sunset,weather_code,temperature_2m_max,temperature_2m_min` +
+  `&timezone=Asia%2FSeoul&forecast_days=7`;
+
+/* 하루치에서 이레치로 늘렸습니다.
+   호출은 여전히 한 번이고 캐시도 그대로라 비용은 같습니다.
+   **따로 부르지 않는 것이 중요합니다** — 위젯의 "지금" 과 주간 예보가
+   다른 시각의 값이면 오늘 칸만 위젯과 어긋나 보입니다. */
 
 interface OpenMeteo {
   current?: {
@@ -43,7 +49,14 @@ interface OpenMeteo {
     weather_code?: number;
     cloud_cover?: number;
   };
-  daily?: { sunrise?: string[]; sunset?: string[] };
+  daily?: {
+    time?: string[];
+    sunrise?: string[];
+    sunset?: string[];
+    weather_code?: number[];
+    temperature_2m_max?: number[];
+    temperature_2m_min?: number[];
+  };
 }
 
 async function readWeather(): Promise<WeatherPayload> {
@@ -62,6 +75,12 @@ async function readWeather(): Promise<WeatherPayload> {
       cloud: d.current?.cloud_cover ?? null,
       sunrise: d.daily?.sunrise?.[0] ?? null,
       sunset: d.daily?.sunset?.[0] ?? null,
+      days: (d.daily?.time ?? []).map((date, i) => ({
+        date,
+        code: d.daily?.weather_code?.[i] ?? null,
+        max: d.daily?.temperature_2m_max?.[i] ?? null,
+        min: d.daily?.temperature_2m_min?.[i] ?? null,
+      })),
     };
   } catch {
     // 그대로 FALLBACK. 창밖은 기본 하늘로 그려집니다.

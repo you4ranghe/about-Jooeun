@@ -28,6 +28,14 @@ export interface PhoneAppItem {
    * 방에서 관리자 여부를 먼저 보고 안내를 띄웠던 것과 같은 처리가 폰에도 필요합니다.
    */
   guard?: "admin";
+  /**
+   * 앱 안 내용이 밝은가 어두운가.
+   * 위쪽 막대가 내용 위에 얹히므로 글자색이 반대여야 읽힙니다.
+   * 프로젝트마다 그 사이트의 옷을 입어(docs/07 §5) 밝은 것도 어두운 것도 있습니다.
+   */
+  tone?: "light" | "dark";
+  /** 만든 기간 (YYYY-MM-DD). 시계 위젯을 눌렀을 때 뜨는 연표가 씁니다 */
+  span?: { from: string; to: string };
 }
 
 export interface PhoneDockItem {
@@ -56,6 +64,8 @@ export async function getPhoneApps(): Promise<PhoneAppItem[]> {
       title: p.title,
       art: p.icon ?? ("globe" as IconArtKey),
       href: `/projects/${p.slug}`,
+      tone: p.theme.mode,
+      span: p.span,
     })),
     {
       id: "calendar",

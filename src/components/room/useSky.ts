@@ -16,6 +16,7 @@ import {
   type Phase,
   type Season,
   type WeatherPayload,
+  type DayForecast,
 } from "@/lib/sky";
 
 /**
@@ -46,6 +47,8 @@ export interface Sky {
   bodyY: number;
   /** "흐림 30°" 같은 표시용. 받아오지 못했으면 빈 문자열 */
   label: string;
+  /** 오늘부터 이레. 위젯을 눌렀을 때 뜨는 주간 예보가 씁니다 */
+  days: DayForecast[];
 }
 
 const INITIAL: Sky = {
@@ -58,6 +61,7 @@ const INITIAL: Sky = {
   bodyX: 46,
   bodyY: 34,
   label: "",
+  days: [],
 };
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -86,6 +90,7 @@ function compute(w: WeatherPayload, now = new Date()): Sky {
     label: w.ok
       ? `${CONDITION_LABEL[condition]}${w.tempC === null ? "" : ` ${Math.round(w.tempC)}°`}`
       : "",
+    days: w.days,
   };
 }
 

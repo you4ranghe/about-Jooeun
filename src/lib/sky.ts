@@ -22,6 +22,20 @@ export type Condition =
 export type Season = "spring" | "summer" | "autumn" | "winter";
 
 /** /api/weather 가 돌려주는 것 */
+/**
+ * 하루치 예보.
+ *
+ * 창밖에는 쓰이지 않습니다 — 창은 "지금" 만 그립니다.
+ * 폰의 날씨 위젯을 눌렀을 때 뜨는 이번 주 화면에서 씁니다(docs/08).
+ */
+export interface DayForecast {
+  /** "2026-07-31" — 이미 KST 입니다 */
+  date: string;
+  code: number | null;
+  max: number | null;
+  min: number | null;
+}
+
 export interface WeatherPayload {
   ok: boolean;
   tempC: number | null;
@@ -30,6 +44,13 @@ export interface WeatherPayload {
   /** "05:33" — 이미 KST 입니다 (요청할 때 timezone=Asia/Seoul) */
   sunrise: string | null;
   sunset: string | null;
+  /**
+   * 오늘부터 이레.
+   *
+   * **같은 요청 한 번에 같이 받아옵니다.** 따로 부르면 위젯의 "지금"과
+   * 주간 예보가 서로 다른 시각의 값이 되어, 오늘 칸만 위젯과 어긋나 보입니다.
+   */
+  days: DayForecast[];
 }
 
 export const FALLBACK: WeatherPayload = {
@@ -39,6 +60,7 @@ export const FALLBACK: WeatherPayload = {
   cloud: null,
   sunrise: null,
   sunset: null,
+  days: [],
 };
 
 /**

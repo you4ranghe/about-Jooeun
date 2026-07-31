@@ -159,8 +159,13 @@
 .phW {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
   aspect-ratio: 1;
   padding: 15px 16px;
+  color: inherit;
+  font: inherit;
+  cursor: default;
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.16);
   border: 1px solid rgba(255, 255, 255, 0.16);
@@ -198,6 +203,23 @@
   margin-top: 2px;
   font-size: 11.5px;
   opacity: 0.6;
+}
+/* 누를 수 있는 위젯 */
+.phW--sky,
+.phW--clock {
+  cursor: pointer;
+  transition: transform 0.14s ease;
+}
+.phW--sky:active,
+.phW--clock:active {
+  transform: scale(0.96);
+}
+/* 시계는 시각이 커서 자리가 빠듯합니다. 날짜 줄을 한 줄로 눌러 둡니다 */
+.phW--clock .phW__sub {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 /* ── 앱 격자 ── */
@@ -383,16 +405,68 @@
   background: #fff;
   transform-origin: center;
 }
+/* ── 위쪽 막대 ──
+   쓸어올려 닫는 손짓만 두면 기기 자체의 손짓과 겹쳐, 잘못 쓸면 사이트 밖으로
+   나가 버립니다. 눌러서 닫는 길이 반드시 있어야 합니다.
+   상태 표시줄 자리(노치)를 이 막대가 대신 채웁니다. */
+.phApp__bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: calc(var(--safe-top) + 8px) 14px 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  color: #16202a;
+}
+/* 어두운 앱 위에서는 막대도 어두워야 이어져 보입니다 */
+.phApp[data-tone="dark"] .phApp__bar {
+  background: rgba(14, 18, 24, 0.82);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+  color: #eef3f7;
+}
+.phApp__bar button {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  padding: 6px 10px 6px 4px;
+  margin: -6px 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 16px;
+  cursor: pointer;
+}
+.phApp__bar button svg {
+  width: 20px;
+  height: 20px;
+}
+.phApp__bar button:active {
+  opacity: 0.55;
+}
+.phApp__title {
+  flex: 1;
+  min-width: 0;
+  padding-right: 52px;
+  text-align: center;
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .phApp__body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-}
-/* 앱 안에서도 상태 표시줄 자리를 비워 둡니다 */
-.phApp__body > * {
-  padding-top: calc(var(--safe-top) + 44px);
 }
 
 /* 홈 인디케이터 — 누르거나 위로 쓸어올리면 닫힙니다 */
@@ -415,6 +489,168 @@
 }
 .phApp__home:active span {
   background: rgba(0, 0, 0, 0.55);
+}
+
+/* ── 이번 주 날씨 ── */
+.phWx__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.phWx__list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 0;
+  border-bottom: 1px solid #eee6d8;
+}
+.phWx__day {
+  flex: none;
+  width: 46px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.phWx__day small {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 400;
+  color: #8a8072;
+}
+.phWx__cond {
+  flex: none;
+  width: 46px;
+  font-size: 12.5px;
+  color: #6b6155;
+}
+.phWx__min,
+.phWx__max {
+  flex: none;
+  width: 30px;
+  font-size: 14px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.phWx__min {
+  color: #8a8072;
+}
+.phWx__max {
+  font-weight: 700;
+}
+/* 이레 전체의 최저~최고를 양 끝으로 둔 막대. 오늘이 더운 편인지 한눈에 보입니다 */
+.phWx__bar {
+  position: relative;
+  flex: 1;
+  height: 5px;
+  border-radius: 3px;
+  background: #e8e0d2;
+}
+.phWx__bar i {
+  position: absolute;
+  top: 0;
+  height: 5px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #7fb3d6, #e8a34a);
+}
+.phWx__note {
+  margin: 18px 0 0;
+  font-size: 12.5px;
+  color: #8a8072;
+}
+.phWx__empty {
+  margin: 24px 0 0;
+  font-size: 15px;
+  line-height: 1.75;
+  color: #6b6155;
+}
+
+/* ── 만든 시간 연표 ── */
+.phTl__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.phTl__list li {
+  border-bottom: 1px solid #eee6d8;
+}
+.phTl__list button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.phTl__list button:active {
+  opacity: 0.6;
+}
+.phTl__art {
+  display: block;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 22%;
+  overflow: hidden;
+}
+.phTl__art svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.phTl__body {
+  flex: 1;
+  min-width: 0;
+}
+.phTl__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.phTl__head b {
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.phTl__head small {
+  flex: none;
+  font-size: 12.5px;
+  color: #b4574a;
+  font-weight: 700;
+}
+/* 전체 기간을 가로로 편 자리. 막대가 그 안 어디쯤인지 보여줍니다 */
+.phTl__track {
+  position: relative;
+  display: block;
+  height: 6px;
+  margin: 7px 0 5px;
+  border-radius: 3px;
+  background: #ece4d6;
+}
+.phTl__track i {
+  position: absolute;
+  top: 0;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #b4574a, #d98b52);
+}
+.phTl__when {
+  display: block;
+  font-size: 12px;
+  color: #8a8072;
+  font-variant-numeric: tabular-nums;
+}
+.phTl__note {
+  margin: 18px 0 0;
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: #8a8072;
 }
 
 /* ── 관리자 전용 안내 ── */

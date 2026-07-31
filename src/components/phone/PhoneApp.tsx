@@ -24,6 +24,7 @@ export function PhoneApp({
   id,
   title,
   onClose,
+  tone = "light",
   children,
 }: {
   /** 어느 아이콘에서 자라날지. 홈 화면의 `data-appicon` 과 맞춥니다 */
@@ -36,6 +37,12 @@ export function PhoneApp({
    * 그래서 닫는 일은 부모가 정합니다.
    */
   onClose: () => void;
+  /**
+   * 앱 안 내용이 밝은가 어두운가.
+   * 위쪽 막대가 내용 위에 얹히므로 글자색이 반대여야 읽힙니다.
+   * 프로젝트 상세는 그 사이트의 옷을 입으므로 밝은 것도 어두운 것도 있습니다.
+   */
+  tone?: "light" | "dark";
   children: React.ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -106,6 +113,7 @@ export function PhoneApp({
     <div
       className="phApp"
       ref={ref}
+      data-tone={tone}
       /* 위로 쓸어올려 닫기. 아래에서 시작한 짧은 스와이프만 받습니다 —
          본문을 읽으려고 굴리는 손짓과 헷갈리면 안 됩니다. */
       onTouchStart={(e) => {
@@ -120,6 +128,27 @@ export function PhoneApp({
         if (from - to > 40) close();
       }}
     >
+      {/* ── 위쪽 막대 ──
+          쓸어올려 닫는 손짓 하나만 두면, 그게 기기 자체의 손짓
+          (홈으로 나가기 · 앱 전환)과 겹칩니다. 잘못 쓸면 사이트 밖으로
+          나가 버리므로 **눌러서 닫는 길이 반드시 있어야 합니다.** */}
+      <div className="phApp__bar">
+        <button type="button" onClick={close} aria-label={`${title} 닫기`}>
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            <path
+              d="M12.5 4L6.5 10l6 6"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          뒤로
+        </button>
+        <span className="phApp__title">{title}</span>
+      </div>
+
       <div className="phApp__body">{children}</div>
 
       <button

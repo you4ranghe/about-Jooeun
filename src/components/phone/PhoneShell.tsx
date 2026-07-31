@@ -13,6 +13,8 @@ import { PhoneHome } from "./PhoneHome";
 import { PhoneApp } from "./PhoneApp";
 import { ResumeApp } from "./ResumeApp";
 import { AboutApp } from "./AboutApp";
+import { WeatherApp } from "./WeatherApp";
+import { TimelineApp } from "./TimelineApp";
 import "@/styles/phone.css";
 
 /**
@@ -36,11 +38,13 @@ import "@/styles/phone.css";
  * 새벽·한낮·해질녘·밤이 바뀝니다. 사진 파일은 쓰지 않습니다(docs/04).
  */
 
-type Sheet = "resume" | "about";
+type Sheet = "resume" | "about" | "weather" | "timeline";
 
 const SHEET_TITLE: Record<Sheet, string> = {
   resume: "이력서",
   about: "소개",
+  weather: "서울 날씨",
+  timeline: "만든 시간",
 };
 
 export function PhoneShell({
@@ -125,6 +129,7 @@ export function PhoneShell({
           <PhoneApp
             id={routed.id}
             title={routed.title}
+            tone={routed.tone}
             onClose={() => router.push("/")}
           >
             {children}
@@ -137,11 +142,12 @@ export function PhoneShell({
             title={SHEET_TITLE[sheet]}
             onClose={closeSheet}
           >
-            {sheet === "resume" ? (
-              <ResumeApp items={items} />
-            ) : (
+            {sheet === "resume" && <ResumeApp items={items} />}
+            {sheet === "about" && (
               <AboutApp projects={apps.length - 1} resumeCount={items.length} />
             )}
+            {sheet === "weather" && <WeatherApp sky={sky} />}
+            {sheet === "timeline" && <TimelineApp apps={apps} />}
           </PhoneApp>
         )}
       </div>

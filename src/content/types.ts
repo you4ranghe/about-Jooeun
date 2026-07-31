@@ -276,8 +276,16 @@ export interface Project {
   live: string;
   /** 목록 오른쪽에 표시할 연도 표기 */
   year: string;
-  /** 사람이 읽는 기간 */
+  /** 사람이 읽는 기간. "2026.07.24 (하루 · 커밋 10)" 처럼 단서가 붙습니다 */
   period: string;
+  /**
+   * 기계가 읽는 기간 (YYYY-MM-DD).
+   *
+   * `period` 를 파싱하지 않습니다 — 표기가 조금씩 달라서 정규식이 언젠가 깨집니다.
+   * 폰의 "만든 시간" 연표가 이 값으로 막대를 놓습니다(docs/08).
+   * 하루 만에 만든 것은 from 과 to 가 같습니다.
+   */
+  span: { from: string; to: string };
   role: string;
   tags: string[];
   meta: RepoMeta;

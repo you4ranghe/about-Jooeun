@@ -29,6 +29,7 @@ const PROJECTS: Project[] = [
     live: "https://yutnori-rho.vercel.app",
     year: "2026",
     period: "2026.07.22 — 07.23",
+    span: { from: "2026-07-22", to: "2026-07-23" },
     role: "기획 · 개발 · 배포 (단독)",
     tags: ["바닐라 JS", "Supabase", "Postgres", "Realtime", "PWA"],
     meta: {
@@ -201,6 +202,7 @@ const PROJECTS: Project[] = [
     live: "https://inter-papper.vercel.app",
     year: "2026",
     period: "2026.05.22 — 07.06",
+    span: { from: "2026-05-22", to: "2026-07-06" },
     role: "기획 · 개발 · 배포 (단독)",
     tags: ["Next.js 16", "React 19", "TypeScript", "Supabase", "Tailwind 4"],
     meta: {
@@ -365,6 +367,7 @@ const PROJECTS: Project[] = [
     live: "https://todaktodak.vercel.app",
     year: "2026",
     period: "2026.05.21 (하루)",
+    span: { from: "2026-05-21", to: "2026-05-21" },
     role: "기획 · 개발 (단독)",
     tags: ["Spring Boot 3.4", "Java 21", "JPA", "H2", "Spring Security"],
     meta: {
@@ -543,6 +546,7 @@ const PROJECTS: Project[] = [
     live: "https://chaechae-daddy.vercel.app",
     year: "2026",
     period: "2026.03.25 — 05.27",
+    span: { from: "2026-03-25", to: "2026-05-27" },
     role: "기획 · 개발 · 배포 (단독)",
     tags: ["Next.js 16", "TypeScript", "Supabase", "Claude API", "Tailwind 4"],
     meta: {
@@ -713,6 +717,7 @@ const PROJECTS: Project[] = [
     live: "https://jummechu-wine.vercel.app",
     year: "2026",
     period: "2026.07.24 (하루 · 커밋 10)",
+    span: { from: "2026-07-24", to: "2026-07-24" },
     role: "기획 · 개발 · 배포 (단독)",
     tags: ["바닐라 JS", "ES 모듈", "Supabase", "PWA", "WebAudio"],
     meta: {
@@ -878,6 +883,7 @@ const PROJECTS: Project[] = [
     live: "https://our-home-eight.vercel.app",
     year: "2026",
     period: "2026.06.01 — 06.04",
+    span: { from: "2026-06-01", to: "2026-06-04" },
     role: "기획 · 개발 · 배포 (단독)",
     tags: ["Next.js", "Supabase", "Google APIs", "Realtime", "Recharts"],
     meta: {
