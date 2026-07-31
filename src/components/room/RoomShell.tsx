@@ -18,6 +18,7 @@ import { WallCalendar } from "./WallCalendar";
 import { DeskPad } from "./DeskPad";
 import { MusicProvider } from "@/components/music/MusicProvider";
 import { LoginNotice } from "./LoginNotice";
+import { BookModal } from "./BookModal";
 import { useViewerIsAdmin } from "./useViewerIsAdmin";
 import { useSky } from "./useSky";
 import { WindowWeather } from "./WindowWeather";
@@ -129,6 +130,11 @@ export function RoomShell({
   const [noticeOpen, setNoticeOpen] = useState(false);
   /** 캘린더 오른쪽 패널이 열려 있는가. 카메라가 가운데/왼쪽을 정하는 데 씁니다. */
   const [sidePanel, setSidePanel] = useState(false);
+  /** 열려 있는 서랍. 카메라가 그쪽으로 내려갑니다 */
+  const [drawer, setDrawer] = useState<"card" | "site" | null>(null);
+  const [copied, setCopied] = useState(false);
+  /** 책꽂이의 그 한 권을 펼쳤는가 */
+  const [bookOpen, setBookOpen] = useState(false);
 
   /* 창밖 — 실제 서울 날씨와 KST 시각. 1시간마다 받아오고 1분마다 다시 계산합니다. */
   const sky = useSky();
@@ -418,6 +424,28 @@ export function RoomShell({
     }
   };
 
+  /* ── 서랍 ──
+     방 안 물건을 누르면 카메라가 다가가는 규칙을 그대로 씁니다.
+     무대가 축소돼 있어 서랍 안 글씨는 다가가지 않으면 못 읽습니다. */
+  const openDrawer = (key: "card" | "site") => {
+    setCopied(false);
+    setDrawer(key);
+    const el = roomRef.current?.querySelector<HTMLElement>(
+      `[data-drawer="${key}"]`,
+    );
+    if (!el || !sceneRef.current) return;
+    const shot = shotFor(el, 0.5, 0.4, baseScale() * 1.75);
+    move(css(shot), null, 900);
+    lastShot.current = shot;
+  };
+
+  const closeDrawer = useCallback(() => {
+    setDrawer(null);
+    setCopied(false);
+    move(css(baseShot()), null, 820);
+    lastShot.current = null;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const closeItem = useCallback(() => {
     if (swapTimer.current) clearTimeout(swapTimer.current);
     move(css(baseShot()), null, 820);
@@ -430,7 +458,9 @@ export function RoomShell({
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        if (listOpen) setListOpen(false);
+        if (bookOpen) setBookOpen(false);
+        else if (listOpen) setListOpen(false);
+        else if (drawer) closeDrawer();
         else if (zoomedIn) router.push("/");
         else closeItem();
         return;
@@ -523,7 +553,7 @@ export function RoomShell({
       <div
         ref={roomRef}
         className="room"
-        data-zoom={activeId ? "on" : "off"}
+        data-zoom={activeId || drawer ? "on" : "off"}
         data-screen={inScreen ? "on" : "off"}
         data-cal={inCalendar ? "on" : "off"}
         data-music={inMusic ? "on" : "off"}
@@ -684,24 +714,99 @@ export function RoomShell({
               className="deskFront"
               style={{ top: L.desk.y + L.desk.h }}
             >
-              <span
-                className="deskFront__drawer"
+              {/* ── 왼쪽 서랍 — 명함 ──
+                  서랍에서 실제로 꺼내는 물건이라야 은유가 맞습니다.
+                  이력서는 이미 벽에 있고, 연락처는 여기가 제자리입니다. */}
+              <button
+                type="button"
+                className="drawer"
+                data-drawer="card"
+                data-open={String(drawer === "card")}
                 style={{ left: L.drawerInset }}
+                onClick={() =>
+                  drawer === "card" ? closeDrawer() : openDrawer("card")
+                }
+                aria-expanded={drawer === "card"}
+                aria-label="왼쪽 서랍 — 명함"
               >
-                <i />
-                <i />
-              </span>
-              <span
-                className="deskFront__drawer"
+                <span className="drawer__front">
+                  <i />
+                  <i />
+                </span>
+                <span className="drawer__in" aria-hidden={drawer !== "card"}>
+                  <span className="namecard">
+                    <b>{profile.name || "이름을 채워 주세요"}</b>
+                    <small>{profile.role}</small>
+                    {profile.email && (
+                      <span
+                        className="namecard__mail"
+                        role="button"
+                        tabIndex={drawer === "card" ? 0 : -1}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void navigator.clipboard?.writeText(profile.email);
+                          setCopied(true);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key !== "Enter" && e.key !== " ") return;
+                          e.preventDefault();
+                          e.stopPropagation();
+                          void navigator.clipboard?.writeText(profile.email);
+                          setCopied(true);
+                        }}
+                      >
+                        {copied ? "복사했습니다" : profile.email}
+                      </span>
+                    )}
+                    {profile.github && (
+                      <span className="namecard__gh">
+                        github.com/{profile.github}
+                      </span>
+                    )}
+                  </span>
+                </span>
+                <span className="drawer__tip">명함</span>
+              </button>
+
+              {/* ── 오른쪽 서랍 — 이 사이트를 만든 방법 ──
+                  서재 자체가 프로젝트인데 그 이야기가 어디에도 없었습니다. */}
+              <button
+                type="button"
+                className="drawer"
+                data-drawer="site"
+                data-open={String(drawer === "site")}
                 style={{ right: L.drawerInset }}
+                onClick={() =>
+                  drawer === "site" ? closeDrawer() : openDrawer("site")
+                }
+                aria-expanded={drawer === "site"}
+                aria-label="오른쪽 서랍 — 이 사이트를 만든 방법"
               >
-                <i />
-                <i />
-              </span>
+                <span className="drawer__front">
+                  <i />
+                  <i />
+                </span>
+                <span className="drawer__in" aria-hidden={drawer !== "site"}>
+                  <span className="memo">
+                    <b>이 방을 만든 방법</b>
+                    <em>이미지 파일 0개</em>
+                    <span>방·물건·아이콘이 전부 CSS 와 SVG 입니다</span>
+                    <em>공개 화면은 전부 정적</em>
+                    <span>데이터베이스가 잠들어 있어도 사이트는 돕니다</span>
+                    <em>창밖은 진짜 서울</em>
+                    <span>날씨와 해·달이 실제 시각을 따라 움직입니다</span>
+                    <em>좁은 화면에서는</em>
+                    <span>방 대신 아이폰 홈 화면이 뜹니다</span>
+                    <small>Next.js · Supabase · Vercel · 전 구간 무료</small>
+                  </span>
+                </span>
+                <span className="drawer__tip">이 사이트</span>
+              </button>
             </div>
 
-            {/* 책상 왼쪽 책꽂이 — 바닥이 상판에 닿습니다 */}
-            <DeskShelf />
+            {/* 책상 왼쪽 책꽂이 — 바닥이 상판에 닿습니다.
+                꽂힌 책 중 한 권만 진짜 책입니다 (인터페이퍼) */}
+            <DeskShelf onOpenBook={() => setBookOpen(true)} />
 
             {/* 아래 물건들은 **세로 무대에 없는 것이 있습니다.**
                 좁은 화면에 아홉 개를 늘어놓으면 물건이 아니라 얼룩이 됩니다.
@@ -769,7 +874,14 @@ export function RoomShell({
                   strokeWidth="2.6"
                   strokeLinejoin="round"
                 />
-                <circle cx="70" cy="45" r="5" fill="#FFF3C4" />
+                {/* 전구. 밤이 되면 스스로 밝아집니다 (scene.css 의 lamp-on) */}
+                <circle
+                  className="lamp__bulb"
+                  cx="70"
+                  cy="45"
+                  r="5"
+                  fill="#FFF3C4"
+                />
               </svg>
             </div>
             )}
@@ -865,15 +977,11 @@ export function RoomShell({
 
         <LoginNotice open={noticeOpen} onClose={() => setNoticeOpen(false)} />
 
-        <p
-          className="guide"
-          data-on={
-            !shownId && !zoomedIn && !listOpen && !noticeOpen ? "true" : "false"
-          }
-        >
-          <span className="guide__dot" />
-          모니터를 누르면 컴퓨터 화면 · 이력서는 벽에 붙은 메모에서
-        </p>
+        {bookOpen && <BookModal onClose={() => setBookOpen(false)} />}
+
+        {/* 하단 안내 문구는 2026-07-31 에 내렸습니다.
+            화면에 떠 있는 마지막 웹 UI 였고, 모니터에 마우스를 올리면
+            이름표가 뜨므로 길잡이가 아주 없는 것도 아닙니다. */}
 
         {/* ── 이력서 카드 ──
           12개를 모두 마크업에 남기고 활성 항목만 보여 줍니다. */}

@@ -48,40 +48,6 @@
 /* HUD 는 벽에 붙인 메모(.note*, scene.css)로 옮겼습니다.
    떠 있는 칩은 장면 위에 얹힌 웹 UI 였고, 벽에 붙은 종이는 방의 일부입니다. */
 
-/* ── 안내 ────────────────────────────────────── */
-.guide {
-  position: fixed;
-  left: 50%;
-  bottom: 22px;
-  translate: -50% 0;
-  z-index: 30;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border-radius: 999px;
-  padding: 10px 20px;
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  color: #fff7ea;
-  background: rgba(70, 48, 79, 0.9);
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.32);
-  pointer-events: none;
-  transition:
-    opacity 0.5s,
-    translate 0.5s;
-}
-.guide[data-on="false"] {
-  opacity: 0;
-  translate: -50% 14px;
-}
-.guide__dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #ffc93c;
-  flex: none;
-}
 
 /* ── 이력서 카드 ─────────────────────────────── */
 .card-panel {
@@ -339,7 +305,6 @@
   margin: 0 0 24px;
   padding: 0;
 }
-.sheet__list button,
 /* 관리자에게만 보이는 편집 입구.
    방문자에게는 마크업에 아예 없으므로 숨김 처리가 필요 없습니다. */
 .sheet__admin {
@@ -360,6 +325,7 @@
   color: #fff7ea;
 }
 
+.sheet__list button,
 .sheet__gal {
   display: flex;
   align-items: center;

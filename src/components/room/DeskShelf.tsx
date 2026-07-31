@@ -50,8 +50,20 @@ const BOOKS: [number, number, number][] = [
 const SIDE = 11;
 const BASE = 10;
 
-export function DeskShelf() {
+/**
+ * 진짜 책 한 권.
+ *
+ * 열한 권 중 이 한 권만 누를 수 있습니다. 전부 누르게 만들면 열 번 눌러
+ * 열 번 실망하게 되고, 하나도 못 누르게 하면 책꽂이가 벽지가 됩니다.
+ * 한 권만 책등에 제목이 있고 살짝 솟아 있어서, 나머지에 기능이 없는 것이
+ * 누락으로 보이지 않습니다.
+ *
+ * 왜 인터페이퍼인가 — 그 사이트가 **책을 다루는 사이트**입니다.
+ * 서재의 책이 책 사이트로 이어지는 것이 이 방에서 가장 자연스러운 연결입니다.
+ */
+const PICK = 4;
 
+export function DeskShelf({ onOpenBook }: { onOpenBook: () => void }) {
   const shelf = L.props.bookshelf;
   // 세로 무대에는 책꽂이가 없습니다. 640px 안에 다 넣으면 얼룩이 됩니다.
   if (!shelf?.h) return null;
@@ -75,19 +87,38 @@ export function DeskShelf() {
       <span className="deskShelf__well" />
 
       {/* 세워 꽂은 책 */}
-      {placed.map(({ at, bw, bh, ci }, i) => (
-        <span
-          key={i}
-          className="deskShelf__book"
-          style={{
-            left: at,
-            top: floorY - bh,
-            width: bw,
-            height: bh,
-            background: SPINES[ci],
-          }}
-        />
-      ))}
+      {placed.map(({ at, bw, bh, ci }, i) =>
+        i === PICK ? (
+          <button
+            key={i}
+            type="button"
+            className="deskShelf__book deskShelf__book--pick"
+            onClick={onOpenBook}
+            style={{
+              left: at,
+              /* 살짝 솟아 있습니다 — 자주 꺼내 보는 책은 반듯하게 안 꽂힙니다 */
+              top: floorY - bh - 7,
+              width: bw + 4,
+              height: bh + 7,
+            }}
+            aria-label="바우치 서재 — 펼쳐 보기"
+          >
+            <span className="deskShelf__title">바우치 서재</span>
+          </button>
+        ) : (
+          <span
+            key={i}
+            className="deskShelf__book"
+            style={{
+              left: at,
+              top: floorY - bh,
+              width: bw,
+              height: bh,
+              background: SPINES[ci],
+            }}
+          />
+        ),
+      )}
 
       {/* 마지막 한 권 — 옆판에 기대어 */}
       <span
