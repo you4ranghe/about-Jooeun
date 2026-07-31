@@ -15,7 +15,13 @@ import { ObjectArt } from "@/components/art/ObjectArt";
  * 제목만 늘어놓고 누른 것만 펼치면 목록이 목차 노릇을 합니다.
  * 한 번에 하나만 열립니다 — 여럿이 열리면 다시 긴 한 장이 됩니다.
  */
-export function ResumeApp({ items }: { items: ResumeItem[] }) {
+export function ResumeApp({
+  items,
+  isAdmin,
+}: {
+  items: ResumeItem[];
+  isAdmin: boolean;
+}) {
   const [open, setOpen] = useState<string | null>(items[0]?.id ?? null);
 
   return (
@@ -24,8 +30,17 @@ export function ResumeApp({ items }: { items: ResumeItem[] }) {
         <p className="phDoc__k">RESUME</p>
         <h1 className="phDoc__h1">이력서</h1>
         <p className="phDoc__lede">
-          {items.length}가지 이야기입니다. 제목을 누르면 펼쳐집니다.
+          {items.length
+            ? `${items.length}가지 이야기입니다. 제목을 누르면 펼쳐집니다.`
+            : "아직 채우는 중입니다."}
         </p>
+
+        {/* 관리자에게만 보이는 문. 폰에서도 주소를 외워 칠 일이 없어야 합니다 */}
+        {isAdmin && (
+          <a className="phDoc__admin" href="/admin/resume">
+            ✎ 이력서 고치기
+          </a>
+        )}
       </header>
 
       <ul className="phList">

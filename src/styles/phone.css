@@ -784,6 +784,20 @@
   font-size: 14.5px;
   color: #6b6155;
 }
+/* 관리자에게만 보이는 편집 입구. 방문자에게는 마크업에 아예 없습니다 */
+.phDoc__admin {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 9px 16px;
+  border: 1px solid #ded4c2;
+  border-radius: 999px;
+  color: #8a6a4a;
+  font-size: 14px;
+  text-decoration: none;
+}
+.phDoc__admin:active {
+  background: #f1ece1;
+}
 
 /* 아코디언 */
 .phList {

@@ -995,8 +995,19 @@ export function RoomShell({
             <div className="sheet__in">
               <h2>이력서</h2>
               <p>
-                12개 항목입니다. 프로젝트는 책상 위 모니터 안에 따로 있습니다.
+                {items.length
+                  ? `${items.length}가지입니다. 프로젝트는 책상 위 모니터 안에 따로 있습니다.`
+                  : "아직 채우는 중입니다. 프로젝트는 책상 위 모니터 안에 있습니다."}
               </p>
+
+              {/* 관리자에게만 보이는 문. 방문자에게는 아예 없습니다.
+                  기획(docs/09 §5)에서 "들어가는 문은 화면 안에" 라고 정한 자리입니다 —
+                  주소를 외워 치는 것 말고 길이 있어야 합니다. */}
+              {isAdmin && (
+                <a className="sheet__admin" href="/admin/resume">
+                  ✎ 이력서 고치기
+                </a>
+              )}
               <ul className="sheet__list">
                 {items.map((item) => (
                   <li key={item.id}>

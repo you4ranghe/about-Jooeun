@@ -145,12 +145,15 @@ export function PhoneShell({
             title={SHEET_TITLE[sheet]}
             onClose={closeSheet}
           >
-            {sheet === "resume" && <ResumeApp items={items} />}
+            {sheet === "resume" && (
+              <ResumeApp items={items} isAdmin={isAdmin} />
+            )}
             {sheet === "about" && (
               <AboutApp
                 profile={profile}
                 projects={apps.length - 1}
                 resumeCount={items.length}
+                isAdmin={isAdmin}
               />
             )}
             {sheet === "weather" && <WeatherApp sky={sky} />}

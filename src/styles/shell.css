@@ -340,6 +340,26 @@
   padding: 0;
 }
 .sheet__list button,
+/* 관리자에게만 보이는 편집 입구.
+   방문자에게는 마크업에 아예 없으므로 숨김 처리가 필요 없습니다. */
+.sheet__admin {
+  display: inline-block;
+  margin: -4px 0 18px;
+  padding: 8px 15px;
+  border: 1px solid #d3c6b4;
+  border-radius: 999px;
+  color: #8a6a4a;
+  font-size: 14px;
+  text-decoration: none;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.sheet__admin:hover {
+  background: #8a6a4a;
+  color: #fff7ea;
+}
+
 .sheet__gal {
   display: flex;
   align-items: center;

@@ -17,10 +17,12 @@ export function AboutApp({
   profile,
   projects,
   resumeCount,
+  isAdmin,
 }: {
   profile: Profile;
   projects: number;
   resumeCount: number;
+  isAdmin: boolean;
 }) {
   return (
     <div className="phDoc">
@@ -28,6 +30,12 @@ export function AboutApp({
         <p className="phDoc__k">ABOUT</p>
         <h1 className="phDoc__h1">{profile.name || "이름을 채워 주세요"}</h1>
         <p className="phDoc__lede">{profile.role}</p>
+
+        {isAdmin && (
+          <a className="phDoc__admin" href="/admin/profile">
+            ✎ 소개 고치기
+          </a>
+        )}
       </header>
 
       <dl className="phAbout">
