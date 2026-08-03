@@ -9,9 +9,25 @@
 
    ── 원칙 ──
    - 방은 움직이지 않는다. 애니메이션은 창밖(해·달·별·구름·새)과 시계뿐.
-   - 광원은 둘. 오른쪽 창빛과 책상 스탠드. 그림자는 창 반대편(왼쪽 아래)으로.
+   - 광원은 둘. 낮에는 오른쪽 창빛, 밤에는 왼쪽 스탠드. 그림자는 그 반대편으로.
    - 클릭은 사물만 받는다 (.layer 는 pointer-events:none).
    ═══════════════════════════════════════════════════════ */
+
+/* 그림자가 눕는 방향(부호). 책상 위 물건들이 전부 이 값을 곱해 씁니다.
+   ── 왜 변수인가 ──
+   아이패드에 책상 오른쪽을 내주면서 스탠드가 왼쪽 끝으로 갔습니다(layout.ts).
+   낮에는 창이 오른쪽이라 그림자가 왼쪽 아래로 눕는 게 맞지만, 밤에는 스탠드가
+   유일한 광원이라 **그림자가 광원 쪽으로 눕고 있었습니다.** 부호가 다섯 군데에
+   흩어져 있어 한 곳에 모읍니다.
+   ── 왜 @property 인가 ──
+   등록하지 않은 커스텀 속성은 전이(transition)가 안 걸려 밤낮이 바뀌는 순간
+   그림자가 툭 건너뜁니다. <number> 로 등록해 두면 -1 에서 1 로 넘어가는 동안
+   그림자가 물건 밑을 쓸고 지나갑니다 — 스탠드에 불이 들어오는 것과 같은 말입니다. */
+@property --sx {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: -1;
+}
 
 .room {
   /* 나무 · 종이 · 황동. 채도를 낮춘 서재 팔레트 */
@@ -39,10 +55,19 @@
   --sun: #d9a441;
   --ease: cubic-bezier(0.22, 0.9, 0.24, 1);
 
+  /* 낮 — 오른쪽 창빛. 그림자는 왼쪽 아래로 */
+  --sx: -1;
+  /* 밤이 내려앉는 속도(--nightwash 1.1s)와 같이 갑니다 */
+  transition: --sx 1.1s var(--ease);
+
   position: fixed;
   inset: 0;
   overflow: hidden;
   background: #241c16;
+}
+/* 밤 — 스탠드가 왼쪽 끝에 하나뿐. 그림자는 오른쪽 아래로 */
+.room[data-night="true"] {
+  --sx: 1;
 }
 
 /* 무대 — 모든 좌표의 기준 */
@@ -592,7 +617,7 @@
   width: 100%;
   height: auto;
   display: block;
-  filter: drop-shadow(-4px 7px 8px rgba(64, 44, 30, 0.3));
+  filter: drop-shadow(calc(4px * var(--sx)) 7px 8px rgba(64, 44, 30, 0.3));
 }
 
 /* ═══ 사물 — 움직이지 않는다 ═════════════════ */
@@ -616,8 +641,8 @@
   overflow: visible;
   position: relative;
   z-index: 1;
-  /* 빛이 오른쪽 창에서 오므로 그림자는 왼쪽 아래로 */
-  filter: drop-shadow(-6px 8px 7px rgba(64, 44, 30, 0.34));
+  /* 그림자 방향은 --sx 가 정합니다 (낮 = 창, 밤 = 스탠드) */
+  filter: drop-shadow(calc(6px * var(--sx)) 8px 7px rgba(64, 44, 30, 0.34));
 }
 /* 접지 그림자 — 물건이 표면에 놓여 있게 보이는 결정적 요소 */
 .thing::after {
@@ -935,7 +960,7 @@ body[data-night="true"] .face {
   margin-left: -74px;
   border-radius: 0 0 5px 5px;
   background: linear-gradient(180deg, #4a4038, #241e1a);
-  box-shadow: -6px 8px 14px rgba(64, 44, 30, 0.36);
+  box-shadow: calc(6px * var(--sx)) 8px 14px rgba(64, 44, 30, 0.36);
 }
 .mon__hit {
   position: absolute;
@@ -1029,7 +1054,9 @@ body[data-night="true"] .face {
     animation: none !important;
   }
   .scene,
-  .layer {
+  .layer,
+  /* 그림자가 물건 밑을 쓸고 지나가는 것도 움직임입니다. 결과만 남깁니다 */
+  .room {
     transition-duration: 0.2s !important;
   }
 }
@@ -1109,7 +1136,7 @@ body[data-night="true"] .face {
   margin-left: -23%;
   border-radius: 0 0 4px 4px;
   background: #2b2219;
-  box-shadow: -4px 5px 9px rgba(64, 44, 30, 0.34);
+  box-shadow: calc(4px * var(--sx)) 5px 9px rgba(64, 44, 30, 0.34);
 }
 .room[data-night="true"] .clock__time {
   text-shadow: 0 0 16px rgba(127, 212, 168, 0.8);
@@ -1787,7 +1814,7 @@ body[data-night="true"] .face {
   border-radius: 3px 3px 6px 6px;
   /* 거치대도 같은 아이보리 계열로 */
   background: linear-gradient(180deg, #e4dbc9, #b7aa92);
-  box-shadow: -5px 8px 14px rgba(64, 44, 30, 0.42);
+  box-shadow: calc(5px * var(--sx)) 8px 14px rgba(64, 44, 30, 0.42);
 }
 
 .pad__body {

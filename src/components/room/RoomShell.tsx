@@ -458,9 +458,13 @@ export function RoomShell({
   /* ── 키보드 ── */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // 책이 펼쳐져 있는 동안 방은 키를 받지 않습니다.
+      // Esc 는 <dialog> 가 처리합니다 — 여기서 먼저 닫으면 열린 채로 떼어 내는
+      // 셈이라 포커스가 책등으로 안 돌아옵니다. 좌우 화살표도 마찬가지로,
+      // 안 보이는 이력서 카드가 뒤에서 넘어가면 덮었을 때 다른 장이 나옵니다.
+      if (bookOpen) return;
       if (e.key === "Escape") {
-        if (bookOpen) setBookOpen(false);
-        else if (listOpen) setListOpen(false);
+        if (listOpen) setListOpen(false);
         else if (drawer) closeDrawer();
         else if (zoomedIn) router.push("/");
         else closeItem();

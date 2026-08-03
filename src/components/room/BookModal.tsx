@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import "@/styles/book.css";
 
@@ -23,13 +23,33 @@ import "@/styles/book.css";
  *
  * iframe 은 **다 펼쳐진 뒤에** 붙입니다. 회전하는 동안 로드하면
  * 브라우저가 애니메이션을 버리고 뚝뚝 끊깁니다.
+ *
+ * ── 왜 <dialog> 인가 ──
+ * `LoginNotice` · `PhoneNotice` 와 같은 이유입니다. 여기만 평범한 `<div>` 였습니다.
+ * `showModal()` 이라야 셋이 한꺼번에 붙습니다 — 포커스가 안에 갇히고,
+ * 바깥이 `inert` 가 되고, 덮을 때 **눌렀던 책등으로 포커스가 돌아갑니다.**
+ * 속에 든 것이 남의 사이트(iframe)라 더 중요합니다. 갇혀 있지 않으면 Tab 이
+ * 방 뒤편의 서랍·모니터로 새어 나가는데, 화면에는 책만 보이니 어디를 짚고 있는지
+ * 알 수 없게 됩니다.
+ *
+ * 닫기는 **반드시 `close()` 를 거칩니다.** 부모의 `onClose` 를 먼저 불러 버리면
+ * React 가 열려 있는 dialog 를 그대로 떼어 내고, 그러면 브라우저가 포커스를
+ * 되돌릴 곳을 잃습니다. `close()` → `close` 이벤트 → `onClose` 순서라야 합니다.
  */
 
 const SITE = "https://inter-papper.vercel.app";
 const OPEN_MS = 720;
 
 export function BookModal({ onClose }: { onClose: () => void }) {
+  const ref = useRef<HTMLDialogElement>(null);
   const [spread, setSpread] = useState(false);
+
+  /* 이 컴포넌트는 열릴 때만 마운트되므로 붙자마자 엽니다.
+     `open` 속성만 주면 그냥 보이기만 할 뿐 모달이 아닙니다. */
+  useEffect(() => {
+    const el = ref.current;
+    if (el && !el.open) el.showModal();
+  }, []);
 
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -41,11 +61,18 @@ export function BookModal({ onClose }: { onClose: () => void }) {
     return () => clearTimeout(t);
   }, []);
 
+  /** 닫는 길은 이 하나뿐입니다 (윗주석 참조) */
+  const dismiss = () => ref.current?.close();
+
   return (
-    <div
+    <dialog
+      ref={ref}
       className="book"
+      aria-labelledby="bookTitle"
+      onClose={onClose}
+      // 여백(책 바깥)을 눌렀을 때만 덮습니다. 속지 안쪽 클릭은 통과시키지 않습니다.
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === ref.current) dismiss();
       }}
     >
       <div className="book__stage" data-spread={String(spread)}>
@@ -57,12 +84,14 @@ export function BookModal({ onClose }: { onClose: () => void }) {
           <div className="book__top">
             <div>
               <p className="book__k">인터페이퍼</p>
-              <h2 className="book__h">바우치 서재</h2>
+              <h2 className="book__h" id="bookTitle">
+                바우치 서재
+              </h2>
             </div>
             <button
               type="button"
               className="book__x"
-              onClick={onClose}
+              onClick={dismiss}
               aria-label="책 덮기"
             >
               ×
@@ -82,7 +111,7 @@ export function BookModal({ onClose }: { onClose: () => void }) {
           </div>
 
           <div className="book__foot">
-            <Link href="/projects/interpaper" onClick={onClose}>
+            <Link href="/projects/interpaper" onClick={dismiss}>
               어떻게 만들었는지 보기 →
             </Link>
             <a href={SITE} target="_blank" rel="noopener">
@@ -91,6 +120,6 @@ export function BookModal({ onClose }: { onClose: () => void }) {
           </div>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 }
